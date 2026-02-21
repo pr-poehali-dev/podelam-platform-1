@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST with message",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "messages": [
+          { "role": "user", "content": "Сегодня поссорился с коллегой из-за мелочи. Почувствовал злость и обиду." }
+        ]
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "reply": "string" },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
