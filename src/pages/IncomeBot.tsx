@@ -18,6 +18,11 @@ type Scores = {
 
 type ResultKey = "body" | "sales" | "online" | "creative" | "soft";
 
+type Plan = {
+  title: string;
+  steps: string[];
+};
+
 const QUESTIONS = [
   {
     key: "goal",
@@ -160,6 +165,7 @@ export default function IncomeBot() {
   const [finished, setFinished] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [plan, setPlan] = useState<Plan | null>(null);
   const [msgId, setMsgId] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -208,9 +214,14 @@ export default function IncomeBot() {
         const scores = calcScores(newAnswers);
         const key = pickResult(scores);
         try {
-          const res = await fetch("/results.json");
-          const data = await res.json();
-          setResult(data[key] ?? "Результат не найден.");
+          const [resResult, resPlan] = await Promise.all([
+            fetch("/results.json"),
+            fetch("/plans.json"),
+          ]);
+          const resultData = await resResult.json();
+          const planData = await resPlan.json();
+          setResult(resultData[key] ?? "Результат не найден.");
+          setPlan(planData[key] ?? null);
         } catch {
           setResult("Не удалось загрузить результат. Попробуй обновить страницу.");
         }
@@ -280,6 +291,24 @@ export default function IncomeBot() {
             </div>
             <div className="max-w-[85%] bg-white border-2 border-primary/20 rounded-2xl rounded-tl-sm px-5 py-4 text-sm leading-relaxed whitespace-pre-line text-foreground">
               {result}
+            </div>
+          </div>
+        )}
+
+        {result && !analyzing && plan && (
+          <div className="flex justify-start">
+            <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
+              <Icon name="Banknote" size={13} className="text-white" />
+            </div>
+            <div className="max-w-[85%] bg-white border-2 border-primary/20 rounded-2xl rounded-tl-sm px-5 py-4 text-sm text-foreground space-y-3">
+              <p className="font-bold leading-snug">{plan.title}</p>
+              <ul className="space-y-2">
+                {plan.steps.map((step, i) => (
+                  <li key={i} className="leading-relaxed text-muted-foreground">
+                    {step}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         )}
