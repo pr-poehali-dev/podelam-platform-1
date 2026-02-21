@@ -1,7 +1,6 @@
 import json
 import os
-import urllib.request
-import urllib.error
+import requests
 
 SYSTEM_PROMPT = """Ты — инструмент самонаблюдения «Дневник самоанализа».
 
@@ -67,34 +66,43 @@ def handler(event: dict, context) -> dict:
     body = json.loads(event.get("body") or "{}")
     messages = body.get("messages", [])
 
-    api_key = os.environ.get("OPENAI_API_KEY", "")
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if not api_key:
         return {
             "statusCode": 500,
             "headers": {**cors_headers, "Content-Type": "application/json"},
-            "body": json.dumps({"error": "OPENAI_API_KEY not set"}),
+            "body": json.dumps({"error": "OPENROUTER_API_KEY not set"}),
         }
 
     payload = {
-        "model": "gpt-4o-mini",
+        "model": "openai/gpt-4o-mini",
         "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages,
         "max_tokens": 1200,
         "temperature": 0.7,
     }
 
-    req = urllib.request.Request(
-        "https://api.openai.com/v1/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
+    resp = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        json=payload,
         headers={
-            "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}",
+            "HTTP-Referer": "https://poehali.dev",
         },
-        method="POST",
+        timeout=30,
     )
 
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        result = json.loads(resp.read().decode("utf-8"))
+    if not resp.ok:
+        return {
+            "statusCode": 502,
+            "headers": {**cors_headers, "Content-Type": "application/json"},
+            "body": json.dumps({
+                "error": f"OpenAI {resp.status_code}",
+                "detail": resp.text,
+                "key_prefix": api_key[:12] + "...",
+            }, ensure_ascii=False),
+        }
 
+    result = resp.json()
     reply = result["choices"][0]["message"]["content"]
 
     return {
