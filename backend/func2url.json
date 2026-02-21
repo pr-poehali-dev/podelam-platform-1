@@ -1,0 +1,5 @@
+{
+  "add-payment": "https://functions.poehali.dev/55a42126-88c7-4b99-b0b5-831a53a24325",
+  "admin-stats": "https://functions.poehali.dev/91afbdc0-3ea5-4c84-9ae2-510594dec646",
+  "user-auth": "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c"
+}

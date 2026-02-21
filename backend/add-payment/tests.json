@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Add payment",
+      "method": "POST",
+      "path": "/",
+      "body": {"user_email": "test@example.com", "user_name": "Тест", "amount": 299, "tariff": "Старт", "status": "paid"},
+      "expectedStatus": 200,
+      "bodyMatcher": "none"
+    }
+  ]
+}
