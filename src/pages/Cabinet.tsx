@@ -6,6 +6,7 @@ type User = { name: string; email: string };
 type TestResult = { id: string; type: string; date: string; score: number };
 
 const tools = [
+  { icon: "Banknote", title: "Подбор дохода", desc: "Найди подходящий вариант дополнительного заработка", color: "bg-green-50 text-green-600", link: "/income-bot" },
   { icon: "BookOpen", title: "Дневник самоанализа", desc: "Фиксируй мысли и наблюдай динамику", color: "bg-violet-50 text-violet-600" },
   { icon: "BarChart3", title: "Прогресс развития", desc: "Сравнение с предыдущими результатами", color: "bg-blue-50 text-blue-600" },
   { icon: "Map", title: "Шаги развития", desc: "Персональный план на 3 месяца", color: "bg-emerald-50 text-emerald-600" },
@@ -339,12 +340,21 @@ export default function Cabinet() {
                 <h1 className="text-2xl font-black text-foreground">Инструменты</h1>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {tools.map((tool) => (
-                    <div key={tool.title} className="bg-white rounded-3xl border border-border p-6 card-hover cursor-pointer">
+                    <div
+                      key={tool.title}
+                      onClick={() => tool.link && navigate(tool.link)}
+                      className={`bg-white rounded-3xl border p-6 card-hover cursor-pointer transition-all ${tool.link ? "border-primary/30 hover:border-primary/60 hover:shadow-md" : "border-border"}`}
+                    >
                       <div className={`w-11 h-11 rounded-2xl ${tool.color} flex items-center justify-center mb-4`}>
                         <Icon name={tool.icon as "BookOpen"} size={20} />
                       </div>
-                      <h3 className="font-bold text-foreground mb-1">{tool.title}</h3>
-                      <p className="text-muted-foreground text-sm">{tool.desc}</p>
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h3 className="font-bold text-foreground mb-1">{tool.title}</h3>
+                          <p className="text-muted-foreground text-sm">{tool.desc}</p>
+                        </div>
+                        {tool.link && <Icon name="ArrowRight" size={16} className="text-primary shrink-0 mt-1" />}
+                      </div>
                     </div>
                   ))}
                 </div>
