@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/e85cccde-a68c-43c5-8e98-e53c3460428b.jpg";
@@ -79,6 +80,7 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
 };
 
 export default function Index() {
+  const navigate = useNavigate();
   const [activeTest, setActiveTest] = useState<null | "склонности" | "психологический">(null);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -129,7 +131,7 @@ export default function Index() {
             <button onClick={() => scrollTo("faq")} className="hover:text-foreground transition-colors">FAQ</button>
           </div>
           <button
-            onClick={() => scrollTo("tariffs")}
+            onClick={() => navigate("/auth")}
             className="gradient-brand text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
           >
             Начать тест
@@ -161,7 +163,7 @@ export default function Index() {
                 Пройти тест — 299 ₽
               </button>
               <button
-                onClick={() => scrollTo("tariffs")}
+                onClick={() => navigate("/auth")}
                 className="bg-white border border-border text-foreground font-semibold px-7 py-4 rounded-2xl hover:bg-secondary transition-colors text-[15px]"
               >
                 Узнать своё предназначение
