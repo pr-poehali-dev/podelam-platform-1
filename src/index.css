@@ -4,35 +4,39 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 248 50% 98%;
+    --foreground: 240 20% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 20% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 252 60% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 248 40% 94%;
+    --secondary-foreground: 240 20% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 248 30% 95%;
+    --muted-foreground: 240 10% 52%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 280 40% 92%;
+    --accent-foreground: 252 60% 35%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 248 30% 90%;
+    --input: 248 30% 90%;
+    --ring: 252 60% 48%;
 
-    --radius: 0.5rem;
+    --radius: 0.875rem;
+
+    --brand: 252 60% 48%;
+    --brand-soft: 252 60% 95%;
+    --brand-glow: 252 80% 70%;
 
     --sidebar-background: 0 0% 98%;
 
@@ -97,5 +101,82 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: "Golos Text", sans-serif;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+  .animate-fade-in-up {
+    animation: fadeInUp 0.7s ease-out forwards;
+  }
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out forwards;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .gradient-brand {
+    background: linear-gradient(
+      135deg,
+      hsl(252, 60%, 48%) 0%,
+      hsl(280, 60%, 52%) 100%
+    );
+  }
+  .gradient-soft {
+    background: linear-gradient(
+      135deg,
+      hsl(248, 50%, 98%) 0%,
+      hsl(280, 40%, 96%) 100%
+    );
+  }
+  .text-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(252, 60%, 45%) 0%,
+      hsl(280, 60%, 52%) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .card-hover {
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(100, 80, 200, 0.12);
+  }
+  .glow-soft {
+    box-shadow: 0 0 40px rgba(120, 80, 220, 0.15);
   }
 }
