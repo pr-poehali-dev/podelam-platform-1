@@ -11,6 +11,7 @@ import Test from "./pages/Test";
 import Results from "./pages/Results";
 import IncomeBot from "./pages/IncomeBot";
 import Diary from "./pages/Diary";
+import Progress from "./pages/Progress";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/results/:id" element={<Results />} />
           <Route path="/income-bot" element={<IncomeBot />} />
           <Route path="/diary" element={<Diary />} />
+          <Route path="/progress" element={<Progress />} />
           <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
