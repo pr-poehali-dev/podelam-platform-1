@@ -15,7 +15,7 @@ import {
   buildReport,
   TOTAL_QUESTIONS,
 } from "@/components/psych-bot/psychBotEngine";
-import { QUESTIONS, SEGMENT_NAMES } from "@/components/psych-bot/psychBotData";
+import { QUESTIONS, SEGMENT_NAMES, PROFILE_MATRIX, SEGMENT_PROFESSIONS, MOTIVATION_NAMES } from "@/components/psych-bot/psychBotData";
 
 const WELCOME_TEXT = `Привет! Я помогу определить, в каком направлении тебе будет легко и энергично работать.
 
@@ -80,6 +80,70 @@ export default function PsychBot() {
       localStorage.setItem(`psych_state3_${userData.email}`, JSON.stringify(botState));
     }
   }, [messages, botState]);
+
+  const savePsychResult = (
+    topSeg: string,
+    primMotiv: string,
+    selectedProf: string,
+    segScores: Record<string, number>,
+    motivScores: Record<string, number>
+  ) => {
+    const u = localStorage.getItem("pdd_user");
+    if (!u) return;
+    const userData = JSON.parse(u);
+
+    const totalSeg = Object.values(segScores).reduce((a, b) => a + b, 0) || 1;
+    const topSegScore = Math.round(((segScores[topSeg] ?? 0) / totalSeg) * 100);
+
+    const topSegs = Object.entries(segScores)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([s, v]) => ({ key: s, name: SEGMENT_NAMES[s], pct: Math.round((v / totalSeg) * 100) }));
+
+    const totalMotiv = Object.values(motivScores).reduce((a, b) => a + b, 0) || 1;
+    const topMotivations = Object.entries(motivScores)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .filter(([, v]) => v > 0)
+      .map(([m, v]) => ({ key: m, name: MOTIVATION_NAMES[m], pct: Math.round((v / totalMotiv) * 100) }));
+
+    const profileName = PROFILE_MATRIX[primMotiv]?.[topSeg] ?? "Уникальный профиль";
+
+    const professions = (SEGMENT_PROFESSIONS[topSeg] ?? []).slice(0, 4).map((p) => ({
+      name: p.name,
+      match: p.tags.includes(primMotiv) ? Math.floor(Math.random() * 8 + 85) : Math.floor(Math.random() * 10 + 70),
+    }));
+
+    const psychResult = {
+      profileName,
+      topSeg,
+      primMotiv,
+      selectedProf,
+      topSegs,
+      topMotivations,
+      topSegScore,
+      professions,
+    };
+
+    localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(psychResult));
+
+    const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(
+      localStorage.getItem("pdd_tests") || "[]"
+    );
+    const existingIdx = tests.findIndex((t) => t.type === "Психологический тест");
+    const newEntry = {
+      id: existingIdx >= 0 ? tests[existingIdx].id : Date.now().toString(),
+      type: "Психологический тест",
+      date: new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }),
+      score: topSegScore,
+    };
+    if (existingIdx >= 0) {
+      tests[existingIdx] = newEntry;
+    } else {
+      tests.push(newEntry);
+    }
+    localStorage.setItem("pdd_tests", JSON.stringify(tests));
+  };
 
   const handlePay = () => {
     const u = localStorage.getItem("pdd_user");
@@ -199,6 +263,7 @@ export default function PsychBot() {
       const primMotiv = st.primaryMotivation!;
 
       setBotState((s) => ({ ...s, step: "report", selectedProfession: option }));
+      savePsychResult(topSeg, primMotiv, option, st.segmentScores, st.motivationScores);
       botReply(`Зафиксировал: **«${option}»** — твой выбор.\n\nГенерирую персональный отчёт...`, undefined, 400);
       setTimeout(() => {
         const report = buildReport(topSeg, primMotiv, option, st.segmentScores, st.motivationScores);
@@ -232,6 +297,7 @@ export default function PsychBot() {
     if (highRated.length === 1) {
       const prof = highRated[0];
       setBotState((s) => ({ ...s, step: "report", ratings, highRated, selectedProfession: prof }));
+      savePsychResult(topSeg, primMotiv, prof, st.segmentScores, st.motivationScores);
       botReply(`Зафиксировал: **«${prof}»** — твой главный выбор.\n\nГенерирую персональный отчёт...`, undefined, 400);
       setTimeout(() => {
         const report = buildReport(topSeg, primMotiv, prof, st.segmentScores, st.motivationScores);
