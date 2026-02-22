@@ -13,6 +13,7 @@ import IncomeBot from "./pages/IncomeBot";
 import Diary from "./pages/Diary";
 import Progress from "./pages/Progress";
 import PsychBot from "./pages/PsychBot";
+import PlanBot from "./pages/PlanBot";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/diary" element={<Diary />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/psych-bot" element={<PsychBot />} />
+          <Route path="/plan-bot" element={<PlanBot />} />
           <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
