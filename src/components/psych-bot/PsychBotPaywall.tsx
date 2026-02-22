@@ -1,0 +1,48 @@
+import Icon from "@/components/ui/icon";
+
+type Props = {
+  onPay: () => void;
+};
+
+export default function PsychBotPaywall({ onPay }: Props) {
+  return (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="max-w-sm w-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-3">
+            <Icon name="Brain" size={32} className="text-white" />
+          </div>
+          <h2 className="text-xl font-bold mb-1">Психологический анализ</h2>
+          <p className="text-indigo-100 text-sm">Профориентация и предотвращение выгорания</p>
+        </div>
+        <div className="p-6">
+          <ul className="space-y-3 mb-6">
+            {[
+              "Алгоритм сегментации по 10 направлениям",
+              "Анализ ведущей мотивации (6 типов)",
+              "Подбор 8–10 профессий под твой профиль",
+              "Расчёт риска выгорания по формуле",
+              "Персональный план монетизации на 30 дней",
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
+                <Icon name="CheckCircle" size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <div className="text-center mb-4">
+            <span className="text-3xl font-bold text-gray-900">299 ₽</span>
+            <span className="text-gray-500 text-sm ml-1">одноразово</span>
+          </div>
+          <button
+            onClick={onPay}
+            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold py-3.5 rounded-xl hover:opacity-90 transition-opacity text-sm"
+          >
+            Начать анализ — 299 ₽
+          </button>
+          <p className="text-center text-xs text-gray-400 mt-3">Персональная сессия · ~15–20 минут</p>
+        </div>
+      </div>
+    </div>
+  );
+}
