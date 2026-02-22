@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
-import { Message, Widget, BotState } from "./psychBotEngine";
+import { Message, BotStep } from "./psychBotEngine";
 
 // ─── РЕНДЕР ТЕКСТА ────────────────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ function renderText(text: string) {
     if (line.startsWith("• ") || line.startsWith("- ")) {
       return (
         <p key={i} className="flex gap-1.5 my-0.5 text-sm leading-relaxed">
-          <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400 inline-block" />
+          <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-violet-400 inline-block" />
           <span dangerouslySetInnerHTML={{ __html: formatted.replace(/^[•-]\s*/, "") }} />
         </p>
       );
@@ -50,8 +50,8 @@ function RatingWidget({ professions, onSubmit }: { professions: string[]; onSubm
                 onClick={() => setRatings((r) => ({ ...r, [prof]: score }))}
                 className={`w-9 h-9 rounded-lg text-sm font-bold transition-all ${
                   ratings[prof] === score
-                    ? "bg-indigo-600 text-white shadow-md scale-110"
-                    : "bg-white border border-gray-200 text-gray-600 hover:border-indigo-400"
+                    ? "bg-violet-600 text-white shadow-md scale-110"
+                    : "bg-white border border-gray-200 text-gray-600 hover:border-violet-400"
                 }`}
               >
                 {score}
@@ -63,7 +63,7 @@ function RatingWidget({ professions, onSubmit }: { professions: string[]; onSubm
       {allRated && (
         <button
           onClick={() => onSubmit(ratings)}
-          className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 transition-colors text-sm mt-2"
+          className="w-full bg-violet-600 text-white font-semibold py-3 rounded-xl hover:bg-violet-700 transition-colors text-sm mt-2"
         >
           Отправить оценки →
         </button>
@@ -76,41 +76,24 @@ function RatingWidget({ professions, onSubmit }: { professions: string[]; onSubm
 
 type Props = {
   messages: Message[];
-  botState: BotState;
   loading: boolean;
   onButtonClick: (option: string) => void;
   onRatingsSubmit: (ratings: Record<string, number>) => void;
-  onTextSubmit: (text: string) => void;
+  onReset: () => void;
   bottomRef: React.RefObject<HTMLDivElement>;
+  step: BotStep;
 };
 
 export default function PsychBotChat({
   messages,
-  botState,
   loading,
   onButtonClick,
   onRatingsSubmit,
-  onTextSubmit,
+  onReset,
   bottomRef,
+  step,
 }: Props) {
-  const [input, setInput] = useState("");
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  const showInput = botState.step === "collect_activities" || botState.step === "ask_segment_why";
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      onTextSubmit(input);
-      setInput("");
-    }
-  };
-
-  const handleSend = () => {
-    onTextSubmit(input);
-    setInput("");
-    setTimeout(() => inputRef.current?.focus(), 100);
-  };
+  const isFinished = step === "report";
 
   return (
     <>
@@ -118,14 +101,14 @@ export default function PsychBotChat({
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
             {msg.from === "bot" && (
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 mr-2 mt-1">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0 mr-2 mt-1">
                 <Icon name="Brain" size={14} className="text-white" />
               </div>
             )}
             <div className={`max-w-[88%] ${msg.from === "user" ? "" : "w-full"}`}>
               <div className={`rounded-2xl px-4 py-3 ${
                 msg.from === "user"
-                  ? "bg-indigo-600 text-white rounded-tr-sm ml-auto inline-block"
+                  ? "bg-violet-600 text-white rounded-tr-sm ml-auto inline-block"
                   : "bg-white border border-gray-100 shadow-sm rounded-tl-sm text-gray-800"
               }`}>
                 {msg.from === "bot" ? (
@@ -135,16 +118,15 @@ export default function PsychBotChat({
                 )}
               </div>
 
-              {msg.from === "bot" && msg.widget && (
+              {msg.from === "bot" && msg.widget && !isFinished && (
                 <div className="mt-2 ml-0">
                   {msg.widget.type === "button_list" && (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-col gap-2">
                       {msg.widget.options.map((opt) => (
                         <button
                           key={opt}
                           onClick={() => onButtonClick(opt)}
-                          disabled={botState.step === "report"}
-                          className="bg-white border border-indigo-200 text-indigo-700 text-sm font-medium px-4 py-2 rounded-xl hover:bg-indigo-50 hover:border-indigo-400 transition-all disabled:opacity-40 disabled:cursor-default"
+                          className="bg-white border border-violet-200 text-violet-800 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-violet-50 hover:border-violet-400 transition-all text-left"
                         >
                           {opt}
                         </button>
@@ -165,55 +147,33 @@ export default function PsychBotChat({
 
         {loading && (
           <div className="flex justify-start">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 mr-2 mt-1">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0 mr-2 mt-1">
               <Icon name="Brain" size={14} className="text-white" />
             </div>
             <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3">
               <div className="flex gap-1 items-center h-5">
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           </div>
         )}
-        <div ref={bottomRef} />
-      </div>
 
-      {showInput && (
-        <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-gray-100 px-4 py-3">
-          <div className="flex gap-2 items-end">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                botState.step === "collect_activities"
-                  ? "Пишите каждый вид деятельности с новой строки..."
-                  : "Напишите, почему это направление вам близко..."
-              }
-              disabled={loading}
-              rows={3}
-              className="flex-1 resize-none rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent disabled:opacity-50 leading-relaxed"
-              style={{ minHeight: "72px", maxHeight: "200px" }}
-              onInput={(e) => {
-                const el = e.currentTarget;
-                el.style.height = "auto";
-                el.style.height = Math.min(el.scrollHeight, 200) + "px";
-              }}
-            />
+        {isFinished && !loading && (
+          <div className="mt-4 pb-6">
             <button
-              onClick={handleSend}
-              disabled={!input.trim() || loading}
-              className="w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 transition-colors flex items-center justify-center shrink-0 self-end"
+              onClick={onReset}
+              className="w-full flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm"
             >
-              <Icon name="Send" size={18} className="text-white" />
+              <Icon name="RotateCcw" size={15} />
+              Пройти тест заново
             </button>
           </div>
-          <p className="text-center text-xs text-gray-400 mt-1.5">Enter — отправить · Shift+Enter — новая строка</p>
-        </div>
-      )}
+        )}
+
+        <div ref={bottomRef} />
+      </div>
     </>
   );
 }

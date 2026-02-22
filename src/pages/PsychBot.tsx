@@ -8,18 +8,20 @@ import {
   Message,
   Widget,
   INITIAL_STATE,
-  segmentActivities,
-  getTop2,
-  analyzeMotivation,
+  applyAnswer,
+  getTopSegment,
   getPrimaryMotivation,
   rankProfessions,
   buildReport,
+  TOTAL_QUESTIONS,
 } from "@/components/psych-bot/psychBotEngine";
-import { SEGMENT_NAMES, MOTIVATION_NAMES } from "@/components/psych-bot/psychBotData";
+import { QUESTIONS, SEGMENT_NAMES } from "@/components/psych-bot/psychBotData";
 
 const WELCOME_TEXT = `Привет! Я помогу определить, в каком направлении тебе будет легко и энергично работать.
 
-Это анализ из 5 этапов. Никакого AI — только алгоритм на основе твоих реальных ответов.
+Это психологический тест из **${TOTAL_QUESTIONS} вопросов**. Для каждого вопроса выбери один вариант — тот, что откликается сильнее.
+
+Никакого AI — только алгоритм на основе твоих реальных ответов.
 
 Готов начать?`;
 
@@ -36,7 +38,7 @@ export default function PsychBot() {
     setMessages((m) => [...m, { id, from, text, widget }]);
   };
 
-  const botReply = (text: string, widget?: Widget, delay = 600) => {
+  const botReply = (text: string, widget?: Widget, delay = 500) => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -52,8 +54,8 @@ export default function PsychBot() {
     const paid = localStorage.getItem(`psych_paid_${userData.email}`);
     if (paid === "true") setHasAccess(true);
 
-    const savedMessages = localStorage.getItem(`psych_chat2_${userData.email}`);
-    const savedState = localStorage.getItem(`psych_state2_${userData.email}`);
+    const savedMessages = localStorage.getItem(`psych_chat3_${userData.email}`);
+    const savedState = localStorage.getItem(`psych_state3_${userData.email}`);
 
     if (savedMessages && savedState) {
       setMessages(JSON.parse(savedMessages));
@@ -74,8 +76,8 @@ export default function PsychBot() {
     if (!u) return;
     const userData = JSON.parse(u);
     if (messages.length > 0) {
-      localStorage.setItem(`psych_chat2_${userData.email}`, JSON.stringify(messages));
-      localStorage.setItem(`psych_state2_${userData.email}`, JSON.stringify(botState));
+      localStorage.setItem(`psych_chat3_${userData.email}`, JSON.stringify(messages));
+      localStorage.setItem(`psych_state3_${userData.email}`, JSON.stringify(botState));
     }
   }, [messages, botState]);
 
@@ -91,13 +93,25 @@ export default function PsychBot() {
     const u = localStorage.getItem("pdd_user");
     if (!u) return;
     const userData = JSON.parse(u);
-    localStorage.removeItem(`psych_chat2_${userData.email}`);
-    localStorage.removeItem(`psych_state2_${userData.email}`);
+    localStorage.removeItem(`psych_chat3_${userData.email}`);
+    localStorage.removeItem(`psych_state3_${userData.email}`);
     setMessages([]);
     setBotState(INITIAL_STATE);
     setTimeout(() => {
       addMsg("bot", WELCOME_TEXT, { type: "button_list", options: ["Да, начнём!"] });
     }, 300);
+  };
+
+  // ── ВОПРОС ТЕСТА ──────────────────────────────────────────────────────────
+
+  const askQuestion = (state: BotState, idx: number) => {
+    const q = QUESTIONS[idx];
+    const progress = `Вопрос ${idx + 1} из ${TOTAL_QUESTIONS}`;
+    botReply(
+      `**${progress}**\n\n${q.text}`,
+      { type: "button_list", options: q.options.map((o) => o.text) },
+      400
+    );
   };
 
   // ── ОБРАБОТЧИК КНОПОК ──────────────────────────────────────────────────────
@@ -106,50 +120,91 @@ export default function PsychBot() {
     addMsg("user", option);
     const st = botState;
 
+    // Старт теста
     if (st.step === "welcome") {
-      setBotState((s) => ({ ...s, step: "collect_activities" }));
-      botReply(`Отлично! 
-
-**Этап 1 из 5 — Список желаний**
-
-В течение 5 минут напиши все виды деятельности, которыми тебе хотелось бы заниматься.
-
-• Не оценивай реальность
-• Можно писать даже невозможные варианты
-• Минимум 15 пунктов, каждый с новой строки
-
-Просто пиши — я подожду 👇`);
+      const newState: BotState = { ...st, step: "quiz", currentQuestion: 0 };
+      setBotState(newState);
+      askQuestion(newState, 0);
       return;
     }
 
-    if (st.step === "show_top2" && st.top2) {
-      const [seg1, seg2] = st.top2;
-      const chosen = option.includes(SEGMENT_NAMES[seg1]) ? seg1 : seg2;
-      setBotState((s) => ({ ...s, step: "ask_segment_why", chosenSegment: chosen }));
-      botReply(`Хороший выбор!
+    // Ответ на вопрос теста
+    if (st.step === "quiz") {
+      const q = QUESTIONS[st.currentQuestion];
+      const optionIndex = q.options.findIndex((o) => o.text === option);
+      if (optionIndex === -1) return;
 
-**Этап 3 из 5 — Анализ мотивации**
-
-Напиши в свободной форме: почему именно «${SEGMENT_NAMES[chosen]}» откликается тебе сильнее?
-
-Что в этом направлении привлекает — деньги, свобода, смысл, признание, процесс? Чем честнее, тем точнее анализ.`);
-      return;
-    }
-
-    if (st.step === "ask_final_choice") {
-      setBotState((s) => ({ ...s, step: "report", selectedProfession: option }));
-      const report = buildReport(
-        st.chosenSegment!,
-        st.primaryMotivation,
-        option,
+      const { segmentScores, motivationScores } = applyAnswer(
         st.segmentScores,
-        st.motivationScores
+        st.motivationScores,
+        st.currentQuestion,
+        optionIndex
       );
-      botReply(`Отлично, финальный выбор зафиксирован.\n\nГенерирую твой персональный отчёт...`, undefined, 400);
+
+      const nextQuestion = st.currentQuestion + 1;
+
+      if (nextQuestion < TOTAL_QUESTIONS) {
+        const newState: BotState = {
+          ...st,
+          currentQuestion: nextQuestion,
+          segmentScores,
+          motivationScores,
+          answers: [...st.answers, optionIndex],
+        };
+        setBotState(newState);
+        askQuestion(newState, nextQuestion);
+      } else {
+        // Тест завершён — вычисляем результат
+        const topSeg = getTopSegment(segmentScores);
+        const primMotiv = getPrimaryMotivation(motivationScores);
+        const profs = rankProfessions(topSeg, primMotiv);
+
+        const newState: BotState = {
+          ...st,
+          step: "show_professions",
+          currentQuestion: nextQuestion,
+          segmentScores,
+          motivationScores,
+          answers: [...st.answers, optionIndex],
+          topSegment: topSeg,
+          primaryMotivation: primMotiv,
+          professions: profs,
+        };
+        setBotState(newState);
+
+        botReply(
+          `Тест завершён! Обрабатываю результаты...`,
+          undefined,
+          300
+        );
+        setTimeout(() => {
+          setLoading(false);
+          addMsg(
+            "bot",
+            `**Твоё ведущее направление: ${SEGMENT_NAMES[topSeg]}**
+
+Теперь оцени профессии в этом направлении по шкале от 1 до 5 — насколько тебя привлекает каждая из них.
+
+Не думай слишком долго — доверяй первому ощущению.`,
+            { type: "rating_list", professions: profs.map((p) => p.name) }
+          );
+        }, 1400);
+      }
+      return;
+    }
+
+    // Финальный выбор из нескольких профессий
+    if (st.step === "ask_final_choice") {
+      const topSeg = st.topSegment!;
+      const primMotiv = st.primaryMotivation!;
+
+      setBotState((s) => ({ ...s, step: "report", selectedProfession: option }));
+      botReply(`Зафиксировал: **«${option}»** — твой выбор.\n\nГенерирую персональный отчёт...`, undefined, 400);
       setTimeout(() => {
+        const report = buildReport(topSeg, primMotiv, option, st.segmentScores, st.motivationScores);
         addMsg("bot", report);
         setLoading(false);
-      }, 1800);
+      }, 1600);
       return;
     }
   };
@@ -157,139 +212,76 @@ export default function PsychBot() {
   // ── ОБРАБОТЧИК ОЦЕНОК ──────────────────────────────────────────────────────
 
   const handleRatingsSubmit = (ratings: Record<string, number>) => {
-    const ratingsText = Object.entries(ratings).map(([p, s]) => `${p}: ${s}`).join(", ");
-    addMsg("user", `Оценки: ${ratingsText}`);
+    const ratingsText = Object.entries(ratings).map(([p, s]) => `${p}: ${s}⭐`).join(", ");
+    addMsg("user", `Оценки выставлены: ${ratingsText}`);
 
     const highRated = Object.entries(ratings).filter(([, s]) => s >= 4).map(([p]) => p);
     const st = botState;
+    const topSeg = st.topSegment!;
+    const primMotiv = st.primaryMotivation!;
 
     if (highRated.length === 0) {
-      setBotState((s) => ({ ...s, step: "show_professions", ratings }));
-      botReply(`Ни одно направление не набрало 4+ баллов. Давай ещё раз посмотрим на список — возможно, ты оцениваешь слишком строго.
-
-Попробуй снова: что из этого ты мог бы попробовать, даже если сомневаешься?`, {
-        type: "rating_list",
-        professions: st.professions.map((p) => p.name),
-      });
+      setBotState((s) => ({ ...s, step: "collect_ratings", ratings }));
+      botReply(
+        `Ни одна профессия не набрала 4+ баллов. Попробуй пересмотреть — возможно, ты оцениваешь слишком строго.`,
+        { type: "rating_list", professions: st.professions.map((p) => p.name) }
+      );
       return;
     }
 
     if (highRated.length === 1) {
       const prof = highRated[0];
       setBotState((s) => ({ ...s, step: "report", ratings, highRated, selectedProfession: prof }));
-      botReply(`Зафиксировал: **«${prof}»** — твой главный выбор.
-
-Генерирую персональный отчёт...`, undefined, 400);
+      botReply(`Зафиксировал: **«${prof}»** — твой главный выбор.\n\nГенерирую персональный отчёт...`, undefined, 400);
       setTimeout(() => {
-        const report = buildReport(
-          st.chosenSegment!,
-          st.primaryMotivation,
-          prof,
-          st.segmentScores,
-          st.motivationScores
-        );
+        const report = buildReport(topSeg, primMotiv, prof, st.segmentScores, st.motivationScores);
         addMsg("bot", report);
         setLoading(false);
-      }, 1800);
+      }, 1600);
       return;
     }
 
     setBotState((s) => ({ ...s, step: "ask_final_choice", ratings, highRated }));
     botReply(
-      `Несколько направлений тебе откликнулись. Если нужно начать уже в этом месяце — что выберешь?`,
+      `Несколько профессий тебе откликнулись. Выбери одну — с чего начнёшь уже в этом месяце?`,
       { type: "button_list", options: highRated }
     );
   };
 
-  // ── ОБРАБОТЧИК ТЕКСТОВОГО ВВОДА ────────────────────────────────────────────
+  // ─── RENDER ────────────────────────────────────────────────────────────────
 
-  const handleTextSubmit = (text: string) => {
-    if (!text.trim()) return;
-    addMsg("user", text);
-    const st = botState;
-
-    if (st.step === "collect_activities") {
-      const activities = text
-        .split(/\n|;|,/)
-        .map((a) => a.replace(/^\d+[.)]\s*/, "").trim())
-        .filter((a) => a.length > 2);
-
-      if (activities.length < 5) {
-        botReply(`Маловато! Нужно хотя бы 15 пунктов — так анализ будет точнее.
-
-Попробуй ещё раз: пиши всё, что приходит в голову, даже если кажется нереальным.`);
-        return;
-      }
-
-      const segScores = segmentActivities(activities);
-      const [seg1, seg2] = getTop2(segScores);
-
-      setBotState((s) => ({ ...s, step: "show_top2", activities, segmentScores: segScores, top2: [seg1, seg2] }));
-
-      botReply(
-        `Получил ${activities.length} пунктов — хорошо!
-
-**Этап 2 из 5 — Определение профиля**
-
-По твоему списку выделяются два ведущих направления:
-
-1️⃣ **${SEGMENT_NAMES[seg1]}**
-2️⃣ **${SEGMENT_NAMES[seg2]}**
-
-Какое откликается сильнее?`,
-        { type: "button_list", options: [`1️⃣ ${SEGMENT_NAMES[seg1]}`, `2️⃣ ${SEGMENT_NAMES[seg2]}`] }
-      );
-      return;
-    }
-
-    if (st.step === "ask_segment_why") {
-      const motivScores = analyzeMotivation(text);
-      const primaryMotivation = getPrimaryMotivation(motivScores);
-      const segment = st.chosenSegment!;
-      const profs = rankProfessions(segment, primaryMotivation);
-
-      setBotState((s) => ({
-        ...s,
-        step: "collect_ratings",
-        motivationText: text,
-        motivationScores: motivScores,
-        primaryMotivation,
-        professions: profs,
-      }));
-
-      const motivName = MOTIVATION_NAMES[primaryMotivation];
-
-      botReply(
-        `Понял. Твоя ведущая мотивация — **«${motivName}»**.
-
-**Этап 4 из 5 — Подбор направлений**
-
-Внутри сегмента «${SEGMENT_NAMES[segment]}» — вот конкретные направления для тебя.
-
-Оцени каждое от **1 до 5**:
-• 1 — не моё
-• 3 — возможно
-• 5 — очень откликается`,
-        { type: "rating_list", professions: profs.map((p) => p.name) }
-      );
-      return;
-    }
-  };
+  if (!hasAccess) {
+    return <PsychBotPaywall onPay={handlePay} />;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50 flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100 px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate("/cabinet")} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
           <Icon name="ArrowLeft" size={18} className="text-gray-600" />
         </button>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0">
           <Icon name="Brain" size={18} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 text-sm leading-tight">Психологический анализ</p>
-          <p className="text-xs text-gray-500">5 этапов · без AI · только твои ответы</p>
+          <p className="font-semibold text-gray-900 text-sm leading-tight">Психологический тест</p>
+          {botState.step === "quiz" && (
+            <p className="text-xs text-gray-500">{botState.currentQuestion} из {TOTAL_QUESTIONS} вопросов</p>
+          )}
+          {botState.step !== "quiz" && botState.step !== "welcome" && (
+            <p className="text-xs text-gray-500">Анализ завершён</p>
+          )}
         </div>
+        {/* Прогресс-бар */}
+        {botState.step === "quiz" && (
+          <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-violet-500 rounded-full transition-all duration-500"
+              style={{ width: `${(botState.currentQuestion / TOTAL_QUESTIONS) * 100}%` }}
+            />
+          </div>
+        )}
         {messages.length > 1 && (
           <button onClick={handleReset} className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600" title="Начать заново">
             <Icon name="RotateCcw" size={16} />
@@ -297,19 +289,16 @@ export default function PsychBot() {
         )}
       </div>
 
-      {!hasAccess && <PsychBotPaywall onPay={handlePay} />}
-
-      {hasAccess && (
-        <PsychBotChat
-          messages={messages}
-          botState={botState}
-          loading={loading}
-          onButtonClick={handleButtonClick}
-          onRatingsSubmit={handleRatingsSubmit}
-          onTextSubmit={handleTextSubmit}
-          bottomRef={bottomRef}
-        />
-      )}
+      {/* Chat */}
+      <PsychBotChat
+        messages={messages}
+        loading={loading}
+        bottomRef={bottomRef}
+        onButtonClick={handleButtonClick}
+        onRatingsSubmit={handleRatingsSubmit}
+        onReset={handleReset}
+        step={botState.step}
+      />
     </div>
   );
 }
