@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
-import { ENERGY_TEXT, BURNOUT_TEXT, FORMAT_TEXT } from "@/components/psych-bot/psychBotData";
+import {
+  ENERGY_TEXT,
+  BURNOUT_TEXT,
+  FORMAT_TEXT,
+  PROFILE_DESCRIPTIONS,
+  SEGMENT_NAMES,
+  PROFILE_MATRIX,
+} from "@/components/psych-bot/psychBotData";
 
 type TestResult = { id: string; type: string; date: string; score: number };
 
@@ -48,28 +55,36 @@ export default function Results() {
     </div>
   );
 
-  const isPsych = result.type === "Психологический тест" && psychResult;
+  const isPsychTest = result.type === "Психологический тест";
 
-  const title = isPsych ? psychResult.profileName : "Творческий стратег";
-  const subtitle = isPsych
-    ? `${psychResult.topSegs[0]?.name ?? ""} · ${psychResult.topMotivations[0]?.name ?? ""}`
-    : "Аналитически-гуманитарный тип";
-  const emoji = isPsych ? "🧠" : "🎨";
+  // Данные — из реального результата бота или дефолт
+  const topSeg = psychResult?.topSeg ?? "analytics";
+  const primMotiv = psychResult?.primMotiv ?? "meaning";
+  const profileName = psychResult?.profileName ?? PROFILE_MATRIX[primMotiv]?.[topSeg] ?? result.type;
+  const selectedProf = psychResult?.selectedProf ?? "";
+  const topSegs = psychResult?.topSegs ?? [];
+  const topMotivations = psychResult?.topMotivations ?? [];
+  const professions = psychResult?.professions ?? [];
 
-  const staticSteps = isPsych
+  const description = isPsychTest ? (PROFILE_DESCRIPTIONS[primMotiv]?.[topSeg] ?? "") : "";
+  const energyText = isPsychTest ? (ENERGY_TEXT[topSeg] ?? "") : "";
+  const burnoutText = isPsychTest ? (BURNOUT_TEXT[topSeg] ?? "") : "";
+  const formatText = isPsychTest ? (FORMAT_TEXT[topSeg] ?? "") : "";
+
+  const steps = isPsychTest
     ? [
-        `Прочитай описание направления «${psychResult.topSegs[0]?.name}» — найди 3 конкретных профессии`,
-        `Изучи, что делает ${psychResult.selectedProf} в реальном проекте — найди 2-3 кейса`,
+        selectedProf ? `Изучи, что делает «${selectedProf}» в реальных проектах — найди 2–3 кейса` : `Изучи 2–3 реальных кейса по направлению «${SEGMENT_NAMES[topSeg]}»`,
         "Найди одного человека в этой сфере и задай ему 3 вопроса про вход в профессию",
         "Пройди 1 бесплатный урок или мини-курс по выбранному направлению",
         "Сделай первый маленький проект — даже учебный — и покажи кому-нибудь",
+        "Сформулируй своё предложение в 2 предложениях и предложи помощь 3 людям бесплатно",
       ]
     : [
         "Сформулируй 3 направления, которые тебя давно привлекают",
-        "Пройди 1-2 бесплатных онлайн-урока по каждому из них",
+        "Пройди 1–2 бесплатных онлайн-урока по каждому из них",
         "Найди первый пет-проект или волонтёрскую задачу для практики",
-        "Собери портфолио из 3-5 работ — даже учебных",
-        "Поговори с 2-3 людьми, которые уже работают в этих сферах",
+        "Собери портфолио из 3–5 работ — даже учебных",
+        "Поговори с 2–3 людьми, которые уже работают в этих сферах",
       ];
 
   return (
@@ -95,32 +110,28 @@ export default function Results() {
         {/* HERO */}
         <div className="gradient-brand rounded-3xl p-8 md:p-10 text-white mb-8 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10 text-[200px] flex items-center justify-end pr-8 leading-none select-none">
-            {emoji}
+            🧠
           </div>
           <div className="relative">
             <div className="flex items-center gap-2 mb-4">
               <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">{result.type}</span>
               <span className="text-white/60 text-xs">{result.date}</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-black mb-2">{title}</h1>
-            <p className="text-white/80 text-lg mb-6">{subtitle}</p>
+            <h1 className="text-3xl md:text-4xl font-black mb-2">{profileName}</h1>
+            {isPsychTest && <p className="text-white/80 text-lg mb-6">{SEGMENT_NAMES[topSeg]}{topMotivations[0] ? ` · ${topMotivations[0].name}` : ""}</p>}
             <div className="flex items-center gap-4 flex-wrap">
               <div className="bg-white/15 rounded-2xl px-5 py-3">
                 <div className="text-2xl font-black">{result.score}%</div>
                 <div className="text-xs text-white/70">совпадение профиля</div>
               </div>
-              {isPsych && (
-                <>
-                  <div className="bg-white/15 rounded-2xl px-5 py-3">
-                    <div className="text-2xl font-black">{psychResult.professions.length}</div>
-                    <div className="text-xs text-white/70">направления</div>
-                  </div>
-                  <div className="bg-white/15 rounded-2xl px-5 py-3">
-                    <div className="text-2xl font-black">{staticSteps.length}</div>
-                    <div className="text-xs text-white/70">шагов вперёд</div>
-                  </div>
-                </>
-              )}
+              <div className="bg-white/15 rounded-2xl px-5 py-3">
+                <div className="text-2xl font-black">{professions.length || topSegs.length || 4}</div>
+                <div className="text-xs text-white/70">направления</div>
+              </div>
+              <div className="bg-white/15 rounded-2xl px-5 py-3">
+                <div className="text-2xl font-black">{steps.length}</div>
+                <div className="text-xs text-white/70">шагов вперёд</div>
+              </div>
             </div>
           </div>
         </div>
@@ -150,92 +161,104 @@ export default function Results() {
         {/* PROFILE TAB */}
         {activeSection === "profile" && (
           <div className="space-y-4">
-            {isPsych ? (
-              <>
-                <div className="bg-white rounded-2xl p-6 border border-border">
-                  <h3 className="font-bold text-foreground mb-3">Ведущие направления</h3>
-                  <div className="space-y-3">
-                    {psychResult.topSegs.map((seg) => (
-                      <div key={seg.key}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-foreground font-medium">{seg.name}</span>
-                          <span className="text-primary font-bold">{seg.pct}%</span>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full gradient-brand rounded-full" style={{ width: `${seg.pct}%` }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="bg-white rounded-2xl p-6 border border-border">
-                  <h3 className="font-bold text-foreground mb-3">Мотивация</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {psychResult.topMotivations.map((m) => (
-                      <span key={m.key} className="bg-violet-50 text-violet-700 text-sm font-semibold px-3 py-1.5 rounded-xl border border-violet-100">
-                        {m.name} — {m.pct}%
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-border">
-                  <h3 className="font-bold text-foreground mb-2">Что тебя заряжает</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{ENERGY_TEXT[psychResult.topSeg]}</p>
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-border">
-                  <h3 className="font-bold text-foreground mb-2">Где ты будешь выгорать</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{BURNOUT_TEXT[psychResult.topSeg]}</p>
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-border">
-                  <h3 className="font-bold text-foreground mb-2">Подходящий формат работы</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{FORMAT_TEXT[psychResult.topSeg]}</p>
-                </div>
-
-                <div className="bg-violet-50 rounded-2xl p-6 border border-violet-100">
-                  <h3 className="font-bold text-violet-800 mb-1">Выбранная профессия</h3>
-                  <p className="text-violet-700 text-lg font-semibold">{psychResult.selectedProf}</p>
-                </div>
-              </>
-            ) : (
+            {description && (
               <div className="bg-white rounded-2xl p-6 border border-border">
-                <p className="text-muted-foreground text-sm">Данные профиля не найдены. Пройдите тест ещё раз.</p>
+                <h3 className="font-bold text-foreground mb-2">Твой психологический портрет</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
               </div>
             )}
+
+            {topSegs.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 border border-border">
+                <h3 className="font-bold text-foreground mb-3">Ведущие направления</h3>
+                <div className="space-y-3">
+                  {topSegs.map((seg) => (
+                    <div key={seg.key}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-foreground font-medium">{seg.name}</span>
+                        <span className="text-primary font-bold">{seg.pct}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full gradient-brand rounded-full" style={{ width: `${seg.pct}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {topMotivations.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 border border-border">
+                <h3 className="font-bold text-foreground mb-3">Мотивация</h3>
+                <div className="flex flex-wrap gap-2">
+                  {topMotivations.map((m) => (
+                    <span key={m.key} className="bg-violet-50 text-violet-700 text-sm font-semibold px-3 py-1.5 rounded-xl border border-violet-100">
+                      {m.name} — {m.pct}%
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {energyText && (
+              <div className="bg-white rounded-2xl p-6 border border-border">
+                <h3 className="font-bold text-foreground mb-2">Что тебя заряжает</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{energyText}</p>
+              </div>
+            )}
+
+            {burnoutText && (
+              <div className="bg-white rounded-2xl p-6 border border-border">
+                <h3 className="font-bold text-foreground mb-2">Где ты будешь выгорать</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{burnoutText}</p>
+              </div>
+            )}
+
+            {formatText && (
+              <div className="bg-white rounded-2xl p-6 border border-border">
+                <h3 className="font-bold text-foreground mb-2">Подходящий формат работы</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{formatText}</p>
+              </div>
+            )}
+
+            {selectedProf && (
+              <div className="bg-violet-50 rounded-2xl p-6 border border-violet-100">
+                <h3 className="font-bold text-violet-800 mb-1">Выбранная профессия</h3>
+                <p className="text-violet-700 text-lg font-semibold">{selectedProf}</p>
+              </div>
+            )}
+
           </div>
         )}
 
         {/* DIRECTIONS TAB */}
         {activeSection === "directions" && (
           <div className="space-y-3">
-            {isPsych
-              ? psychResult.professions.map((p, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-5 border border-border flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl gradient-brand flex items-center justify-center shrink-0">
-                      <span className="text-white font-black text-sm">{p.match}%</span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground">{p.name}</p>
-                      <p className="text-muted-foreground text-sm">Совпадение с твоим профилем</p>
-                    </div>
+            {professions.length > 0 ? (
+              professions.map((p, i) => (
+                <div key={i} className="bg-white rounded-2xl p-5 border border-border flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl gradient-brand flex items-center justify-center shrink-0">
+                    <span className="text-white font-black text-sm">{p.match}%</span>
                   </div>
-                ))
-              : (
-                <div className="bg-white rounded-2xl p-6 border border-border">
-                  <p className="text-muted-foreground text-sm">Пройдите тест чтобы увидеть персональные направления.</p>
+                  <div>
+                    <p className="font-bold text-foreground">{p.name}</p>
+                    <p className="text-muted-foreground text-sm">Совпадение с твоим профилем</p>
+                  </div>
                 </div>
-              )
-            }
+              ))
+            ) : (
+              <div className="bg-white rounded-2xl p-6 border border-border text-center">
+                <p className="text-muted-foreground text-sm">Пройди тест заново — получишь персональный список профессий с оценкой совпадения.</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* STEPS TAB */}
         {activeSection === "steps" && (
           <div className="space-y-3">
-            {staticSteps.map((step, i) => (
+            {steps.map((step, i) => (
               <div key={i} className="bg-white rounded-2xl p-5 border border-border flex gap-4">
                 <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center shrink-0 text-white font-black text-sm">
                   {i + 1}
