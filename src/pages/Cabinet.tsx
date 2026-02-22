@@ -238,25 +238,18 @@ export default function Cabinet() {
 
                 {/* QUICK TESTS */}
                 {tests.length === 0 && (
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {[
-                      { title: "Тест на склонности", desc: "15–20 мин · 40 вопросов", price: "299 ₽", type: "склонности", link: "/test/склонности" },
-                      { title: "Психологический тест", desc: "20 мин · 15 вопросов", price: "299 ₽", type: "психологический", link: "/psych-bot" },
-                    ].map((t) => (
-                      <div key={t.type} className="bg-white rounded-3xl border border-border p-5 card-hover">
-                        <h3 className="font-bold text-foreground mb-1">{t.title}</h3>
-                        <p className="text-muted-foreground text-xs mb-4">{t.desc}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="font-black text-lg text-foreground">{t.price}</span>
-                          <button
-                            onClick={() => navigate(t.link)}
-                            className="gradient-brand text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
-                          >
-                            Начать
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="bg-white rounded-3xl border border-border p-5 card-hover max-w-sm">
+                    <h3 className="font-bold text-foreground mb-1">Психологический тест</h3>
+                    <p className="text-muted-foreground text-xs mb-4">20 мин · 15 вопросов · профориентация</p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-lg text-foreground">299 ₽</span>
+                      <button
+                        onClick={() => navigate("/psych-bot")}
+                        className="gradient-brand text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+                      >
+                        Начать
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -268,8 +261,7 @@ export default function Cabinet() {
                 <h1 className="text-2xl font-black text-foreground">Тесты</h1>
                 <div className="grid sm:grid-cols-2 gap-5">
                   {[
-                    { title: "Тест на склонности", desc: "Определяет твои природные таланты и подходящие сферы деятельности на основе 40 вопросов", time: "15–20 мин", questions: 40, price: "299 ₽", type: "склонности", link: "/test/склонности", icon: "Zap" },
-                    { title: "Психологический тест", desc: "Анализирует мотивацию, ценности и стиль мышления. Даёт понимание твоих сильных сторон", time: "20 мин", questions: 15, price: "299 ₽", type: "психологический", link: "/psych-bot", icon: "Brain" },
+                    { title: "Психологический тест", desc: "Анализирует мотивацию, ценности и стиль мышления. Даёт понимание твоих сильных сторон и профессий которые подойдут", time: "20 мин", questions: 15, price: "299 ₽", type: "психологический", link: "/psych-bot", icon: "Brain" },
                   ].map((t) => {
                     const done = tests.find((r) => r.type === t.title);
                     return (
