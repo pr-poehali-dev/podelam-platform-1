@@ -442,22 +442,68 @@ export default function PlanBot() {
                   {/* Кнопка скачать/сохранить план */}
                   {step === "report" && currentPlan && (
                     <div className="mt-3 flex flex-col gap-2">
-                      <button
-                        onClick={() => {
-                          const text = formatPlanAsMarkdown(currentPlan);
-                          const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement("a");
-                          a.href = url;
-                          a.download = "plan_3_months.txt";
-                          a.click();
-                          URL.revokeObjectURL(url);
-                        }}
-                        className="flex items-center gap-2 justify-center bg-emerald-600 text-white font-semibold py-3 rounded-xl hover:bg-emerald-700 transition-colors text-sm"
-                      >
-                        <Icon name="Download" size={16} />
-                        Скачать план
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            const text = formatPlanAsMarkdown(currentPlan);
+                            const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = "plan_3_months.txt";
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="flex-1 flex items-center gap-2 justify-center bg-emerald-600 text-white font-semibold py-3 rounded-xl hover:bg-emerald-700 transition-colors text-sm"
+                        >
+                          <Icon name="Download" size={16} />
+                          Скачать .txt
+                        </button>
+                        <button
+                          onClick={() => {
+                            const plan = currentPlan;
+                            const md = formatPlanAsMarkdown(plan);
+                            const html = md
+                              .split("\n")
+                              .map((line) => {
+                                if (line.startsWith("# ")) return `<h1>${line.replace(/^# /, "")}</h1>`;
+                                if (line.startsWith("## ")) return `<h2>${line.replace(/^## /, "")}</h2>`;
+                                if (line.startsWith("### ")) return `<h3>${line.replace(/^### /, "")}</h3>`;
+                                if (line.startsWith("---")) return `<hr/>`;
+                                if (line.startsWith("> ")) return `<blockquote>${line.replace(/^> /, "")}</blockquote>`;
+                                if (line.startsWith("• ") || line.startsWith("✓ ")) return `<p class="bullet">${line}</p>`;
+                                if (line.trim() === "") return `<br/>`;
+                                return `<p>${line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</p>`;
+                              })
+                              .join("");
+
+                            const win = window.open("", "_blank");
+                            if (!win) return;
+                            win.document.write(`<!DOCTYPE html><html><head>
+                              <meta charset="utf-8"/>
+                              <title>Мой план развития на 3 месяца</title>
+                              <style>
+                                body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; color: #1a1a1a; line-height: 1.6; padding: 0 20px; }
+                                h1 { font-size: 22px; color: #059669; border-bottom: 2px solid #059669; padding-bottom: 8px; margin-top: 32px; }
+                                h2 { font-size: 17px; color: #1a1a1a; margin-top: 24px; }
+                                h3 { font-size: 14px; color: #374151; margin-top: 18px; }
+                                hr { border: none; border-top: 1px solid #e5e7eb; margin: 16px 0; }
+                                blockquote { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 8px 12px; margin: 10px 0; border-radius: 0 8px 8px 0; font-size: 13px; }
+                                p { font-size: 13px; margin: 4px 0; }
+                                p.bullet { padding-left: 8px; }
+                                strong { font-weight: 600; }
+                                @media print { body { margin: 20px; } }
+                              </style>
+                            </head><body>${html}<br/><p style="color:#9ca3af;font-size:11px;margin-top:32px">Сформировано: ${new Date().toLocaleDateString("ru-RU")}</p></body></html>`);
+                            win.document.close();
+                            setTimeout(() => { win.focus(); win.print(); }, 400);
+                          }}
+                          className="flex-1 flex items-center gap-2 justify-center bg-white border border-emerald-300 text-emerald-700 font-semibold py-3 rounded-xl hover:bg-emerald-50 transition-colors text-sm"
+                        >
+                          <Icon name="FileText" size={16} />
+                          Сохранить PDF
+                        </button>
+                      </div>
                       <button
                         onClick={handleReset}
                         className="flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-700 font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
