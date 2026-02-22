@@ -6,6 +6,7 @@ type User = { name: string; email: string };
 type TestResult = { id: string; type: string; date: string; score: number };
 
 const tools = [
+  { icon: "Brain", title: "Психологический анализ", desc: "Профориентация и предотвращение выгорания · 299 ₽", color: "bg-indigo-50 text-indigo-600", link: "/psych-bot", badge: "299 ₽" },
   { icon: "Banknote", title: "Подбор дохода", desc: "Найди подходящий вариант дополнительного заработка", color: "bg-green-50 text-green-600", link: "/income-bot" },
   { icon: "BookOpen", title: "Дневник самоанализа", desc: "Фиксируй мысли и наблюдай динамику", color: "bg-violet-50 text-violet-600", link: "/diary" },
   { icon: "BarChart3", title: "Прогресс развития", desc: "Сравнение с предыдущими результатами", color: "bg-blue-50 text-blue-600", link: "/progress" },
@@ -349,8 +350,13 @@ export default function Cabinet() {
                         <Icon name={tool.icon as "BookOpen"} size={20} />
                       </div>
                       <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h3 className="font-bold text-foreground mb-1">{tool.title}</h3>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-foreground">{tool.title}</h3>
+                            {"badge" in tool && tool.badge && (
+                              <span className="text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full shrink-0">{tool.badge}</span>
+                            )}
+                          </div>
                           <p className="text-muted-foreground text-sm">{tool.desc}</p>
                         </div>
                         {tool.link && <Icon name="ArrowRight" size={16} className="text-primary shrink-0 mt-1" />}
