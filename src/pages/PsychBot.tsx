@@ -130,10 +130,10 @@ export default function PsychBot() {
     const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(
       localStorage.getItem("pdd_tests") || "[]"
     );
-    const existingIdx = tests.findIndex((t) => t.type === "Психологический тест");
+    const existingIdx = tests.findIndex((t) => t.type === "Тест на призвание");
     const newEntry = {
       id: existingIdx >= 0 ? tests[existingIdx].id : Date.now().toString(),
-      type: "Психологический тест",
+      type: "Тест на призвание",
       date: new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }),
       score: topSegScore,
     };
@@ -331,7 +331,7 @@ export default function PsychBot() {
           <Icon name="Brain" size={18} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 text-sm leading-tight">Психологический тест</p>
+          <p className="font-semibold text-gray-900 text-sm leading-tight">Тест на призвание</p>
           {botState.step === "quiz" && (
             <p className="text-xs text-gray-500">{botState.currentQuestion} из {TOTAL_QUESTIONS} вопросов</p>
           )}

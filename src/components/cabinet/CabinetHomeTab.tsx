@@ -21,7 +21,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, profileCo
       <div>
         <h1 className="text-2xl md:text-3xl font-black text-foreground">Привет, {user.name} 👋</h1>
         <p className="text-muted-foreground mt-1">
-          {psychTest ? "Твой психологический профиль готов" : "Начни с психологического теста"}
+          {psychTest ? "Твой профиль призвания готов" : "Начни с теста на призвание"}
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, profileCo
           <div>
             <h3 className="font-bold text-foreground">Профиль заполнен</h3>
             <p className="text-muted-foreground text-sm mt-0.5">
-              {profileComplete < 50 ? "Пройдите тест, чтобы получить рекомендации" : "Психологический профиль построен"}
+              {profileComplete < 50 ? "Пройдите тест, чтобы получить рекомендации" : "Профиль призвания построен"}
             </p>
           </div>
           <div className="text-3xl font-black text-gradient">{profileComplete}%</div>
@@ -49,7 +49,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, profileCo
             <div className="absolute inset-0 opacity-10 text-[160px] flex items-center justify-end pr-6 leading-none select-none">🧠</div>
             <div className="relative">
               <div className="flex items-center gap-2 mb-3">
-                <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Психологический тест</span>
+                <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Тест на призвание</span>
                 <span className="text-white/60 text-xs">{psychTest.date}</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-black mb-1">{psychResult.profileName}</h2>
@@ -90,7 +90,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, profileCo
           {/* ОПИСАНИЕ ПРОФИЛЯ */}
           {PROFILE_DESCRIPTIONS[psychResult.primMotiv]?.[psychResult.topSeg] && (
             <div className="bg-white rounded-3xl border border-border p-6">
-              <h3 className="font-bold text-foreground mb-2">Твой психологический портрет</h3>
+              <h3 className="font-bold text-foreground mb-2">Твой портрет призвания</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 {PROFILE_DESCRIPTIONS[psychResult.primMotiv][psychResult.topSeg]}
               </p>

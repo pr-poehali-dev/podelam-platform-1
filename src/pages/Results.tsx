@@ -39,7 +39,7 @@ export default function Results() {
     const found = tests.find((t) => t.id === id);
     if (found) {
       setResult(found);
-      if (found.type === "Психологический тест") {
+      if (found.type === "Тест на призвание") {
         const saved = localStorage.getItem(`psych_result_${userData.email}`);
         if (saved) setPsychResult(JSON.parse(saved));
       }
@@ -55,7 +55,7 @@ export default function Results() {
     </div>
   );
 
-  const isPsychTest = result.type === "Психологический тест";
+  const isPsychTest = result.type === "Тест на призвание";
 
   // Данные — из реального результата бота или дефолт
   const topSeg = psychResult?.topSeg ?? "analytics";

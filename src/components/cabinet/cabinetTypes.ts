@@ -50,7 +50,7 @@ export function printPsychResult(psychResult: PsychResult, date: string, score: 
   if (!win) return;
   win.document.write(`<!DOCTYPE html><html><head>
     <meta charset="utf-8"/>
-    <title>Психологический профиль — ПоДелам</title>
+    <title>Тест на призвание — ПоДелам</title>
     <style>
       body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; color: #1a1a1a; line-height: 1.6; padding: 0 24px; }
       .header { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border-radius: 16px; padding: 32px; margin-bottom: 32px; }
@@ -70,7 +70,7 @@ export function printPsychResult(psychResult: PsychResult, date: string, score: 
     </style>
   </head><body>
     <div class="header">
-      <div style="font-size:12px;opacity:0.7;margin-bottom:8px">Психологический тест · ${date}</div>
+      <div style="font-size:12px;opacity:0.7;margin-bottom:8px">Тест на призвание · ${date}</div>
       <h1>${psychResult.profileName}</h1>
       <p>${SEGMENT_NAMES[psychResult.topSeg]}</p>
       <div class="badges">
@@ -80,7 +80,7 @@ export function printPsychResult(psychResult: PsychResult, date: string, score: 
       </div>
     </div>
 
-    ${description ? `<h2>Психологический портрет</h2><div class="highlight">${description}</div>` : ""}
+    ${description ? `<h2>Портрет призвания</h2><div class="highlight">${description}</div>` : ""}
 
     <h2>Ведущие направления</h2>
     <ul>${segList}</ul>

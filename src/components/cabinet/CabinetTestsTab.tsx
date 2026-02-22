@@ -21,7 +21,7 @@ export default function CabinetTestsTab({ psychTest, psychResult, onNavigate }: 
             <span className="bg-green-50 text-green-600 text-xs font-bold px-3 py-1 rounded-full border border-green-200">Пройден</span>
           )}
         </div>
-        <h3 className="font-bold text-lg text-foreground mb-2">Психологический тест</h3>
+        <h3 className="font-bold text-lg text-foreground mb-2">Тест на призвание</h3>
         <p className="text-muted-foreground text-sm leading-relaxed mb-5">
           Анализирует мотивацию, ценности и стиль мышления. Даёт понимание твоих сильных сторон и профессий которые подойдут
         </p>

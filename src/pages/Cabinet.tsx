@@ -33,7 +33,7 @@ export default function Cabinet() {
 
   if (!user) return null;
 
-  const psychTest = tests.find((t) => t.type === "Психологический тест");
+  const psychTest = tests.find((t) => t.type === "Тест на призвание");
   const profileComplete = psychTest ? 85 : 15;
 
   return (
