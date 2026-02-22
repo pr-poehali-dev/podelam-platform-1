@@ -229,6 +229,18 @@ export default function Results() {
               </div>
             )}
 
+            {!psychResult && isPsychTest && (
+              <div className="bg-white rounded-2xl p-6 border border-border text-center space-y-4">
+                <p className="text-muted-foreground text-sm">Для полного профиля с профессиями и развёрнутым анализом пройди обновлённый тест.</p>
+                <button
+                  onClick={() => navigate("/psych-bot")}
+                  className="gradient-brand text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-opacity text-sm"
+                >
+                  Пройти обновлённый тест
+                </button>
+              </div>
+            )}
+
           </div>
         )}
 
@@ -248,8 +260,14 @@ export default function Results() {
                 </div>
               ))
             ) : (
-              <div className="bg-white rounded-2xl p-6 border border-border text-center">
-                <p className="text-muted-foreground text-sm">Пройди тест заново — получишь персональный список профессий с оценкой совпадения.</p>
+              <div className="bg-white rounded-2xl p-6 border border-border text-center space-y-4">
+                <p className="text-muted-foreground text-sm">Пройди обновлённый тест — получишь персональный список профессий с оценкой совпадения.</p>
+                <button
+                  onClick={() => navigate("/psych-bot")}
+                  className="gradient-brand text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-opacity text-sm"
+                >
+                  Пройти тест
+                </button>
               </div>
             )}
           </div>

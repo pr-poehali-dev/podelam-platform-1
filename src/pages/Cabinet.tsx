@@ -240,8 +240,8 @@ export default function Cabinet() {
                 {tests.length === 0 && (
                   <div className="grid sm:grid-cols-2 gap-4">
                     {[
-                      { title: "Тест на склонности", desc: "15–20 мин · 40 вопросов", price: "299 ₽", type: "склонности" },
-                      { title: "Психологический тест", desc: "20 мин · 45 вопросов", price: "299 ₽", type: "психологический" },
+                      { title: "Тест на склонности", desc: "15–20 мин · 40 вопросов", price: "299 ₽", type: "склонности", link: "/test/склонности" },
+                      { title: "Психологический тест", desc: "20 мин · 15 вопросов", price: "299 ₽", type: "психологический", link: "/psych-bot" },
                     ].map((t) => (
                       <div key={t.type} className="bg-white rounded-3xl border border-border p-5 card-hover">
                         <h3 className="font-bold text-foreground mb-1">{t.title}</h3>
@@ -249,7 +249,7 @@ export default function Cabinet() {
                         <div className="flex items-center justify-between">
                           <span className="font-black text-lg text-foreground">{t.price}</span>
                           <button
-                            onClick={() => navigate(`/test/${t.type}`)}
+                            onClick={() => navigate(t.link)}
                             className="gradient-brand text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
                           >
                             Начать
@@ -268,8 +268,8 @@ export default function Cabinet() {
                 <h1 className="text-2xl font-black text-foreground">Тесты</h1>
                 <div className="grid sm:grid-cols-2 gap-5">
                   {[
-                    { title: "Тест на склонности", desc: "Определяет твои природные таланты и подходящие сферы деятельности на основе 40 вопросов", time: "15–20 мин", questions: 40, price: "299 ₽", type: "склонности", icon: "Zap" },
-                    { title: "Психологический тест", desc: "Анализирует мотивацию, ценности и стиль мышления. Даёт понимание твоих сильных сторон", time: "20 мин", questions: 45, price: "299 ₽", type: "психологический", icon: "Brain" },
+                    { title: "Тест на склонности", desc: "Определяет твои природные таланты и подходящие сферы деятельности на основе 40 вопросов", time: "15–20 мин", questions: 40, price: "299 ₽", type: "склонности", link: "/test/склонности", icon: "Zap" },
+                    { title: "Психологический тест", desc: "Анализирует мотивацию, ценности и стиль мышления. Даёт понимание твоих сильных сторон", time: "20 мин", questions: 15, price: "299 ₽", type: "психологический", link: "/psych-bot", icon: "Brain" },
                   ].map((t) => {
                     const done = tests.find((r) => r.type === t.title);
                     return (
@@ -301,7 +301,7 @@ export default function Cabinet() {
                             </button>
                           ) : (
                             <button
-                              onClick={() => navigate(`/test/${t.type}`)}
+                              onClick={() => navigate(t.link)}
                               className="gradient-brand text-white font-bold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm"
                             >
                               Начать тест
