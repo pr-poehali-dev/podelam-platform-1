@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import BarrierBotPaywall from "@/components/barrier-bot/BarrierBotPaywall";
 import BarrierBotChat from "@/components/barrier-bot/BarrierBotChat";
+import BarrierBotHistory, { BarrierSession } from "@/components/barrier-bot/BarrierBotHistory";
 import {
   BotState,
   Message,
   Widget,
   INITIAL_STATE,
   applyAnswer,
-  detectBreakPoint,
   recalcY,
   detectProfile,
   PROFILE_TEXTS,
@@ -32,7 +32,19 @@ export default function BarrierBot() {
   const [botState, setBotState] = useState<BotState>(INITIAL_STATE);
   const [loading, setLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
+  const [tab, setTab] = useState<"chat" | "history">("chat");
+  const [sessions, setSessions] = useState<BarrierSession[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const getUserEmail = () => {
+    const u = localStorage.getItem("pdd_user");
+    return u ? JSON.parse(u).email : "";
+  };
+
+  const loadSessions = (email: string) => {
+    const raw = localStorage.getItem(`barrier_results_${email}`) ?? "[]";
+    setSessions(JSON.parse(raw));
+  };
 
   const addMsg = (from: "bot" | "user", text: string, widget?: Widget) => {
     const id = Date.now() + Math.random();
@@ -55,6 +67,8 @@ export default function BarrierBot() {
     const paid = localStorage.getItem(`barrier_paid_${userData.email}`);
     if (paid === "true") setHasAccess(true);
 
+    loadSessions(userData.email);
+
     const savedMessages = localStorage.getItem(`barrier_chat_${userData.email}`);
     const savedState = localStorage.getItem(`barrier_state_${userData.email}`);
 
@@ -75,26 +89,32 @@ export default function BarrierBot() {
   }, [messages, loading]);
 
   useEffect(() => {
-    const u = localStorage.getItem("pdd_user");
-    if (!u || !hasAccess) return;
-    const userData = JSON.parse(u);
+    const email = getUserEmail();
+    if (!email || !hasAccess) return;
     if (messages.length > 0) {
-      localStorage.setItem(`barrier_chat_${userData.email}`, JSON.stringify(messages));
-      localStorage.setItem(`barrier_state_${userData.email}`, JSON.stringify(botState));
+      localStorage.setItem(`barrier_chat_${email}`, JSON.stringify(messages));
+      localStorage.setItem(`barrier_state_${email}`, JSON.stringify(botState));
     }
   }, [messages, botState, hasAccess]);
 
   const handlePay = () => {
-    const u = localStorage.getItem("pdd_user");
-    if (!u) return;
-    const userData = JSON.parse(u);
-    localStorage.setItem(`barrier_paid_${userData.email}`, "true");
+    const email = getUserEmail();
+    if (!email) return;
+    localStorage.setItem(`barrier_paid_${email}`, "true");
     setHasAccess(true);
   };
 
-  const getNextBotMessage = (newState: BotState, answer: string | number | string[]): { text: string; widget?: Widget } => {
-    const stepNum = newState.currentStepIndex + 1;
+  const handleNewSession = () => {
+    const email = getUserEmail();
+    if (!email) return;
+    localStorage.removeItem(`barrier_chat_${email}`);
+    localStorage.removeItem(`barrier_state_${email}`);
+    setMessages([]);
+    setBotState(INITIAL_STATE);
+    setTab("chat");
+  };
 
+  const getNextBotMessage = (newState: BotState, _answer: string | number | string[]): { text: string; widget?: Widget } => {
     switch (newState.phase) {
       case "context":
         return {
@@ -134,13 +154,11 @@ export default function BarrierBot() {
         };
       }
 
-      case "step_y": {
-        const last = newState.steps[newState.currentStepIndex];
+      case "step_y":
         return {
           text: `Какой **уровень напряжения** вы чувствовали в этот момент?`,
           widget: { type: "slider", min: 0, max: 10, label: "0 — спокойно, 10 — паника / невыносимо" },
         };
-      }
 
       case "step_more": {
         const done = newState.currentStepIndex;
@@ -204,11 +222,10 @@ export default function BarrierBot() {
       }
 
       case "result": {
-        const u = localStorage.getItem("pdd_user");
-        const email = u ? JSON.parse(u).email : "";
+        const email = getUserEmail();
         const savedResults = localStorage.getItem(`barrier_results_${email}`) ?? "[]";
         const allResults = JSON.parse(savedResults);
-        const record = {
+        const record: BarrierSession = {
           date: new Date().toLocaleDateString("ru-RU"),
           context: newState.selectedContext,
           mainStrength: newState.mainStrength,
@@ -220,9 +237,10 @@ export default function BarrierBot() {
         };
         allResults.push(record);
         localStorage.setItem(`barrier_results_${email}`, JSON.stringify(allResults));
+        setSessions(allResults);
 
         return {
-          text: `## Сессия завершена\n\nТы прошёл полный цикл анализа. Вот что ты узнал:\n\n• **Сфера:** ${newState.selectedContext}\n• **Слабость:** ${newState.mainWeakness}\n• **Сила:** ${newState.mainStrength.join(", ")}\n• **Дополнительная опора:** ${newState.additionalStrength.join(", ")}\n• **Профиль:** ${PROFILE_TEXTS[newState.psychProfile]?.title}\n\n---\n\nЭто сохранено в твоём кабинете. В следующий раз — ты уже знаешь, где держаться крепче.`,
+          text: `## Сессия завершена\n\nТы прошёл полный цикл анализа. Вот что ты узнал:\n\n• **Сфера:** ${newState.selectedContext}\n• **Слабость:** ${newState.mainWeakness}\n• **Сила:** ${newState.mainStrength.join(", ")}\n• **Дополнительная опора:** ${newState.additionalStrength.join(", ")}\n• **Профиль:** ${PROFILE_TEXTS[newState.psychProfile]?.title}\n\n---\n\nСессия сохранена. Посмотри историю — там можно скачать PDF или начать новый анализ.`,
           widget: { type: "confirm" },
         };
       }
@@ -246,9 +264,10 @@ export default function BarrierBot() {
     botReply(text, widget);
   };
 
+  const isDone = botState.phase === "done" || botState.phase === "result";
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
         <button
           onClick={() => navigate("/cabinet")}
@@ -259,21 +278,63 @@ export default function BarrierBot() {
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-400 to-pink-600 flex items-center justify-center">
           <Icon name="ShieldAlert" size={18} className="text-white" />
         </div>
-        <div>
+        <div className="flex-1">
           <div className="font-semibold text-sm text-gray-900">Барьеры, тревоги и стресс</div>
           <div className="text-xs text-gray-400">Координатный анализ X–Y</div>
         </div>
+        {hasAccess && sessions.length > 0 && (
+          <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+            <button
+              onClick={() => setTab("chat")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${tab === "chat" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+            >
+              Анализ
+            </button>
+            <button
+              onClick={() => setTab("history")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${tab === "history" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+            >
+              История {sessions.length > 0 && <span className="ml-1 text-rose-500">{sessions.length}</span>}
+            </button>
+          </div>
+        )}
       </div>
 
       {!hasAccess ? (
         <BarrierBotPaywall onPay={handlePay} />
+      ) : tab === "history" ? (
+        <div className="flex-1 overflow-y-auto">
+          <BarrierBotHistory sessions={sessions} onNewSession={handleNewSession} />
+        </div>
       ) : (
-        <BarrierBotChat
-          messages={messages}
-          loading={loading}
-          onAnswer={handleAnswer}
-          bottomRef={bottomRef as React.RefObject<HTMLDivElement>}
-        />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {isDone && (
+            <div className="px-4 pt-3 flex gap-2">
+              <button
+                onClick={handleNewSession}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-semibold hover:bg-rose-100 transition-colors"
+              >
+                <Icon name="RotateCcw" size={15} />
+                Новая сессия
+              </button>
+              {sessions.length > 0 && (
+                <button
+                  onClick={() => setTab("history")}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  <Icon name="History" size={15} />
+                  История и PDF
+                </button>
+              )}
+            </div>
+          )}
+          <BarrierBotChat
+            messages={messages}
+            loading={loading}
+            onAnswer={handleAnswer}
+            bottomRef={bottomRef as React.RefObject<HTMLDivElement>}
+          />
+        </div>
       )}
     </div>
   );
