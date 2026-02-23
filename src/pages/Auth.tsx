@@ -38,6 +38,13 @@ export default function Auth() {
       const user = data.user;
       localStorage.setItem("pdd_user", JSON.stringify({ id: user.id, name: user.name, email: user.email }));
 
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.includes(user.email)) keysToRemove.push(k);
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+
       const results: { test_type: string; score: number; result_data: Record<string, unknown>; created_at: string | null }[] = data.test_results ?? [];
 
       const testsArr: { id: string; type: string; date: string; score: number }[] = [];
