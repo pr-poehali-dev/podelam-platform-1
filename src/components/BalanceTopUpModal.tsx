@@ -50,7 +50,7 @@ export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
   const balance = getBalance();
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center bg-black/40 p-4 pt-16 sm:pt-4" onClick={onClose}>
       <div
         className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
