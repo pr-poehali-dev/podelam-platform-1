@@ -14,13 +14,135 @@ export type Strategy = "intensive" | "balanced" | "soft";
 
 export type UserInputs = {
   direction: Direction;
-  energy_level: number;        // 1–10
-  motivation_level: number;    // 1–10
-  confidence_level: number;    // 1–10
-  time_per_week: number;       // часы
-  income_target: number;       // руб/мес
-  current_income: number;      // руб/мес (0 если нет)
+  energy_level: number;
+  motivation_level: number;
+  confidence_level: number;
+  time_per_week: number;
+  income_target: number;
+  current_income: number;
 };
+
+export type TestProfile = {
+  careerTopType?: string;
+  careerTopTypeName?: string;
+  careerProfessions?: string[];
+  psychProfileName?: string;
+  psychTopSegments?: { key: string; name: string; pct: number }[];
+  psychMotivations?: { key: string; name: string; pct: number }[];
+  psychProfessions?: { name: string; match: number }[];
+};
+
+export type SavedPlanEntry = {
+  date: string;
+  plan: FinalPlan;
+  testProfile?: TestProfile;
+};
+
+function getUserEmail(): string {
+  try { return JSON.parse(localStorage.getItem("pdd_user") || "{}").email || ""; } catch { return ""; }
+}
+
+export function PLANS_KEY() { return `plan_history_${getUserEmail()}`; }
+
+export function getSavedPlans(): SavedPlanEntry[] {
+  try { return JSON.parse(localStorage.getItem(PLANS_KEY()) || "[]"); } catch { return []; }
+}
+
+export function savePlanEntry(plan: FinalPlan, testProfile?: TestProfile): void {
+  const history = getSavedPlans();
+  history.push({ date: new Date().toISOString(), plan, testProfile });
+  localStorage.setItem(PLANS_KEY(), JSON.stringify(history));
+}
+
+export function loadTestProfile(): TestProfile {
+  const email = getUserEmail();
+  const profile: TestProfile = {};
+
+  try {
+    const careerRaw = localStorage.getItem(`career_result_${email}`);
+    if (careerRaw) {
+      const results = JSON.parse(careerRaw);
+      const latest = Array.isArray(results) ? results[0] : results;
+      if (latest) {
+        profile.careerTopType = latest.topType;
+        profile.careerTopTypeName = latest.topTypeName;
+        profile.careerProfessions = latest.professions;
+      }
+    }
+  } catch { /* ignore */ }
+
+  try {
+    const psychRaw = localStorage.getItem(`psych_result_${email}`);
+    if (psychRaw) {
+      const psych = JSON.parse(psychRaw);
+      profile.psychProfileName = psych.profileName;
+      profile.psychTopSegments = psych.topSegs;
+      profile.psychMotivations = psych.topMotivations;
+      profile.psychProfessions = psych.professions;
+    }
+  } catch { /* ignore */ }
+
+  return profile;
+}
+
+export function suggestDirection(profile: TestProfile): Direction | null {
+  const segToDir: Record<string, Direction> = {
+    creative: "creative",
+    business: "sales",
+    analytics: "online",
+    communication: "soft",
+    education: "soft",
+    management: "sales",
+    practical: "body",
+    help_people: "soft",
+    research: "online",
+    freedom: "online",
+  };
+
+  const careerToDir: Record<string, Direction> = {
+    realistic: "body",
+    investigative: "online",
+    artistic: "creative",
+    social: "soft",
+    enterprising: "sales",
+    conventional: "online",
+  };
+
+  if (profile.psychTopSegments?.length) {
+    const topSeg = profile.psychTopSegments[0].key;
+    if (segToDir[topSeg]) return segToDir[topSeg];
+  }
+
+  if (profile.careerTopType) {
+    if (careerToDir[profile.careerTopType]) return careerToDir[profile.careerTopType];
+  }
+
+  return null;
+}
+
+export function formatTestInsight(profile: TestProfile): string {
+  const parts: string[] = [];
+
+  if (profile.psychProfileName) {
+    parts.push(`**Ваш психологический профиль:** ${profile.psychProfileName}`);
+  }
+  if (profile.psychTopSegments?.length) {
+    const top3 = profile.psychTopSegments.slice(0, 3).map(s => s.name).join(", ");
+    parts.push(`**Сильные стороны:** ${top3}`);
+  }
+  if (profile.psychMotivations?.length) {
+    const top2 = profile.psychMotivations.slice(0, 2).map(m => m.name).join(", ");
+    parts.push(`**Мотивация:** ${top2}`);
+  }
+  if (profile.careerTopTypeName) {
+    parts.push(`**Тип личности (тест профессий):** ${profile.careerTopTypeName}`);
+  }
+  if (profile.careerProfessions?.length) {
+    parts.push(`**Рекомендованные профессии:** ${profile.careerProfessions.slice(0, 4).join(", ")}`);
+  }
+
+  return parts.join("\n");
+}
 
 export type PlanBotStep =
   | "welcome"
@@ -176,13 +298,21 @@ export function buildPlan(inputs: UserInputs): FinalPlan {
 
 // ─── ФОРМАТИРОВАНИЕ ОТЧЁТА В MARKDOWN ─────────────────────────────────────────
 
-export function formatPlanAsMarkdown(plan: FinalPlan): string {
+export function formatPlanAsMarkdown(plan: FinalPlan, testProfile?: TestProfile): string {
   const lines: string[] = [];
 
-  lines.push(`# 📅 Персональный план развития на 3 месяца`);
+  lines.push(`# Персональный план развития на 3 месяца`);
   lines.push(`\n## Стратегия: ${plan.strategyName}`);
   lines.push(`**Направление:** ${plan.directionName}`);
   lines.push(`**Индекс готовности:** ${plan.readiness_index}/10`);
+
+  if (testProfile) {
+    const insight = formatTestInsight(testProfile);
+    if (insight) {
+      lines.push(`\n---\n## На основе ваших тестов\n`);
+      lines.push(insight);
+    }
+  }
 
   if (plan.lowReadinessNote) {
     lines.push(`\n> ⚠️ Рекомендуется начать с восстановления энергии и дисциплины. План построен с постепенной нагрузкой.`);

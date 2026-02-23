@@ -11,12 +11,21 @@ import {
   buildPlan,
   formatPlanAsMarkdown,
   FinalPlan,
+  TestProfile,
+  SavedPlanEntry,
+  loadTestProfile,
+  suggestDirection,
+  formatTestInsight,
+  getSavedPlans,
+  savePlanEntry,
 } from "@/components/plan-bot/planBotEngine";
 import { Direction, DIRECTION_NAMES } from "@/components/plan-bot/planBotData";
 import PlanBotHeader from "@/components/plan-bot/PlanBotHeader";
 import PlanBotMessages from "@/components/plan-bot/PlanBotMessages";
+import PlanBotHistory from "@/components/plan-bot/PlanBotHistory";
 
 type SliderValues = { energy: number; motivation: number; confidence: number };
+type ViewTab = "chat" | "history";
 
 export default function PlanBot() {
   const navigate = useNavigate();
@@ -28,6 +37,9 @@ export default function PlanBot() {
   const [hasAccess, setHasAccess] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSourceChoice, setShowSourceChoice] = useState(false);
+  const [testProfile, setTestProfile] = useState<TestProfile>({});
+  const [savedPlans, setSavedPlans] = useState<SavedPlanEntry[]>([]);
+  const [tab, setTab] = useState<ViewTab>("chat");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const addMsg = (from: "bot" | "user", text: string) => {
@@ -51,6 +63,12 @@ export default function PlanBot() {
     if (access === "locked") { setShowPaywall(true); return; }
     setHasAccess(true);
 
+    const profile = loadTestProfile();
+    setTestProfile(profile);
+
+    const plans = getSavedPlans();
+    setSavedPlans(plans);
+
     const u2 = JSON.parse(u);
     const em = u2.email;
     const savedMessages = localStorage.getItem(`plan_chat_${em}`);
@@ -64,21 +82,13 @@ export default function PlanBot() {
     } else {
       const hasPsych = !!localStorage.getItem(`psych_result_${u2.email}`);
       const hasCareer = !!getLatestCareerResult();
-      if (hasPsych && hasCareer) { setShowSourceChoice(true); return; }
-      setTimeout(() => {
-        addMsg("bot", `Привет! Я помогу составить **персональный план развития на 3 месяца**.
+      const hasAnyTest = hasPsych || hasCareer;
 
-Никакого ИИ — только алгоритм на основе твоих реальных показателей. 
-
-Сначала отвечу на несколько вопросов, потом выберу стратегию и сформирую пошаговый план под твои условия.
-
-Готов? Нажми кнопку ниже 👇`);
-        setTimeout(() => {
-          addMsg("bot", "**Шаг 1 из 7 — Направление**\n\nВыбери, в каком направлении хочешь развиваться:");
-          setBotState((s) => ({ ...s, step: "ask_direction" }));
-          setLoading(false);
-        }, 800);
-      }, 400);
+      if (hasAnyTest) {
+        startWithTestData(profile);
+      } else {
+        startFresh();
+      }
     }
   }, [navigate]);
 
@@ -95,6 +105,43 @@ export default function PlanBot() {
     }
   }, [messages, botState, currentPlan]);
 
+  function startFresh() {
+    setTimeout(() => {
+      addMsg("bot", `Привет! Я помогу составить **персональный план развития на 3 месяца**.
+
+Никакого ИИ — только алгоритм на основе твоих реальных показателей.
+
+Сначала отвечу на несколько вопросов, потом выберу стратегию и сформирую пошаговый план под твои условия.`);
+      setTimeout(() => {
+        addMsg("bot", "**Шаг 1 из 7 — Направление**\n\nВыбери, в каком направлении хочешь развиваться:");
+        setBotState((s) => ({ ...s, step: "ask_direction" }));
+        setLoading(false);
+      }, 800);
+    }, 400);
+  }
+
+  function startWithTestData(profile: TestProfile) {
+    const insight = formatTestInsight(profile);
+    const suggestedDir = suggestDirection(profile);
+    const suggestedName = suggestedDir ? DIRECTION_NAMES[suggestedDir] : null;
+
+    setTimeout(() => {
+      addMsg("bot", `Привет! Я помогу составить **персональный план развития на 3 месяца**.
+
+Я вижу, что вы уже проходили тесты. Использую эти данные для персонализации плана.
+
+${insight}`);
+      setTimeout(() => {
+        const dirHint = suggestedName
+          ? `\n\nНа основе тестов рекомендую: **${suggestedName}**. Можешь выбрать это или другое направление:`
+          : "";
+        addMsg("bot", `**Шаг 1 из 7 — Направление**${dirHint}\n\nВыбери направление развития:`);
+        setBotState((s) => ({ ...s, step: "ask_direction" }));
+        setLoading(false);
+      }, 1000);
+    }, 400);
+  }
+
   const handleReset = () => {
     const em = JSON.parse(localStorage.getItem("pdd_user") || "{}").email || "";
     localStorage.removeItem(`plan_chat_${em}`);
@@ -104,17 +151,18 @@ export default function PlanBot() {
     setBotState(INITIAL_PLAN_STATE);
     setCurrentPlan(null);
     setSliderValues({ energy: 5, motivation: 5, confidence: 5 });
-    setTimeout(() => {
-      addMsg("bot", `Привет! Я помогу составить **персональный план развития на 3 месяца**.
+    setTab("chat");
 
-Никакого ИИ — только алгоритм на основе твоих реальных показателей. 
+    const profile = loadTestProfile();
+    setTestProfile(profile);
+    const hasAnyTest = !!(profile.careerTopType || profile.psychProfileName);
 
-Готов? Начнём с выбора направления:`);
-      setBotState((s) => ({ ...s, step: "ask_direction" }));
-    }, 300);
+    if (hasAnyTest) {
+      startWithTestData(profile);
+    } else {
+      startFresh();
+    }
   };
-
-  // ── ВЫБОР НАПРАВЛЕНИЯ ────────────────────────────────────────────────────────
 
   const handleDirection = (dir: string) => {
     addMsg("user", DIRECTION_NAMES[dir as Direction]);
@@ -125,8 +173,6 @@ export default function PlanBot() {
 
 Оцени, насколько у тебя сейчас есть силы и ресурсы на развитие в этом направлении:`);
   };
-
-  // ── ОБРАБОТЧИКИ СЛАЙДЕРОВ ────────────────────────────────────────────────────
 
   const handleEnergySubmit = () => {
     const v = sliderValues.energy;
@@ -161,8 +207,6 @@ export default function PlanBot() {
 Сколько часов в неделю ты можешь уделять этому направлению? (честно — без перегрузки)`);
   };
 
-  // ── ЧИСЛОВЫЕ ПОЛЯ ────────────────────────────────────────────────────────────
-
   const handleTimeSubmit = (v: number) => {
     addMsg("user", `${v} часов в неделю`);
     setBotState((s) => ({ ...s, step: "ask_income_target", inputs: { ...s.inputs, time_per_week: v } }));
@@ -193,7 +237,14 @@ export default function PlanBot() {
     setTimeout(() => {
       const plan = buildPlan(inputs);
       setCurrentPlan(plan);
-      const markdown = formatPlanAsMarkdown(plan);
+
+      savePlanEntry(plan, testProfile);
+      setSavedPlans(getSavedPlans());
+
+      const dirName = DIRECTION_NAMES[inputs.direction];
+      saveToolCompletion("plan-bot", `План: ${dirName}, ${plan.strategyName}`);
+
+      const markdown = formatPlanAsMarkdown(plan, testProfile);
       setLoading(false);
       setBotState((s) => ({ ...s, step: "report" }));
       addMsg("bot", `Анализирую твои данные...`);
@@ -207,28 +258,9 @@ export default function PlanBot() {
     setSliderValues((s) => ({ ...s, [key]: value }));
   };
 
-  const startFromSource = (source: "career" | "psych") => {
-    setShowSourceChoice(false);
-    const hint = source === "career"
-      ? "Использую результат теста профессий (рациональный профиль)."
-      : "Использую результат психологического анализа (глубинный профиль).";
-    setTimeout(() => {
-      addMsg("bot", `Привет! Я помогу составить **персональный план развития на 3 месяца**.
-
-${hint}
-
-Сначала несколько вопросов — потом пошаговый план.`);
-      setTimeout(() => {
-        addMsg("bot", "**Шаг 1 из 7 — Направление**\n\nВыбери, в каком направлении хочешь развиваться:");
-        setBotState((s) => ({ ...s, step: "ask_direction" }));
-      }, 800);
-    }, 300);
-  };
-
   if (showPaywall) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">
-        <PlanBotHeader onBack={() => navigate("/cabinet?tab=tools")} onReset={() => {}} showReset={false} />
+      <div className="min-h-screen font-golos flex flex-col bg-gray-50">
         <PaywallModal
           toolId="plan-bot"
           toolName="Шаги развития"
@@ -239,72 +271,69 @@ ${hint}
     );
   }
 
-  if (showSourceChoice) {
-    const career = getLatestCareerResult();
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">
-        <PlanBotHeader onBack={() => navigate("/cabinet?tab=tools")} onReset={() => {}} showReset={false} />
-        <div className="flex-1 flex items-center justify-center px-6 py-12">
-          <div className="w-full max-w-md space-y-5 animate-fade-in-up">
-            <div className="text-center">
-              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Icon name="GitCompare" size={24} className="text-emerald-600" />
-              </div>
-              <h2 className="text-xl font-black text-foreground mb-2">Два результата</h2>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                У тебя есть рациональный тест и глубинный психологический анализ. От какого хочешь строить план?
-              </p>
-            </div>
+  return (
+    <div className="min-h-screen font-golos flex flex-col bg-gray-50">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100 px-4 py-3 flex items-center gap-3">
+        <button onClick={() => navigate("/cabinet?tab=tools")} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <Icon name="ArrowLeft" size={18} className="text-gray-600" />
+        </button>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
+          <Icon name="Map" size={18} className="text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-gray-900 text-sm leading-tight">Шаги развития</p>
+          <p className="text-xs text-gray-500">Персональный план на 3 месяца</p>
+        </div>
+
+        {savedPlans.length > 0 ? (
+          <div className="flex gap-1 bg-gray-100 rounded-xl p-0.5">
             <button
-              onClick={() => startFromSource("career")}
-              className="w-full bg-white border-2 border-violet-200 hover:border-violet-400 rounded-2xl p-5 text-left transition-all"
+              onClick={() => setTab("chat")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${tab === "chat" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
             >
-              <div className="font-bold text-foreground mb-1">🧭 Тест профессий — {career?.topTypeName}</div>
-              <div className="text-xs text-muted-foreground">Рациональный взгляд — что ты думаешь о своих склонностях</div>
+              План
             </button>
             <button
-              onClick={() => startFromSource("psych")}
-              className="w-full gradient-brand text-white rounded-2xl p-5 text-left"
+              onClick={() => setTab("history")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${tab === "history" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
             >
-              <div className="font-bold mb-1">🧠 Психологический анализ</div>
-              <div className="text-xs text-white/80">Глубинный профиль — истинные таланты и мотивация</div>
-            </button>
-            <button
-              onClick={() => startFromSource("career")}
-              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-            >
-              Сделать оба варианта плана →
+              История ({savedPlans.length})
             </button>
           </div>
-        </div>
+        ) : (
+          messages.length > 1 && (
+            <button
+              onClick={handleReset}
+              className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+              title="Начать заново"
+            >
+              <Icon name="RotateCcw" size={16} />
+            </button>
+          )
+        )}
       </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">
-      <PlanBotHeader
-        onBack={() => navigate("/cabinet?tab=tools")}
-        onReset={handleReset}
-        showReset={messages.length > 1}
-      />
-      <PlanBotMessages
-        messages={messages}
-        loading={loading}
-        step={botState.step}
-        sliderValues={sliderValues}
-        currentPlan={currentPlan}
-        bottomRef={bottomRef}
-        onSliderChange={handleSliderChange}
-        onEnergySubmit={handleEnergySubmit}
-        onMotivationSubmit={handleMotivationSubmit}
-        onConfidenceSubmit={handleConfidenceSubmit}
-        onDirectionClick={handleDirection}
-        onTimeSubmit={handleTimeSubmit}
-        onIncomeTargetSubmit={handleIncomeTargetSubmit}
-        onCurrentIncomeSubmit={handleCurrentIncomeSubmit}
-        onReset={handleReset}
-      />
+      {tab === "history" ? (
+        <PlanBotHistory entries={savedPlans} onNewPlan={handleReset} />
+      ) : (
+        <PlanBotMessages
+          messages={messages}
+          loading={loading}
+          step={botState.step}
+          sliderValues={sliderValues}
+          currentPlan={currentPlan}
+          bottomRef={bottomRef as React.RefObject<HTMLDivElement>}
+          onSliderChange={handleSliderChange}
+          onEnergySubmit={handleEnergySubmit}
+          onMotivationSubmit={handleMotivationSubmit}
+          onConfidenceSubmit={handleConfidenceSubmit}
+          onDirectionClick={handleDirection}
+          onTimeSubmit={handleTimeSubmit}
+          onIncomeTargetSubmit={handleIncomeTargetSubmit}
+          onCurrentIncomeSubmit={handleCurrentIncomeSubmit}
+          onReset={handleReset}
+        />
+      )}
     </div>
   );
 }

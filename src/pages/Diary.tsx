@@ -28,7 +28,9 @@ export default function Diary() {
   const [currentChips, setCurrentChips] = useState<{ label: string; group: string }[]>([]);
   const [currentSlider, setCurrentSlider] = useState<{ min: number; max: number; label: string } | undefined>();
 
-  const [entry, setEntry] = useState<Omit<JournalEntry, "report" | "date">>({
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+
+  const [entry, setEntryState] = useState<Omit<JournalEntry, "report" | "date">>({
     context_area: "",
     achievements: [],
     actions: [],
@@ -41,6 +43,14 @@ export default function Diary() {
     stress_level: 0,
     completion_stage: 0,
   });
+  const entryRef = useRef(entry);
+  function setEntry(updater: (prev: Omit<JournalEntry, "report" | "date">) => Omit<JournalEntry, "report" | "date">) {
+    setEntryState(prev => {
+      const next = updater(prev);
+      entryRef.current = next;
+      return next;
+    });
+  }
 
   const [pendingEmotions, setPendingEmotions] = useState<string[]>([]);
   const [currentEmotionIdx, setCurrentEmotionIdx] = useState(0);
@@ -62,6 +72,9 @@ export default function Diary() {
   }, [navigate]);
 
   useEffect(() => {
+    const storedEntries: JournalEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
+    setEntries(storedEntries);
+
     const stored = localStorage.getItem(CHAT_KEY());
     if (stored) {
       const parsed: Message[] = JSON.parse(stored);
@@ -97,11 +110,13 @@ export default function Diary() {
 
   function startFresh() {
     idRef.current = 0;
-    setEntry({
-      context_area: "", achievements: [], actions: [], emotions: [],
-      body_state: [], difficulties: [], insights: [], gratitude: [],
+    const freshEntry = {
+      context_area: "", achievements: [] as string[], actions: [] as string[], emotions: [] as { emotion: string; trigger: string }[],
+      body_state: [] as string[], difficulties: [] as string[], insights: [] as string[], gratitude: [] as string[],
       energy_level: 0, stress_level: 0, completion_stage: 0,
-    });
+    };
+    setEntryState(freshEntry);
+    entryRef.current = freshEntry;
     setSubItemCount(0);
     setAwaitingFollowup(false);
     setPendingEmotions([]);
@@ -225,7 +240,8 @@ export default function Diary() {
   function finishSession(currentMsgs?: Message[], forceStage?: number) {
     const msgs = currentMsgs || messages;
     const completionStage = forceStage || stageNumber;
-    const finalEntry = { ...entry, completion_stage: completionStage };
+    const currentEntry = entryRef.current;
+    const finalEntry = { ...currentEntry, completion_stage: completionStage };
 
     setPhase("finishing");
     setInputMode("none");
@@ -236,6 +252,7 @@ export default function Diary() {
     const history: JournalEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
     history.push(fullEntry);
     localStorage.setItem(ENTRIES_KEY(), JSON.stringify(history));
+    setEntries([...history]);
 
     const emotionSummary = fullEntry.emotions.map(e => e.emotion).join(", ") || "без эмоций";
     saveToolCompletion("diary", `Запись: ${emotionSummary}`);
@@ -523,8 +540,6 @@ export default function Diary() {
     setTab("chat");
     startFresh();
   }
-
-  const entries: JournalEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
 
   if (showPaywall) {
     return (
