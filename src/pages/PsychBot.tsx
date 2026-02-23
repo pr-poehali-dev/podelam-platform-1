@@ -174,8 +174,9 @@ export default function PsychBot() {
       }).catch(() => { /* ignore */ });
     }
 
+    const userEmail = JSON.parse(localStorage.getItem("pdd_user") || "{}").email || "";
     const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(
-      localStorage.getItem("pdd_tests") || "[]"
+      localStorage.getItem(`pdd_tests_${userEmail}`) || "[]"
     );
     const existingIdx = tests.findIndex((t) => t.type === "Тест на призвание");
     const newEntry = {
@@ -189,7 +190,7 @@ export default function PsychBot() {
     } else {
       tests.push(newEntry);
     }
-    localStorage.setItem("pdd_tests", JSON.stringify(tests));
+    localStorage.setItem(`pdd_tests_${userEmail}`, JSON.stringify(tests));
   };
 
   const handlePay = () => {

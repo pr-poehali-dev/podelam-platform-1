@@ -78,10 +78,7 @@ export default function Auth() {
         }
       }
 
-      const existingTests = localStorage.getItem("pdd_tests");
-      if (!existingTests || JSON.parse(existingTests).length === 0) {
-        localStorage.setItem("pdd_tests", JSON.stringify(testsArr));
-      }
+      localStorage.setItem(`pdd_tests_${user.email}`, JSON.stringify(testsArr));
 
       navigate("/cabinet");
     } catch {

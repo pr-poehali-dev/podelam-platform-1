@@ -23,7 +23,7 @@ export default function Cabinet() {
     const userData: User = JSON.parse(u);
     setUser(userData);
 
-    const t = localStorage.getItem("pdd_tests");
+    const t = localStorage.getItem(`pdd_tests_${userData.email}`);
     if (t) setTests(JSON.parse(t));
 
     const pr = localStorage.getItem(`psych_result_${userData.email}`);

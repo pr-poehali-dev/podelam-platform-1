@@ -35,7 +35,7 @@ export default function Results() {
     if (!u) { navigate("/auth"); return; }
     const userData = JSON.parse(u);
 
-    const tests: TestResult[] = JSON.parse(localStorage.getItem("pdd_tests") || "[]");
+    const tests: TestResult[] = JSON.parse(localStorage.getItem(`pdd_tests_${userData.email}`) || "[]");
     const found = tests.find((t) => t.id === id);
     if (found) {
       setResult(found);

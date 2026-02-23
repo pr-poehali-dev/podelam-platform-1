@@ -61,10 +61,11 @@ export default function Test() {
 
     if (isLast) {
       const testName = type === "психологический" ? "Психологический тест" : "Тест на склонности";
-      const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(localStorage.getItem("pdd_tests") || "[]");
+      const userEmail = JSON.parse(localStorage.getItem("pdd_user") || "{}").email || "";
+      const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(localStorage.getItem(`pdd_tests_${userEmail}`) || "[]");
       const id = Date.now().toString();
       tests.push({ id, type: testName, date: new Date().toLocaleDateString("ru-RU"), score: Math.floor(Math.random() * 20) + 75 });
-      localStorage.setItem("pdd_tests", JSON.stringify(tests));
+      localStorage.setItem(`pdd_tests_${userEmail}`, JSON.stringify(tests));
       localStorage.setItem(`pdd_answers_${id}`, JSON.stringify({ ...answers, [q.id]: ans }));
       navigate(`/results/${id}`);
       return;
