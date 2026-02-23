@@ -19,6 +19,9 @@ interface Client {
   last_login: string | null;
   total_paid: number;
   payments_count: number;
+  balance: number;
+  subscription_expires: string | null;
+  paid_tools: string;
 }
 
 interface Payment {
@@ -32,6 +35,15 @@ interface Payment {
 }
 
 type Tab = "clients" | "payments";
+
+const TOOL_LABELS: Record<string, string> = {
+  "psych-bot": "Психоанализ",
+  "barrier-bot": "Барьеры",
+  "income-bot": "Доход",
+  "plan-bot": "План",
+  "progress": "Прогресс",
+  "diary": "Дневник",
+};
 
 function formatDate(s: string | null) {
   if (!s) return "—";
@@ -242,6 +254,9 @@ export default function Admin() {
                     <th className="px-6 py-3 font-medium">Email</th>
                     <th className="px-6 py-3 font-medium">Зарегистрирован</th>
                     <th className="px-6 py-3 font-medium">Последний вход</th>
+                    <th className="px-6 py-3 font-medium text-right">Баланс</th>
+                    <th className="px-6 py-3 font-medium">Подписка</th>
+                    <th className="px-6 py-3 font-medium">Инструменты</th>
                     <th className="px-6 py-3 font-medium text-right">Оплат</th>
                     <th className="px-6 py-3 font-medium text-right">Сумма</th>
                     <th className="px-6 py-3 font-medium"></th>
@@ -249,7 +264,7 @@ export default function Admin() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredClients.length === 0 ? (
-                    <tr><td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">Клиентов нет</td></tr>
+                    <tr><td colSpan={11} className="px-6 py-12 text-center text-muted-foreground">Клиентов нет</td></tr>
                   ) : filteredClients.map(c => (
                     <tr key={c.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-6 py-4 text-muted-foreground">#{c.id}</td>
@@ -257,6 +272,29 @@ export default function Admin() {
                       <td className="px-6 py-4 text-muted-foreground">{c.email}</td>
                       <td className="px-6 py-4 text-muted-foreground">{formatDate(c.created_at)}</td>
                       <td className="px-6 py-4 text-muted-foreground">{formatDate(c.last_login)}</td>
+                      <td className="px-6 py-4 text-right font-medium">
+                        {Number(c.balance) > 0 ? formatMoney(Number(c.balance)) : "—"}
+                      </td>
+                      <td className="px-6 py-4">
+                        {c.subscription_expires && new Date(c.subscription_expires) > new Date() ? (
+                          <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                            до {new Date(c.subscription_expires).toLocaleDateString("ru-RU")}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {c.paid_tools ? (
+                          <div className="flex flex-wrap gap-1">
+                            {c.paid_tools.split(",").filter(Boolean).map(t => (
+                              <span key={t} className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-violet-100 text-violet-700">
+                                {TOOL_LABELS[t.trim()] || t.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        ) : <span className="text-muted-foreground">—</span>}
+                      </td>
                       <td className="px-6 py-4 text-right">{c.payments_count}</td>
                       <td className="px-6 py-4 text-right font-semibold text-primary">
                         {Number(c.total_paid) > 0 ? formatMoney(Number(c.total_paid)) : "—"}

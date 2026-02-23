@@ -62,14 +62,15 @@ def handler(event: dict, context) -> dict:
     cur.execute(f"""
         SELECT u.id, u.name, u.email, u.created_at, u.last_login,
                COALESCE(SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END), 0) as total_paid,
-               COUNT(CASE WHEN p.status = 'paid' THEN 1 END) as payments_count
+               COUNT(CASE WHEN p.status = 'paid' THEN 1 END) as payments_count,
+               u.balance, u.subscription_expires, u.paid_tools
         FROM "{S}".users u
         LEFT JOIN "{S}".payments p ON p.user_email = u.email
-        GROUP BY u.id, u.name, u.email, u.created_at, u.last_login
+        GROUP BY u.id, u.name, u.email, u.created_at, u.last_login, u.balance, u.subscription_expires, u.paid_tools
         ORDER BY u.created_at DESC
         LIMIT 100
     """)
-    cols = ['id', 'name', 'email', 'created_at', 'last_login', 'total_paid', 'payments_count']
+    cols = ['id', 'name', 'email', 'created_at', 'last_login', 'total_paid', 'payments_count', 'balance', 'subscription_expires', 'paid_tools']
     clients = []
     for row in cur.fetchall():
         clients.append({cols[i]: (str(row[i]) if row[i] is not None else None) for i in range(len(cols))})
