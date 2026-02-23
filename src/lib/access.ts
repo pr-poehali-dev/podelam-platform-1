@@ -1,5 +1,6 @@
 // Система доступа и оплаты ПоДелам
 // Тарифы: 290₽ за один инструмент / 990₽ подписка на 30 дней (все инструменты)
+// Баланс: хранится в pdd_balance_{email}
 
 export type ToolId =
   | "career-test"    // Тест «Какая профессия тебе подходит» — БЕСПЛАТНО
@@ -31,6 +32,61 @@ function subKey(email: string) { return `pdd_sub_${email}`; }
 function onceKey(email: string, toolId: ToolId) { return `pdd_once_${email}_${toolId}`; }
 // Ключ результата теста профессий (склонности)
 function careerKey(email: string) { return `career_result_${email}`; }
+// Ключ баланса: pdd_balance_{email} -> число (рубли)
+function balanceKey(email: string) { return `pdd_balance_${email}`; }
+
+/** Получить баланс пользователя */
+export function getBalance(): number {
+  const email = getEmail();
+  return parseFloat(localStorage.getItem(balanceKey(email)) || "0");
+}
+
+/** Пополнить баланс */
+export function topUpBalance(amount: number): void {
+  const email = getEmail();
+  const current = getBalance();
+  localStorage.setItem(balanceKey(email), String(current + amount));
+}
+
+/** Списать с баланса. Возвращает true если успешно */
+export function chargeBalance(amount: number): boolean {
+  const email = getEmail();
+  const current = getBalance();
+  if (current < amount) return false;
+  localStorage.setItem(balanceKey(email), String(current - amount));
+  return true;
+}
+
+/** Списать с баланса и активировать разовый доступ к инструменту */
+export function payFromBalanceOnce(toolId: ToolId): boolean {
+  const ok = chargeBalance(TOOL_PRICE);
+  if (ok) activatePaidOnce(toolId);
+  return ok;
+}
+
+/** Списать с баланса и активировать подписку на 30 дней */
+export function payFromBalanceSub(): boolean {
+  const ok = chargeBalance(SUB_PRICE);
+  if (ok) activateSubscription();
+  return ok;
+}
+
+/** Московское время истечения подписки */
+export function subscriptionExpiresFormatted(): string | null {
+  const email = getEmail();
+  const val = localStorage.getItem(subKey(email));
+  if (!val) return null;
+  const d = new Date(val);
+  if (d <= new Date()) return null;
+  return d.toLocaleString("ru-RU", {
+    timeZone: "Europe/Moscow",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 /** Проверить активность подписки */
 export function hasSubscription(): boolean {
