@@ -1,10 +1,10 @@
 {
   "tests": [
     {
-      "name": "Register user",
+      "name": "Login existing user",
       "method": "POST",
       "path": "/",
-      "body": {"action": "register", "name": "Тест Юзер", "email": "test_admin_check@example.com", "password": "password123"},
+      "body": {"action": "login", "email": "test_admin_check@example.com", "password": "password123"},
       "expectedStatus": 200,
       "bodyMatcher": "partial"
     }

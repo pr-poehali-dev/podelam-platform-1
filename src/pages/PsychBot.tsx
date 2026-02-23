@@ -89,6 +89,31 @@ export default function PsychBot() {
     }
   }, [messages, botState]);
 
+  const AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
+
+  const handleSaveToServer = async () => {
+    const u = localStorage.getItem("pdd_user");
+    if (!u) return;
+    const userData = JSON.parse(u);
+    const result = localStorage.getItem(`psych_result_${userData.email}`);
+    if (!result || !userData.id) return;
+
+    try {
+      await fetch(AUTH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "save_test_result",
+          userId: userData.id,
+          testType: "psych-bot",
+          resultData: JSON.parse(result),
+        }),
+      });
+    } catch {
+      // локальное сохранение уже есть — не критично
+    }
+  };
+
   const savePsychResult = (
     topSeg: string,
     primMotiv: string,
@@ -373,6 +398,7 @@ export default function PsychBot() {
         onButtonClick={handleButtonClick}
         onRatingsSubmit={handleRatingsSubmit}
         onReset={handleReset}
+        onSave={handleSaveToServer}
         step={botState.step}
       />
     </div>

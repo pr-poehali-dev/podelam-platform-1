@@ -2,6 +2,7 @@ import json
 import os
 import hashlib
 import psycopg2
+import psycopg2.extras
 from datetime import datetime
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
@@ -77,6 +78,28 @@ def handler(event: dict, context) -> dict:
             'headers': cors,
             'body': json.dumps({'user': {'id': row[0], 'name': row[1], 'email': row[2]}})
         }
+
+    elif action == 'save_test_result':
+        user_id = body.get('userId')
+        test_type = body.get('testType', '')
+        result_data = body.get('resultData', {})
+        score = result_data.get('topSegScore', 0) if isinstance(result_data, dict) else 0
+
+        if not user_id:
+            conn.close()
+            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'userId required'})}
+
+        cur.execute(
+            f'DELETE FROM "{S}".test_results WHERE user_id = %s AND test_type = %s',
+            (user_id, test_type)
+        )
+        cur.execute(
+            f'INSERT INTO "{S}".test_results (user_id, test_type, score, result_data) VALUES (%s, %s, %s, %s)',
+            (user_id, test_type, score, json.dumps(result_data, ensure_ascii=False))
+        )
+        conn.commit()
+        conn.close()
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
 
     conn.close()
     return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Неизвестное действие'})}

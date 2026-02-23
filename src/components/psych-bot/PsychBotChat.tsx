@@ -80,6 +80,7 @@ type Props = {
   onButtonClick: (option: string) => void;
   onRatingsSubmit: (ratings: Record<string, number>) => void;
   onReset: () => void;
+  onSave?: () => void;
   bottomRef: React.RefObject<HTMLDivElement>;
   step: BotStep;
 };
@@ -90,9 +91,17 @@ export default function PsychBotChat({
   onButtonClick,
   onRatingsSubmit,
   onReset,
+  onSave,
   bottomRef,
   step,
 }: Props) {
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    onSave?.();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
   const isFinished = step === "report";
 
   return (
@@ -161,7 +170,19 @@ export default function PsychBotChat({
         )}
 
         {isFinished && !loading && (
-          <div className="mt-4 pb-6">
+          <div className="mt-4 pb-6 space-y-2">
+            <button
+              onClick={handleSave}
+              disabled={saved}
+              className={`w-full flex items-center gap-2 justify-center font-semibold py-3 rounded-xl transition-all text-sm ${
+                saved
+                  ? "bg-green-100 border border-green-300 text-green-700"
+                  : "bg-violet-600 text-white hover:bg-violet-700"
+              }`}
+            >
+              <Icon name={saved ? "CheckCircle" : "Save"} size={15} />
+              {saved ? "Результат сохранён!" : "Сохранить результат"}
+            </button>
             <button
               onClick={onReset}
               className="w-full flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm"

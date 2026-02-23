@@ -1,0 +1,1 @@
+ALTER TABLE "t_p13403005_podelam_platform_1".test_results ADD COLUMN IF NOT EXISTS result_data jsonb;

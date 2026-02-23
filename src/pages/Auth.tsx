@@ -11,20 +11,37 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!email || !password) { setError("Заполните все поля"); return; }
     if (mode === "register" && !name) { setError("Введите имя"); return; }
     setLoading(true);
 
-    setTimeout(() => {
-      const user = { name: name || email.split("@")[0], email };
-      localStorage.setItem("pdd_user", JSON.stringify(user));
-      localStorage.setItem("pdd_tests", JSON.stringify([]));
-      setLoading(false);
+    try {
+      const res = await fetch(AUTH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: mode, name, email: email.trim().toLowerCase(), password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setError(data.error || "Ошибка сервера");
+        setLoading(false);
+        return;
+      }
+
+      const user = data.user;
+      localStorage.setItem("pdd_user", JSON.stringify({ id: user.id, name: user.name, email: user.email }));
+      if (mode === "register") localStorage.setItem("pdd_tests", JSON.stringify([]));
       navigate("/cabinet");
-    }, 900);
+    } catch {
+      setError("Ошибка соединения. Попробуйте ещё раз.");
+      setLoading(false);
+    }
   };
 
   return (
