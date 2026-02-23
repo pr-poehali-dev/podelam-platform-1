@@ -81,6 +81,7 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
 
 export default function Index() {
   const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem("pdd_user");
   const [activeTest, setActiveTest] = useState<null | "склонности" | "психологический">(null);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -130,12 +131,22 @@ export default function Index() {
             <button onClick={() => scrollTo("tariffs")} className="hover:text-foreground transition-colors">Тарифы</button>
             <button onClick={() => scrollTo("faq")} className="hover:text-foreground transition-colors">FAQ</button>
           </div>
-          <button
-            onClick={() => navigate("/auth")}
-            className="gradient-brand text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
-          >
-            Начать тест
-          </button>
+          {isLoggedIn ? (
+            <button
+              onClick={() => navigate("/cabinet")}
+              className="gradient-brand text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2"
+            >
+              <Icon name="LayoutDashboard" size={15} />
+              В кабинет
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/auth")}
+              className="gradient-brand text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+            >
+              Начать тест
+            </button>
+          )}
         </div>
       </nav>
 
