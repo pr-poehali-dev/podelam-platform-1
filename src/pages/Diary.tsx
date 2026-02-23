@@ -60,7 +60,7 @@ export default function Diary() {
 
   useEffect(() => {
     if (!tpl) return;
-    const stored = localStorage.getItem(CHAT_KEY);
+    const stored = localStorage.getItem(CHAT_KEY());
     if (stored) {
       const parsed: Message[] = JSON.parse(stored);
       setMessages(parsed);
@@ -91,7 +91,7 @@ export default function Diary() {
   }
 
   function saveChat(msgs: Message[]) {
-    localStorage.setItem(CHAT_KEY, JSON.stringify(msgs));
+    localStorage.setItem(CHAT_KEY(), JSON.stringify(msgs));
   }
 
   function addBotMsg(text: string, current: Message[]): Message[] {
@@ -136,7 +136,7 @@ export default function Diary() {
 
         const { tags: emoTags, score } = detectEmotions(allText, emoDict);
         const patTags = detectPatterns(allText, patRules);
-        const history: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? "[]");
+        const history: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
 
         const entry: DiaryEntry = {
           date: new Date().toISOString(),
@@ -180,9 +180,9 @@ export default function Diary() {
         const support = generateSupport(newRA, entry);
         entry.supportText = support;
 
-        const history: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? "[]");
-        history.push(entry);
-        localStorage.setItem(ENTRIES_KEY, JSON.stringify(history));
+        const history2: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
+        history2.push(entry);
+        localStorage.setItem(ENTRIES_KEY(), JSON.stringify(history2));
 
         let supportMsg = "---\n\n";
         supportMsg += `${support}\n\n`;
@@ -196,14 +196,14 @@ export default function Diary() {
   }
 
   function startNew() {
-    localStorage.removeItem(CHAT_KEY);
+    localStorage.removeItem(CHAT_KEY());
     idRef.current = 0;
     setMessages([]);
     setTab("chat");
     freshStart();
   }
 
-  const entries: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? "[]");
+  const entries: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
 
   if (showPaywall) {
     return (

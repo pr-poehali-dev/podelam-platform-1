@@ -25,8 +25,11 @@ export type Message = { id: number; from: "bot" | "user"; text: string };
 
 export type Phase = "intro" | "metrics" | "focus" | "thought" | "result" | "done";
 
-export const ENTRIES_KEY = "progress_entries";
-export const CHAT_KEY = "progress_chat";
+function getUserEmail(): string {
+  try { return JSON.parse(localStorage.getItem("pdd_user") || "{}").email || ""; } catch { return ""; }
+}
+export function ENTRIES_KEY() { return `progress_entries_${getUserEmail()}`; }
+export function CHAT_KEY() { return `progress_chat_${getUserEmail()}`; }
 
 function deltaLabel(delta: number, labels: Record<string, string>): string {
   if (delta >= 2) return labels.strong_up;
@@ -91,7 +94,7 @@ export function buildResult(
   lines.push("");
   lines.push("🧭 Итог\n");
 
-  const allEntries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? "[]");
+  const allEntries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
   const conclusionIdx = allEntries.length < 3 ? 2 : Math.floor(Math.random() * 2);
   lines.push(tpl.conclusions[conclusionIdx]);
 

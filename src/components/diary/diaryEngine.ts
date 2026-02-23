@@ -30,8 +30,11 @@ export type Templates = {
   start_message: string;
 };
 
-export const CHAT_KEY = "diary_chat";
-export const ENTRIES_KEY = "diary_entries";
+function getUserEmail(): string {
+  try { return JSON.parse(localStorage.getItem("pdd_user") || "{}").email || ""; } catch { return ""; }
+}
+export function CHAT_KEY() { return `diary_chat_${getUserEmail()}`; }
+export function ENTRIES_KEY() { return `diary_entries_${getUserEmail()}`; }
 
 function matchKeywords(text: string, keywords: string[]): string[] {
   const lower = text.toLowerCase();

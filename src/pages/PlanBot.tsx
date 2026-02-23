@@ -52,9 +52,10 @@ export default function PlanBot() {
     setHasAccess(true);
 
     const u2 = JSON.parse(u);
-    const savedMessages = localStorage.getItem("plan_chat");
-    const savedState = localStorage.getItem("plan_state");
-    const savedPlan = localStorage.getItem("plan_result");
+    const em = u2.email;
+    const savedMessages = localStorage.getItem(`plan_chat_${em}`);
+    const savedState = localStorage.getItem(`plan_state_${em}`);
+    const savedPlan = localStorage.getItem(`plan_result_${em}`);
 
     if (savedMessages && savedState) {
       setMessages(JSON.parse(savedMessages));
@@ -86,17 +87,19 @@ export default function PlanBot() {
   }, [messages, loading]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem("plan_chat", JSON.stringify(messages));
-      localStorage.setItem("plan_state", JSON.stringify(botState));
-      if (currentPlan) localStorage.setItem("plan_result", JSON.stringify(currentPlan));
+    const em = JSON.parse(localStorage.getItem("pdd_user") || "{}").email;
+    if (messages.length > 0 && em) {
+      localStorage.setItem(`plan_chat_${em}`, JSON.stringify(messages));
+      localStorage.setItem(`plan_state_${em}`, JSON.stringify(botState));
+      if (currentPlan) localStorage.setItem(`plan_result_${em}`, JSON.stringify(currentPlan));
     }
   }, [messages, botState, currentPlan]);
 
   const handleReset = () => {
-    localStorage.removeItem("plan_chat");
-    localStorage.removeItem("plan_state");
-    localStorage.removeItem("plan_result");
+    const em = JSON.parse(localStorage.getItem("pdd_user") || "{}").email || "";
+    localStorage.removeItem(`plan_chat_${em}`);
+    localStorage.removeItem(`plan_state_${em}`);
+    localStorage.removeItem(`plan_result_${em}`);
     setMessages([]);
     setBotState(INITIAL_PLAN_STATE);
     setCurrentPlan(null);

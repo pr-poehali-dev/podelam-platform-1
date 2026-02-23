@@ -39,9 +39,12 @@ export default function Auth() {
       localStorage.setItem("pdd_user", JSON.stringify({ id: user.id, name: user.name, email: user.email }));
 
       const keysToRemove: string[] = [];
+      const staleKeys = ["plan_chat", "plan_state", "plan_result", "progress_entries", "progress_chat", "diary_chat", "diary_entries", "pdd_tests"];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
-        if (k && k.includes(user.email)) keysToRemove.push(k);
+        if (!k) continue;
+        if (k.includes(user.email)) keysToRemove.push(k);
+        if (staleKeys.includes(k)) keysToRemove.push(k);
       }
       keysToRemove.forEach(k => localStorage.removeItem(k));
 

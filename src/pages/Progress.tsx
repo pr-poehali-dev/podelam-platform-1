@@ -49,7 +49,7 @@ export default function Progress() {
   useEffect(() => {
     if (!tpl) return;
 
-    const stored = localStorage.getItem(CHAT_KEY);
+    const stored = localStorage.getItem(CHAT_KEY());
     if (stored) {
       setMessages(JSON.parse(stored));
       setPhase("done");
@@ -76,7 +76,7 @@ export default function Progress() {
   }
 
   function save(msgs: Message[]) {
-    localStorage.setItem(CHAT_KEY, JSON.stringify(msgs));
+    localStorage.setItem(CHAT_KEY(), JSON.stringify(msgs));
   }
 
   function submitMetric() {
@@ -114,7 +114,7 @@ export default function Progress() {
 
     let msgs = addUserRaw(messages, kw);
 
-    const entries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? "[]");
+    const entries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
     const prev = entries.length > 0 ? entries[entries.length - 1] : null;
 
     const entry: ProgressEntry = {
@@ -124,7 +124,7 @@ export default function Progress() {
       key_thought: kw,
     };
     entries.push(entry);
-    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
+    localStorage.setItem(ENTRIES_KEY(), JSON.stringify(entries));
 
     const resultText = buildResult(entry, prev, tpl);
     msgs = addBotRaw(msgs, resultText);
@@ -135,7 +135,7 @@ export default function Progress() {
 
   function startNew() {
     if (!tpl) return;
-    localStorage.removeItem(CHAT_KEY);
+    localStorage.removeItem(CHAT_KEY());
     setValues({});
     setMetricIndex(0);
     setSliderVal(5);
@@ -147,12 +147,12 @@ export default function Progress() {
   }
 
   function clearAll() {
-    localStorage.removeItem(CHAT_KEY);
-    localStorage.removeItem(ENTRIES_KEY);
+    localStorage.removeItem(CHAT_KEY());
+    localStorage.removeItem(ENTRIES_KEY());
     startNew();
   }
 
-  const entries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? "[]");
+  const entries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
   const currentMetric = tpl?.metrics[metricIndex];
   const completions = getToolCompletions();
   const careerResult = getLatestCareerResult();
