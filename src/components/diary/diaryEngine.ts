@@ -1,14 +1,55 @@
-export type Message = { id: number; from: "bot" | "user"; text: string; widget?: "finish_btn" };
+export type Stage = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-export type DiaryEntry = {
-  date: string;
-  answers: { question: string; answer: string }[];
-  emotion_tags: string[];
-  intensity: number;
-  supportText: string;
+export type Phase =
+  | "intro"
+  | "context"
+  | "achievements"
+  | "achievements_follow"
+  | "actions"
+  | "actions_follow"
+  | "emotions"
+  | "emotion_trigger"
+  | "energy"
+  | "stress"
+  | "difficulties"
+  | "difficulty_follow"
+  | "insights"
+  | "insight_follow"
+  | "gratitude"
+  | "finishing"
+  | "done";
+
+export type InputMode = "text" | "buttons" | "chips" | "slider" | "none";
+
+export type Message = {
+  id: number;
+  from: "bot" | "user";
+  text: string;
+  inputMode?: InputMode;
+  buttons?: string[];
+  chips?: { label: string; group: string }[];
+  sliderMin?: number;
+  sliderMax?: number;
+  sliderLabel?: string;
 };
 
-export type Phase = "intro" | "conversation" | "finishing" | "done";
+export type EmotionRecord = { emotion: string; trigger: string };
+
+export type JournalEntry = {
+  date: string;
+  context_area: string;
+  achievements: string[];
+  actions: string[];
+  emotions: EmotionRecord[];
+  body_state: string[];
+  difficulties: string[];
+  insights: string[];
+  gratitude: string[];
+  energy_level: number;
+  stress_level: number;
+  completion_stage: number;
+  report: string;
+};
 
 function getUserEmail(): string {
   try { return JSON.parse(localStorage.getItem("pdd_user") || "{}").email || ""; } catch { return ""; }
@@ -16,185 +57,246 @@ function getUserEmail(): string {
 export function CHAT_KEY() { return `diary_chat_${getUserEmail()}`; }
 export function ENTRIES_KEY() { return `diary_entries_${getUserEmail()}`; }
 
-const EMOTION_WORDS: Record<string, string[]> = {
-  "радость": ["рад", "счастлив", "кайф", "классно", "круто", "супер", "восторг", "доволен", "улыбк", "вдохнов", "энерг", "подъём", "лёгк", "свобод"],
-  "тревога": ["тревож", "волну", "беспоко", "страш", "нервнич", "паник", "напряж", "стресс", "переживал", "боюсь", "страх"],
-  "грусть": ["грустн", "печальн", "тоск", "одиноч", "пуст", "уныни", "слёз", "плак", "потер", "скуч"],
-  "злость": ["злюсь", "бесит", "раздраж", "злость", "агресс", "ненавиж", "возмущ", "несправедлив", "обид"],
-  "усталость": ["устал", "вымотан", "выгорел", "без сил", "сил нет", "истощён", "перегруз", "тяжело"],
-  "гордость": ["горжусь", "достиж", "получилось", "справился", "сделал", "победил", "результат", "успех"],
-  "спокойствие": ["спокойн", "умиротвор", "тих", "гармони", "баланс", "расслаб", "ровн"],
-  "растерянность": ["не знаю", "запутал", "не пойм", "не уверен", "сомнева", "теряюсь", "развилк"],
-  "благодарность": ["благодар", "спасибо", "ценю", "признател", "повезло"],
-  "вина": ["виноват", "стыдн", "жале", "корю себя", "не должен был", "не стоило"],
-};
+export const CONTEXT_AREAS = [
+  "Работа",
+  "Переход в новую деятельность",
+  "Обучение",
+  "Проект",
+  "Финансы",
+  "Отношения",
+  "Саморазвитие",
+  "Эмоциональное состояние",
+];
 
-export function detectEmotions(texts: string[]): { tags: string[]; intensity: number } {
-  const combined = texts.join(" ").toLowerCase();
-  const found: string[] = [];
-  let score = 0;
+export const EMOTIONS_POSITIVE = [
+  "Радость", "Интерес", "Воодушевление", "Спокойствие", "Уверенность",
+  "Благодарность", "Гордость", "Лёгкость", "Удовлетворение", "Вдохновение",
+  "Надежда", "Любопытство", "Смелость",
+];
 
-  for (const [emotion, words] of Object.entries(EMOTION_WORDS)) {
-    for (const w of words) {
-      if (combined.includes(w)) {
-        if (!found.includes(emotion)) found.push(emotion);
-        score++;
-        break;
+export const EMOTIONS_NEUTRAL = [
+  "Усталость", "Задумчивость", "Сдержанность", "Сосредоточенность", "Отстранённость",
+];
+
+export const EMOTIONS_NEGATIVE = [
+  "Тревога", "Страх", "Раздражение", "Злость", "Стыд", "Вина", "Обида",
+  "Разочарование", "Апатия", "Бессилие", "Перегрузка", "Растерянность",
+  "Давление", "Неуверенность", "Сомнение",
+];
+
+export const ALL_EMOTIONS_CHIPS = [
+  ...EMOTIONS_POSITIVE.map(e => ({ label: e, group: "positive" })),
+  ...EMOTIONS_NEUTRAL.map(e => ({ label: e, group: "neutral" })),
+  ...EMOTIONS_NEGATIVE.map(e => ({ label: e, group: "negative" })),
+];
+
+const ACHIEVEMENT_FOLLOWUPS = [
+  "Почему это важно для вас?",
+  "Что в этом было самым сложным?",
+  "Что вы сделали правильно?",
+  "Какая ваша сильная сторона помогла?",
+  "Чем вы гордитесь в этом моменте?",
+];
+
+const ACTIONS_FOLLOWUPS = [
+  "Что продвинуло вас ближе к цели?",
+  "Было ли что-то сделано «через сопротивление»?",
+  "Что заняло больше энергии, чем ожидалось?",
+];
+
+const DIFFICULTY_FOLLOWUPS = [
+  "Что именно вызвало сложность?",
+  "Это внешняя причина или внутренняя?",
+  "Повторяется ли это?",
+];
+
+const INSIGHT_FOLLOWUPS = [
+  "Что вы поняли о себе?",
+  "Что стоит изменить?",
+  "Что нужно сохранить?",
+  "Где вы недооценили себя?",
+];
+
+function randomFrom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+export function getAchievementFollowup(): string {
+  return randomFrom(ACHIEVEMENT_FOLLOWUPS);
+}
+
+export function getActionsFollowup(): string {
+  return randomFrom(ACTIONS_FOLLOWUPS);
+}
+
+export function getDifficultyFollowup(): string {
+  return randomFrom(DIFFICULTY_FOLLOWUPS);
+}
+
+export function getInsightFollowup(): string {
+  return randomFrom(INSIGHT_FOLLOWUPS);
+}
+
+export function stageLabel(stage: number): string {
+  const labels: Record<number, string> = {
+    1: "Контекст",
+    2: "Достижения",
+    3: "Действия",
+    4: "Эмоции",
+    5: "Энергия и стресс",
+    6: "Сложности",
+    7: "Осознания",
+    8: "Благодарность",
+  };
+  return labels[stage] || "";
+}
+
+export function buildReport(entry: Omit<JournalEntry, "report" | "date">): string {
+  const lines: string[] = [];
+
+  lines.push("**Итоги дня**\n");
+
+  if (entry.context_area) {
+    lines.push(`Сфера: **${entry.context_area}**\n`);
+  }
+
+  if (entry.achievements.length >= 3) {
+    lines.push("Сегодня вы сделали больше, чем вам кажется.");
+  } else if (entry.achievements.length === 0 && entry.completion_stage >= 2) {
+    lines.push("Даже если день был сложным, сам факт анализа — уже шаг вперёд.");
+  } else if (entry.achievements.length > 0) {
+    lines.push(`Вы зафиксировали ${entry.achievements.length} ${entry.achievements.length === 1 ? "достижение" : "достижения"} — это важно.`);
+  }
+
+  if (entry.actions.length > 0) {
+    lines.push(`Конкретных шагов за день: ${entry.actions.length}.`);
+  }
+
+  if (entry.emotions.length > 0) {
+    lines.push("");
+    const emotionNames = entry.emotions.map(e => e.emotion);
+    const posCount = emotionNames.filter(e => EMOTIONS_POSITIVE.includes(e)).length;
+    const negCount = emotionNames.filter(e => EMOTIONS_NEGATIVE.includes(e)).length;
+
+    lines.push(`Эмоции: ${emotionNames.join(", ")}`);
+
+    if (emotionNames.length > 0) {
+      if (negCount > posCount && negCount > emotionNames.length / 2) {
+        lines.push("\nВы прожили напряжённый день. Это не слабость — это нагрузка.");
+      } else if (posCount > negCount && posCount > emotionNames.length / 2) {
+        lines.push("\nВы движетесь в ресурсном состоянии.");
+      } else if (posCount > 0 && negCount > 0) {
+        lines.push("\nВы видите и светлые, и тёмные стороны — это зрелость.");
       }
     }
   }
 
-  const intensity = Math.min(10, Math.max(1, Math.round(score * 2.5 + texts.reduce((a, t) => a + t.length, 0) / 200)));
-  return { tags: found.length > 0 ? found : ["нейтральность"], intensity };
-}
+  if (entry.energy_level > 0 || entry.stress_level > 0) {
+    lines.push("");
+    lines.push(`Энергия: ${entry.energy_level}/10 · Стресс: ${entry.stress_level}/10`);
 
-const OPENERS = [
-  "Привет! Как ты сегодня? Расскажи, что происходит в твоей жизни прямо сейчас.",
-  "Привет! Рада тебя видеть. С чем ты пришёл сегодня? Что у тебя на душе?",
-  "Привет! Как проходит твой день? Поделись тем, что тебя сейчас занимает.",
-];
-
-const DEEPENING_QUESTIONS: Record<string, string[]> = {
-  "радость": [
-    "Это здорово! А что именно вызвало это чувство? Опиши момент подробнее.",
-    "Как ты ощущаешь эту радость в теле? Где она живёт?",
-    "Как ты думаешь, что помогло этому случиться?",
-  ],
-  "тревога": [
-    "Я слышу тебя. А если представить тревогу как предмет — какой бы она была? Большая, маленькая, какого цвета?",
-    "Что самое худшее, что может случиться? А насколько это реально?",
-    "Что бы ты сказал близкому другу, если бы он чувствовал то же самое?",
-  ],
-  "грусть": [
-    "Спасибо, что делишься. Бывает ли что-то, что хоть немного согревает тебя сейчас?",
-    "Грусть — важное чувство. О чём она тебе говорит?",
-    "Если бы грусть могла говорить, что бы она сказала тебе?",
-  ],
-  "злость": [
-    "Злость — это энергия. На что она направлена? Что тебе хочется изменить?",
-    "Что стоит за этой злостью? Иногда за ней прячется что-то важное.",
-    "Если бы ты мог сейчас изменить одну вещь в этой ситуации — что бы это было?",
-  ],
-  "усталость": [
-    "Похоже, ты давно не отдыхал по-настоящему. Когда ты последний раз делал что-то только для себя?",
-    "Что забирает больше всего энергии прямо сейчас?",
-    "Если бы завтра ты мог проснуться отдохнувшим — что бы первым делом сделал?",
-  ],
-  "гордость": [
-    "Ты заслуживаешь этой гордости. Какие свои качества ты задействовал?",
-    "Кому бы ты хотел рассказать об этом?",
-    "Как ты можешь опираться на этот опыт в будущем?",
-  ],
-  "растерянность": [
-    "Неопределённость — это нормально. А что подсказывает тебе интуиция?",
-    "Если бы тебе не нужно было ничего решать прямо сейчас — что бы ты чувствовал?",
-    "Какой вариант вызывает больше энергии, даже если кажется страшным?",
-  ],
-  "вина": [
-    "Ты очень строг к себе. А что бы сказал твой добрый друг, если бы услышал это?",
-    "Что ты можешь сделать прямо сейчас, чтобы немного отпустить это чувство?",
-    "Иногда вина — это знак, что тебе что-то важно. Что именно тебе важно здесь?",
-  ],
-  "default": [
-    "Расскажи подробнее — что ты чувствуешь прямо сейчас, в эту секунду?",
-    "А что стоит за этим? Может быть, есть что-то, что ты ещё не озвучил?",
-    "Представь, что прошёл месяц. Как ты будешь вспоминать этот момент?",
-    "Если бы кто-то близкий был рядом — что бы ты ему сказал?",
-    "Что для тебя сейчас было бы идеальным исходом?",
-    "Что тебя поддерживает в такие моменты? На что ты опираешься?",
-    "Есть ли что-то ещё, что хочется добавить? Иногда важное приходит в конце.",
-  ],
-};
-
-const TRANSITION_PHRASES = [
-  "Спасибо, что поделился.",
-  "Я тебя слышу.",
-  "Это важно — то, что ты говоришь.",
-  "Спасибо за честность.",
-  "Понимаю тебя.",
-];
-
-export function getOpener(): string {
-  return OPENERS[Math.floor(Math.random() * OPENERS.length)];
-}
-
-export function getNextQuestion(answers: { question: string; answer: string }[], questionIndex: number): string | null {
-  if (questionIndex >= 7) return null;
-
-  const allAnswerText = answers.map(a => a.answer);
-  const { tags } = detectEmotions(allAnswerText);
-  const mainEmotion = tags[0] || "default";
-
-  const pool = DEEPENING_QUESTIONS[mainEmotion] || DEEPENING_QUESTIONS["default"];
-  const defaultPool = DEEPENING_QUESTIONS["default"];
-  const combined = [...pool, ...defaultPool];
-
-  const usedQuestions = new Set(answers.map(a => a.question));
-  const available = combined.filter(q => !usedQuestions.has(q));
-
-  if (available.length === 0) return null;
-
-  const transition = TRANSITION_PHRASES[Math.floor(Math.random() * TRANSITION_PHRASES.length)];
-
-  const question = available[Math.floor(Math.random() * Math.min(3, available.length))];
-  return `${transition} ${question}`;
-}
-
-const SUPPORT_POSITIVE = [
-  "Ты умеешь замечать хорошее — это сильная сторона. Держи этот настрой.",
-  "Радость, которую ты описываешь — заслуженная. Ты проделал путь, чтобы быть здесь.",
-  "Отличный день. Запомни это ощущение — оно поможет в трудные моменты.",
-];
-
-const SUPPORT_TOUGH = [
-  "То, что ты пришёл сюда и написал об этом — уже шаг. Ты не один.",
-  "Сложные чувства не значит, что ты слабый. Это значит, что тебе не всё равно.",
-  "Помни: за каждой тяжёлой полосой следует подъём. Ты справишься.",
-  "Ты заслуживаешь поддержки. Если становится слишком тяжело — поговори с кем-то близким.",
-];
-
-const SUPPORT_NEUTRAL = [
-  "Ты учишься лучше понимать себя — а это уже большой шаг.",
-  "Каждая запись — кирпичик самопознания. Возвращайся, когда захочешь.",
-  "Регулярное наблюдение за собой — привычка, которая меняет жизнь.",
-];
-
-export function buildSupport(answers: { question: string; answer: string }[]): string {
-  const allText = answers.map(a => a.answer);
-  const { tags, intensity } = detectEmotions(allText);
-
-  const positive = ["радость", "гордость", "благодарность", "спокойствие"];
-  const tough = ["тревога", "грусть", "злость", "усталость", "вина"];
-
-  const isPositive = tags.some(t => positive.includes(t));
-  const isTough = tags.some(t => tough.includes(t));
-
-  const lines: string[] = [];
-
-  lines.push("📝 **Запись сохранена**\n");
-
-  if (tags.length > 0 && tags[0] !== "нейтральность") {
-    lines.push(`Эмоции сегодня: ${tags.map(t => `**${t}**`).join(", ")}`);
-    lines.push(`Глубина проработки: ${intensity}/10\n`);
+    if (entry.energy_level <= 3 && entry.stress_level >= 7) {
+      lines.push("\nНизкая энергия + высокий стресс. Организм сигнализирует: нужно восстановление. Позвольте себе отдых — это не слабость, а забота о себе.");
+    } else if (entry.energy_level >= 7 && entry.stress_level >= 7) {
+      lines.push("\nВысокая энергия при высоком стрессе — будьте осторожны. Такой режим может привести к выгоранию. Запланируйте паузу.");
+    } else if (entry.energy_level >= 7 && entry.stress_level <= 3) {
+      lines.push("\nОтличное сочетание: много энергии и мало стресса. Это ваш оптимальный режим — запомните, что к нему привело.");
+    } else if (entry.energy_level <= 3 && entry.stress_level <= 3) {
+      lines.push("\nМало энергии и мало стресса — возможно, не хватает стимулов. Попробуйте добавить что-то новое или вдохновляющее в завтрашний день.");
+    }
   }
 
-  if (answers.length >= 4) {
-    lines.push("Ты сегодня глубоко копнул — это ценно.\n");
-  } else if (answers.length >= 2) {
-    lines.push("Даже короткая запись имеет значение.\n");
+  if (entry.difficulties.length > 0) {
+    lines.push("");
+    lines.push(`Сложности: ${entry.difficulties.length}`);
+
+    const allEntries = getStoredEntries();
+    if (allEntries.length >= 3) {
+      const recentDiffs = allEntries.slice(-7).flatMap(e => e.difficulties.map(d => d.toLowerCase()));
+      for (const diff of entry.difficulties) {
+        const count = recentDiffs.filter(d => d.includes(diff.toLowerCase().slice(0, 10))).length;
+        if (count >= 3) {
+          lines.push(`\nСложность «${diff.slice(0, 40)}» повторяется ${count} раз за последние записи — это системный барьер. Стоит разобрать глубже.`);
+          break;
+        }
+      }
+    }
   }
 
-  lines.push("---\n");
-  lines.push("💬 **Слова поддержки**\n");
-
-  const pool = isPositive ? SUPPORT_POSITIVE : isTough ? SUPPORT_TOUGH : SUPPORT_NEUTRAL;
-  lines.push(pool[Math.floor(Math.random() * pool.length)]);
-
-  if (isTough && isPositive) {
-    lines.push("\nТы видишь и светлые, и тёмные стороны — это зрелость.");
+  if (entry.insights.length > 0) {
+    lines.push("");
+    lines.push("**Ваши осознания:**");
+    entry.insights.forEach(ins => lines.push(`· ${ins}`));
   }
 
-  lines.push("\nДо встречи в следующий раз. Ты молодец, что уделил себе время.");
+  if (entry.gratitude.length > 0) {
+    lines.push("");
+    lines.push("**Благодарность себе:**");
+    entry.gratitude.forEach(g => lines.push(`· ${g}`));
+  }
+
+  lines.push("\n---\n");
+  lines.push("**Рекомендация на завтра:**\n");
+
+  if (entry.energy_level <= 3 || entry.stress_level >= 8) {
+    lines.push("Снизьте нагрузку. Завтра сфокусируйтесь на одной важной задаче и позвольте себе отдых.");
+  } else if (entry.stress_level >= 5 && entry.energy_level >= 5) {
+    lines.push("Усильте фокус. Выберите 2-3 ключевых задачи и не распыляйтесь на мелочи.");
+  } else if (entry.energy_level >= 7 && entry.stress_level <= 3) {
+    lines.push("Продолжайте в том же темпе. Вы в отличной форме — используйте это для важных дел.");
+  } else if (entry.emotions.some(e => EMOTIONS_NEGATIVE.includes(e.emotion) && ["Страх", "Тревога", "Неуверенность", "Сомнение"].includes(e.emotion))) {
+    lines.push("Проработайте тревогу. Запишите, что именно вас беспокоит, и оцените реальность этих опасений.");
+  } else {
+    lines.push("Добавьте отдых. Даже 15 минут для себя помогут перезагрузиться.");
+  }
+
+  lines.push("\nВы молодец, что уделили себе время. До встречи в следующий раз.");
 
   return lines.join("\n");
+}
+
+export function getStoredEntries(): JournalEntry[] {
+  try {
+    return JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function getWeeklyStats(entries: JournalEntry[]): {
+  avgEnergy: number;
+  avgStress: number;
+  topEmotions: string[];
+  totalAchievements: number;
+  repeatingDifficulties: string[];
+} | null {
+  if (entries.length < 7) return null;
+  const recent = entries.slice(-7);
+
+  const energyArr = recent.filter(e => e.energy_level > 0).map(e => e.energy_level);
+  const stressArr = recent.filter(e => e.stress_level > 0).map(e => e.stress_level);
+  const avgEnergy = energyArr.length ? Math.round(energyArr.reduce((a, b) => a + b, 0) / energyArr.length * 10) / 10 : 0;
+  const avgStress = stressArr.length ? Math.round(stressArr.reduce((a, b) => a + b, 0) / stressArr.length * 10) / 10 : 0;
+
+  const emotionCount: Record<string, number> = {};
+  recent.forEach(e => e.emotions.forEach(em => {
+    emotionCount[em.emotion] = (emotionCount[em.emotion] || 0) + 1;
+  }));
+  const topEmotions = Object.entries(emotionCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([e]) => e);
+
+  const totalAchievements = recent.reduce((s, e) => s + e.achievements.length, 0);
+
+  const diffCount: Record<string, number> = {};
+  recent.forEach(e => e.difficulties.forEach(d => {
+    const key = d.toLowerCase().slice(0, 30);
+    diffCount[key] = (diffCount[key] || 0) + 1;
+  }));
+  const repeatingDifficulties = Object.entries(diffCount)
+    .filter(([, c]) => c >= 3)
+    .map(([d]) => d);
+
+  return { avgEnergy, avgStress, topEmotions, totalAchievements, repeatingDifficulties };
 }

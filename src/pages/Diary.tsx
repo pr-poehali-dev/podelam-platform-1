@@ -6,15 +6,10 @@ import PaywallModal from "@/components/PaywallModal";
 import DiaryChat from "@/components/diary/DiaryChat";
 import DiaryHistory from "@/components/diary/DiaryHistory";
 import {
-  Message,
-  DiaryEntry,
-  Phase,
-  CHAT_KEY,
-  ENTRIES_KEY,
-  getOpener,
-  getNextQuestion,
-  buildSupport,
-  detectEmotions,
+  Message, JournalEntry, Phase, InputMode,
+  CHAT_KEY, ENTRIES_KEY, CONTEXT_AREAS, ALL_EMOTIONS_CHIPS,
+  getAchievementFollowup, getActionsFollowup, getDifficultyFollowup,
+  getInsightFollowup, buildReport, stageLabel,
 } from "@/components/diary/diaryEngine";
 
 type ViewTab = "chat" | "history";
@@ -24,10 +19,37 @@ export default function Diary() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [phase, setPhase] = useState<Phase>("intro");
-  const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
   const [showPaywall, setShowPaywall] = useState(false);
   const [tab, setTab] = useState<ViewTab>("chat");
-  const [currentQuestion, setCurrentQuestion] = useState("");
+
+  const [stageNumber, setStageNumber] = useState(1);
+  const [inputMode, setInputMode] = useState<InputMode>("none");
+  const [currentButtons, setCurrentButtons] = useState<string[]>([]);
+  const [currentChips, setCurrentChips] = useState<{ label: string; group: string }[]>([]);
+  const [currentSlider, setCurrentSlider] = useState<{ min: number; max: number; label: string } | undefined>();
+
+  const [entry, setEntry] = useState<Omit<JournalEntry, "report" | "date">>({
+    context_area: "",
+    achievements: [],
+    actions: [],
+    emotions: [],
+    body_state: [],
+    difficulties: [],
+    insights: [],
+    gratitude: [],
+    energy_level: 0,
+    stress_level: 0,
+    completion_stage: 0,
+  });
+
+  const [pendingEmotions, setPendingEmotions] = useState<string[]>([]);
+  const [currentEmotionIdx, setCurrentEmotionIdx] = useState(0);
+
+  const [canAddMore, setCanAddMore] = useState(false);
+  const [addMoreLabel, setAddMoreLabel] = useState("");
+  const [subItemCount, setSubItemCount] = useState(0);
+  const [maxSubItems, setMaxSubItems] = useState(5);
+  const [awaitingFollowup, setAwaitingFollowup] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const idRef = useRef(0);
@@ -48,19 +70,19 @@ export default function Diary() {
       setPhase("done");
       return;
     }
-    freshStart();
+    startFresh();
   }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, phase]);
+  }, [messages, phase, inputMode]);
 
   function save(msgs: Message[]) {
     localStorage.setItem(CHAT_KEY(), JSON.stringify(msgs));
   }
 
-  function addBot(text: string, current: Message[], widget?: "finish_btn"): Message[] {
-    const msg: Message = { id: idRef.current++, from: "bot", text, widget };
+  function addBot(text: string, current: Message[]): Message[] {
+    const msg: Message = { id: idRef.current++, from: "bot", text };
     const next = [...current, msg];
     save(next);
     return next;
@@ -73,81 +95,436 @@ export default function Diary() {
     return next;
   }
 
-  function freshStart() {
-    const opener = getOpener();
-    setCurrentQuestion(opener);
-    const intro: Message = { id: idRef.current++, from: "bot", text: "Это твой личный дневник самоанализа.\n\nЗдесь можно записать всё, что на душе: чувства, мысли, события, сомнения, победы. Я буду задавать открытые вопросы, чтобы помочь тебе разобраться в себе.\n\nНикакого ИИ — только алгоритм, который реагирует на твои эмоции и помогает копнуть глубже. Все записи сохраняются и доступны в истории.\n\n**На любом шаге можешь нажать «Завершить на сегодня»** — я подведу итог и дам поддержку." };
-    const q: Message = { id: idRef.current++, from: "bot", text: opener, widget: "finish_btn" };
+  function startFresh() {
+    idRef.current = 0;
+    setEntry({
+      context_area: "", achievements: [], actions: [], emotions: [],
+      body_state: [], difficulties: [], insights: [], gratitude: [],
+      energy_level: 0, stress_level: 0, completion_stage: 0,
+    });
+    setSubItemCount(0);
+    setAwaitingFollowup(false);
+    setPendingEmotions([]);
+    setCurrentEmotionIdx(0);
+
+    const intro: Message = {
+      id: idRef.current++, from: "bot",
+      text: "Добро пожаловать в дневник самоанализа.\n\nЗдесь вы фиксируете свои достижения, эмоции, действия и осознания. Я проведу вас через 8 шагов.\n\nНа любом этапе вы можете нажать **«Завершить анализ»** — я подведу итог по тому, что вы успели записать.",
+    };
+    const q: Message = {
+      id: idRef.current++, from: "bot",
+      text: "В какой сфере вы сегодня хотите провести анализ?",
+    };
     const init = [intro, q];
     setMessages(init);
     save(init);
-    setPhase("conversation");
-    setAnswers([]);
+    setPhase("context");
+    setStageNumber(1);
+    setInputMode("buttons");
+    setCurrentButtons([...CONTEXT_AREAS, "Свой вариант"]);
+    setCanAddMore(false);
   }
 
-  function send() {
-    if (!input.trim() || phase !== "conversation") return;
+  function goToAchievements(msgs: Message[]) {
+    setStageNumber(2);
+    setSubItemCount(0);
+    setAwaitingFollowup(false);
+    setMaxSubItems(5);
+    setPhase("achievements");
+    setInputMode("text");
+    setCanAddMore(false);
+
+    const m = addBot("Что сегодня получилось? Даже если это мелочь.\n\nМожно добавить до 5 достижений.", msgs);
+    setMessages(m);
+  }
+
+  function goToActions(msgs: Message[]) {
+    setStageNumber(3);
+    setSubItemCount(0);
+    setAwaitingFollowup(false);
+    setMaxSubItems(7);
+    setPhase("actions");
+    setInputMode("text");
+    setCanAddMore(false);
+
+    const m = addBot("Какие конкретные шаги вы сегодня сделали?\n\nМожно добавить до 7 действий.", msgs);
+    setMessages(m);
+  }
+
+  function goToEmotions(msgs: Message[]) {
+    setStageNumber(4);
+    setPhase("emotions");
+    setInputMode("chips");
+    setCurrentChips(ALL_EMOTIONS_CHIPS);
+    setCanAddMore(false);
+
+    const m = addBot("Какие эмоции вы сегодня испытывали?\n\nВыберите до 6 эмоций из списка.", msgs);
+    setMessages(m);
+  }
+
+  function goToEnergy(msgs: Message[]) {
+    setStageNumber(5);
+    setPhase("energy");
+    setInputMode("slider");
+    setCurrentSlider({ min: 0, max: 10, label: "Уровень энергии" });
+    setCanAddMore(false);
+
+    const m = addBot("Оцените ваш уровень энергии сегодня.", msgs);
+    setMessages(m);
+  }
+
+  function goToStress(msgs: Message[]) {
+    setPhase("stress");
+    setInputMode("slider");
+    setCurrentSlider({ min: 0, max: 10, label: "Уровень стресса" });
+    setCanAddMore(false);
+
+    const m = addBot("Оцените ваш уровень стресса сегодня.", msgs);
+    setMessages(m);
+  }
+
+  function goToDifficulties(msgs: Message[]) {
+    setStageNumber(6);
+    setSubItemCount(0);
+    setAwaitingFollowup(false);
+    setMaxSubItems(5);
+    setPhase("difficulties");
+    setInputMode("text");
+    setCanAddMore(false);
+
+    const m = addBot("С чем вы столкнулись сегодня? С какими сложностями?\n\nМожно добавить до 5 пунктов.", msgs);
+    setMessages(m);
+  }
+
+  function goToInsights(msgs: Message[]) {
+    setStageNumber(7);
+    setSubItemCount(0);
+    setAwaitingFollowup(false);
+    setMaxSubItems(3);
+    setPhase("insights");
+    setInputMode("text");
+    setCanAddMore(false);
+
+    const m = addBot("Какой главный вывод вы сделали сегодня?", msgs);
+    setMessages(m);
+  }
+
+  function goToGratitude(msgs: Message[]) {
+    setStageNumber(8);
+    setSubItemCount(0);
+    setAwaitingFollowup(false);
+    setMaxSubItems(3);
+    setPhase("gratitude");
+    setInputMode("text");
+    setCanAddMore(false);
+
+    const m = addBot("За что вы можете поблагодарить себя сегодня?\n\nДобавьте 1–3 пункта.", msgs);
+    setMessages(m);
+  }
+
+  function finishSession(currentMsgs?: Message[], forceStage?: number) {
+    const msgs = currentMsgs || messages;
+    const completionStage = forceStage || stageNumber;
+    const finalEntry = { ...entry, completion_stage: completionStage };
+
+    setPhase("finishing");
+    setInputMode("none");
+
+    const report = buildReport(finalEntry);
+    const fullEntry: JournalEntry = { ...finalEntry, report, date: new Date().toISOString() };
+
+    const history: JournalEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
+    history.push(fullEntry);
+    localStorage.setItem(ENTRIES_KEY(), JSON.stringify(history));
+
+    const emotionSummary = fullEntry.emotions.map(e => e.emotion).join(", ") || "без эмоций";
+    saveToolCompletion("diary", `Запись: ${emotionSummary}`);
+
+    setTimeout(() => {
+      const finalMsgs = addBot(report, msgs);
+      setMessages(finalMsgs);
+      setPhase("done");
+    }, 800);
+  }
+
+  function handleSend() {
+    if (!input.trim()) return;
     const text = input.trim();
     setInput("");
 
-    const newAnswers = [...answers, { question: currentQuestion, answer: text }];
-    setAnswers(newAnswers);
-
     let msgs = addUser(text, messages);
 
-    const nextQ = getNextQuestion(newAnswers, newAnswers.length);
+    if (phase === "context") {
+      setEntry(prev => ({ ...prev, context_area: text }));
+      msgs = addBot(`Сфера: **${text}**`, msgs);
+      setMessages(msgs);
+      setTimeout(() => goToAchievements(msgs), 400);
+      return;
+    }
 
-    if (nextQ) {
-      setCurrentQuestion(nextQ);
-      setTimeout(() => {
-        msgs = addBot(nextQ, msgs, "finish_btn");
+    if (phase === "achievements" || phase === "achievements_follow") {
+      if (awaitingFollowup) {
+        setAwaitingFollowup(false);
+        if (subItemCount >= maxSubItems) {
+          setMessages(msgs);
+          setTimeout(() => goToActions(msgs), 400);
+        } else {
+          setCanAddMore(true);
+          setAddMoreLabel("Далее — действия");
+          msgs = addBot("Хотите добавить ещё достижение?", msgs);
+          setMessages(msgs);
+          setPhase("achievements");
+        }
+        return;
+      }
+
+      const newCount = subItemCount + 1;
+      setSubItemCount(newCount);
+      setEntry(prev => ({ ...prev, achievements: [...prev.achievements, text] }));
+
+      const followup = getAchievementFollowup();
+      setAwaitingFollowup(true);
+      setPhase("achievements_follow");
+      setCanAddMore(false);
+      msgs = addBot(followup, msgs);
+      setMessages(msgs);
+      return;
+    }
+
+    if (phase === "actions" || phase === "actions_follow") {
+      if (awaitingFollowup) {
+        setAwaitingFollowup(false);
+        if (subItemCount >= maxSubItems) {
+          setMessages(msgs);
+          setTimeout(() => goToEmotions(msgs), 400);
+        } else {
+          setCanAddMore(true);
+          setAddMoreLabel("Далее — эмоции");
+          msgs = addBot("Хотите добавить ещё действие?", msgs);
+          setMessages(msgs);
+          setPhase("actions");
+        }
+        return;
+      }
+
+      const newCount = subItemCount + 1;
+      setSubItemCount(newCount);
+      setEntry(prev => ({ ...prev, actions: [...prev.actions, text] }));
+
+      if (newCount >= 2) {
+        const followup = getActionsFollowup();
+        setAwaitingFollowup(true);
+        setPhase("actions_follow");
+        setCanAddMore(false);
+        msgs = addBot(followup, msgs);
         setMessages(msgs);
-      }, 500);
-    } else {
-      finishSession(msgs, newAnswers);
+      } else {
+        setCanAddMore(true);
+        setAddMoreLabel("Далее — эмоции");
+        setMessages(msgs);
+      }
+      return;
+    }
+
+    if (phase === "emotion_trigger") {
+      const emotionName = pendingEmotions[currentEmotionIdx];
+      setEntry(prev => ({
+        ...prev,
+        emotions: [...prev.emotions, { emotion: emotionName, trigger: text }],
+      }));
+
+      const nextIdx = currentEmotionIdx + 1;
+      if (nextIdx < pendingEmotions.length) {
+        setCurrentEmotionIdx(nextIdx);
+        msgs = addBot(`В какой момент вы почувствовали: **${pendingEmotions[nextIdx]}**?`, msgs);
+        setMessages(msgs);
+      } else {
+        setMessages(msgs);
+        setTimeout(() => goToEnergy(msgs), 400);
+      }
+      return;
+    }
+
+    if (phase === "difficulties" || phase === "difficulty_follow") {
+      if (awaitingFollowup) {
+        setAwaitingFollowup(false);
+        if (subItemCount >= maxSubItems) {
+          setMessages(msgs);
+          setTimeout(() => goToInsights(msgs), 400);
+        } else {
+          setCanAddMore(true);
+          setAddMoreLabel("Далее — осознания");
+          msgs = addBot("Хотите добавить ещё сложность?", msgs);
+          setMessages(msgs);
+          setPhase("difficulties");
+        }
+        return;
+      }
+
+      const newCount = subItemCount + 1;
+      setSubItemCount(newCount);
+      setEntry(prev => ({ ...prev, difficulties: [...prev.difficulties, text] }));
+
+      const followup = getDifficultyFollowup();
+      setAwaitingFollowup(true);
+      setPhase("difficulty_follow");
+      setCanAddMore(false);
+      msgs = addBot(followup, msgs);
+      setMessages(msgs);
+      return;
+    }
+
+    if (phase === "insights" || phase === "insight_follow") {
+      if (awaitingFollowup) {
+        setAwaitingFollowup(false);
+        if (subItemCount >= maxSubItems) {
+          setMessages(msgs);
+          setTimeout(() => goToGratitude(msgs), 400);
+        } else {
+          setCanAddMore(true);
+          setAddMoreLabel("Далее — благодарность");
+          msgs = addBot("Хотите добавить ещё вывод?", msgs);
+          setMessages(msgs);
+          setPhase("insights");
+        }
+        return;
+      }
+
+      const newCount = subItemCount + 1;
+      setSubItemCount(newCount);
+      setEntry(prev => ({ ...prev, insights: [...prev.insights, text] }));
+
+      const followup = getInsightFollowup();
+      setAwaitingFollowup(true);
+      setPhase("insight_follow");
+      setCanAddMore(false);
+      msgs = addBot(followup, msgs);
+      setMessages(msgs);
+      return;
+    }
+
+    if (phase === "gratitude") {
+      const newCount = subItemCount + 1;
+      setSubItemCount(newCount);
+      setEntry(prev => ({ ...prev, gratitude: [...prev.gratitude, text] }));
+
+      if (newCount >= maxSubItems) {
+        setMessages(msgs);
+        finishSession(msgs, 8);
+      } else {
+        setCanAddMore(true);
+        setAddMoreLabel("Завершить");
+        msgs = addBot("Хотите добавить ещё?", msgs);
+        setMessages(msgs);
+      }
+      return;
+    }
+
+    setMessages(msgs);
+  }
+
+  function handleButtonSelect(value: string) {
+    if (phase === "context") {
+      if (value === "Свой вариант") {
+        setInputMode("text");
+        setCurrentButtons([]);
+        return;
+      }
+      let msgs = addUser(value, messages);
+      setEntry(prev => ({ ...prev, context_area: value }));
+      msgs = addBot(`Отлично, сфера: **${value}**`, msgs);
+      setMessages(msgs);
+      setTimeout(() => goToAchievements(msgs), 400);
     }
   }
 
-  function finishSession(currentMsgs?: Message[], currentAnswers?: { question: string; answer: string }[]) {
-    const ans = currentAnswers || answers;
-    if (ans.length === 0) return;
+  function handleChipsConfirm(selected: string[]) {
+    const displayText = selected.join(", ");
+    let msgs = addUser(displayText, messages);
 
-    const msgs = currentMsgs || messages;
-    setPhase("finishing");
+    setPendingEmotions(selected);
+    setCurrentEmotionIdx(0);
 
-    const support = buildSupport(ans);
-    const { tags, intensity } = detectEmotions(ans.map(a => a.answer));
+    if (selected.length > 0) {
+      setPhase("emotion_trigger");
+      setInputMode("text");
+      msgs = addBot(`Вы выбрали: **${displayText}**\n\nТеперь уточним каждую эмоцию.\n\nВ какой момент вы почувствовали: **${selected[0]}**?`, msgs);
+      setMessages(msgs);
+    } else {
+      setMessages(msgs);
+      setTimeout(() => goToEnergy(msgs), 400);
+    }
+  }
 
-    const entry: DiaryEntry = {
-      date: new Date().toISOString(),
-      answers: ans,
-      emotion_tags: tags,
-      intensity,
-      supportText: support,
-    };
+  function handleSliderConfirm(value: number) {
+    let msgs = addUser(String(value), messages);
 
-    const history: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
-    history.push(entry);
-    localStorage.setItem(ENTRIES_KEY(), JSON.stringify(history));
+    if (phase === "energy") {
+      setEntry(prev => ({ ...prev, energy_level: value }));
 
-    saveToolCompletion("diary", `Запись: ${tags.join(", ")}`);
+      let note = "";
+      if (value <= 3) note = "\nПометка: низкий ресурс.";
 
-    setTimeout(() => {
-      const finalMsgs = addBot(support, msgs);
-      setMessages(finalMsgs);
-      setPhase("done");
-    }, 600);
+      msgs = addBot(`Энергия: **${value}/10**${note}`, msgs);
+      setMessages(msgs);
+      setTimeout(() => goToStress(msgs), 400);
+      return;
+    }
+
+    if (phase === "stress") {
+      setEntry(prev => ({ ...prev, stress_level: value }));
+
+      let note = "";
+      if (value >= 7) note = "\nПометка: высокая нагрузка.";
+
+      msgs = addBot(`Стресс: **${value}/10**${note}`, msgs);
+      setMessages(msgs);
+      setTimeout(() => goToDifficulties(msgs), 400);
+      return;
+    }
+  }
+
+  function handleAddMore() {
+    setCanAddMore(false);
+
+    if (phase === "achievements") {
+      if (subItemCount >= maxSubItems) {
+        goToActions(messages);
+      } else {
+        goToActions(messages);
+      }
+      return;
+    }
+    if (phase === "actions") {
+      goToEmotions(messages);
+      return;
+    }
+    if (phase === "difficulties") {
+      goToInsights(messages);
+      return;
+    }
+    if (phase === "insights") {
+      goToGratitude(messages);
+      return;
+    }
+    if (phase === "gratitude") {
+      finishSession(messages, 8);
+      return;
+    }
+  }
+
+  function handleFinish() {
+    finishSession(messages, stageNumber);
   }
 
   function startNew() {
     localStorage.removeItem(CHAT_KEY());
-    idRef.current = 0;
     setMessages([]);
     setTab("chat");
-    freshStart();
+    startFresh();
   }
 
-  const entries: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
+  const entries: JournalEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
 
   if (showPaywall) {
     return (
@@ -178,6 +555,11 @@ export default function Diary() {
             <Icon name="BookOpen" size={14} className="text-violet-600" />
           </div>
           <span className="font-bold text-sm text-foreground">Дневник</span>
+          {phase !== "done" && phase !== "finishing" && phase !== "intro" && (
+            <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-md ml-1">
+              {stageLabel(stageNumber)} ({stageNumber}/8)
+            </span>
+          )}
         </div>
 
         {entries.length > 0 ? (
@@ -205,12 +587,22 @@ export default function Diary() {
           messages={messages}
           input={input}
           onInputChange={setInput}
-          onSend={send}
-          onFinish={() => finishSession()}
+          onSend={handleSend}
+          onButtonSelect={handleButtonSelect}
+          onChipsConfirm={handleChipsConfirm}
+          onSliderConfirm={handleSliderConfirm}
+          onFinish={handleFinish}
           onStartNew={startNew}
           phase={phase}
+          currentInputMode={inputMode}
+          currentButtons={currentButtons}
+          currentChips={currentChips}
+          currentSlider={currentSlider}
           bottomRef={bottomRef as React.RefObject<HTMLDivElement>}
-          answersCount={answers.length}
+          stageNumber={stageNumber}
+          canAddMore={canAddMore}
+          onAddMore={handleAddMore}
+          addMoreLabel={addMoreLabel}
         />
       )}
     </div>
