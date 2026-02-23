@@ -273,6 +273,33 @@ export default function BarrierBot() {
   };
 
   const isDone = botState.phase === "done" || botState.phase === "result";
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    const u = localStorage.getItem("pdd_user");
+    if (!u) return;
+    const userData = JSON.parse(u);
+    const lastSession = sessions[sessions.length - 1];
+    if (!lastSession) return;
+
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+
+    if (userData.id) {
+      try {
+        await fetch("https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "save_test_result",
+            userId: userData.id,
+            testType: "barrier-bot",
+            resultData: lastSession,
+          }),
+        });
+      } catch { /* localStorage уже сохранено */ }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -317,23 +344,37 @@ export default function BarrierBot() {
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
           {isDone && (
-            <div className="px-4 pt-3 flex gap-2">
+            <div className="px-4 pt-3 flex flex-col gap-2">
               <button
-                onClick={handleNewSession}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-semibold hover:bg-rose-100 transition-colors"
+                onClick={handleSave}
+                disabled={saved}
+                className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  saved
+                    ? "bg-green-100 border border-green-300 text-green-700"
+                    : "bg-rose-500 text-white hover:bg-rose-600"
+                }`}
               >
-                <Icon name="RotateCcw" size={15} />
-                Новая сессия
+                <Icon name={saved ? "CheckCircle" : "Save"} size={15} />
+                {saved ? "Результат сохранён!" : "Сохранить результат"}
               </button>
-              {sessions.length > 0 && (
+              <div className="flex gap-2">
                 <button
-                  onClick={() => setTab("history")}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  onClick={handleNewSession}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-semibold hover:bg-rose-100 transition-colors"
                 >
-                  <Icon name="History" size={15} />
-                  История и PDF
+                  <Icon name="RotateCcw" size={15} />
+                  Новая сессия
                 </button>
-              )}
+                {sessions.length > 0 && (
+                  <button
+                    onClick={() => setTab("history")}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    <Icon name="History" size={15} />
+                    История и PDF
+                  </button>
+                )}
+              </div>
             </div>
           )}
           <BarrierBotChat
