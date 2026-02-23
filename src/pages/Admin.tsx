@@ -56,6 +56,8 @@ export default function Admin() {
   const [tab, setTab] = useState<Tab>("clients");
   const [search, setSearch] = useState("");
   const [dataLoading, setDataLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchData = async (t: string) => {
     setDataLoading(true);
@@ -96,6 +98,19 @@ export default function Admin() {
     }
     sessionStorage.setItem("admin_token", password);
     setToken(password);
+  };
+
+  const deleteUser = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    await fetch(ADMIN_URL, {
+      method: "DELETE",
+      headers: { "X-Admin-Token": token, "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: deleteTarget.id, user_email: deleteTarget.email }),
+    });
+    setDeleteLoading(false);
+    setDeleteTarget(null);
+    fetchData(token);
   };
 
   const logout = () => {
@@ -225,11 +240,12 @@ export default function Admin() {
                     <th className="px-6 py-3 font-medium">Последний вход</th>
                     <th className="px-6 py-3 font-medium text-right">Оплат</th>
                     <th className="px-6 py-3 font-medium text-right">Сумма</th>
+                    <th className="px-6 py-3 font-medium"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredClients.length === 0 ? (
-                    <tr><td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">Клиентов нет</td></tr>
+                    <tr><td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">Клиентов нет</td></tr>
                   ) : filteredClients.map(c => (
                     <tr key={c.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-6 py-4 text-muted-foreground">#{c.id}</td>
@@ -240,6 +256,15 @@ export default function Admin() {
                       <td className="px-6 py-4 text-right">{c.payments_count}</td>
                       <td className="px-6 py-4 text-right font-semibold text-primary">
                         {Number(c.total_paid) > 0 ? formatMoney(Number(c.total_paid)) : "—"}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => setDeleteTarget(c)}
+                          className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-red-50 rounded-lg transition-colors"
+                          title="Удалить пользователя"
+                        >
+                          <Icon name="Trash2" size={15} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -288,6 +313,47 @@ export default function Admin() {
           )}
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+                <Icon name="Trash2" size={18} className="text-destructive" />
+              </div>
+              <div>
+                <h2 className="font-bold text-foreground">Удалить пользователя?</h2>
+                <p className="text-xs text-muted-foreground">Это действие нельзя отменить</p>
+              </div>
+            </div>
+            <div className="bg-secondary rounded-xl p-3 mb-5 text-sm">
+              <p className="font-medium text-foreground">{deleteTarget.name}</p>
+              <p className="text-muted-foreground">{deleteTarget.email}</p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5">
+              Будут удалены: аккаунт, все результаты тестов и история платежей.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleteLoading}
+                className="flex-1 border border-border rounded-xl py-2.5 text-sm font-medium hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={deleteUser}
+                disabled={deleteLoading}
+                className="flex-1 bg-destructive text-white rounded-xl py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleteLoading ? <Icon name="Loader2" size={14} className="animate-spin" /> : <Icon name="Trash2" size={14} />}
+                {deleteLoading ? "Удаление..." : "Удалить"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

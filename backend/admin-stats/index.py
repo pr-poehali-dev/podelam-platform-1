@@ -24,6 +24,22 @@ def handler(event: dict, context) -> dict:
     if token != ADMIN_PASSWORD:
         return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Доступ запрещён'})}
 
+    if event.get('httpMethod') == 'DELETE':
+        body = json.loads(event.get('body') or '{}')
+        user_id = body.get('user_id')
+        user_email = body.get('user_email')
+        if not user_id or not user_email:
+            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'user_id и user_email обязательны'})}
+        conn = get_conn()
+        cur = conn.cursor()
+        S = SCHEMA
+        cur.execute(f'DELETE FROM "{S}".test_results WHERE user_id = %s', (user_id,))
+        cur.execute(f'DELETE FROM "{S}".payments WHERE user_email = %s', (user_email,))
+        cur.execute(f'DELETE FROM "{S}".users WHERE id = %s', (user_id,))
+        conn.commit()
+        conn.close()
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
     conn = get_conn()
     cur = conn.cursor()
     S = SCHEMA
