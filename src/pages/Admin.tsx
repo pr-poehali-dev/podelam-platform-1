@@ -108,9 +108,10 @@ export default function Admin() {
       headers: { "X-Admin-Token": token, "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: deleteTarget.id, user_email: deleteTarget.email }),
     });
+    setClients(prev => prev.filter(c => c.id !== deleteTarget.id));
+    setStats(prev => prev ? { ...prev, total_users: prev.total_users - 1 } : prev);
     setDeleteLoading(false);
     setDeleteTarget(null);
-    fetchData(token);
   };
 
   const logout = () => {
