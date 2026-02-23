@@ -196,7 +196,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, profileCo
           <div className="w-16 h-16 gradient-brand rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Icon name="Brain" size={28} className="text-white" />
           </div>
-          <h3 className="font-bold text-foreground text-lg mb-2">Тест на призвание</h3>
+          <h3 className="font-bold text-foreground text-lg mb-2">Тест: Какая профессия тебе подходит</h3>
           <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">
             15 вопросов — и ты узнаешь своё направление, мотивацию и подходящие профессии
           </p>
