@@ -41,11 +41,16 @@ export function getBalance(): number {
   return parseFloat(localStorage.getItem(balanceKey(email)) || "0");
 }
 
+function notifyBalanceChange() {
+  window.dispatchEvent(new CustomEvent("pdd_balance_change"));
+}
+
 /** Пополнить баланс */
 export function topUpBalance(amount: number): void {
   const email = getEmail();
   const current = getBalance();
   localStorage.setItem(balanceKey(email), String(current + amount));
+  notifyBalanceChange();
 }
 
 /** Списать с баланса. Возвращает true если успешно */
@@ -54,6 +59,7 @@ export function chargeBalance(amount: number): boolean {
   const current = getBalance();
   if (current < amount) return false;
   localStorage.setItem(balanceKey(email), String(current - amount));
+  notifyBalanceChange();
   return true;
 }
 

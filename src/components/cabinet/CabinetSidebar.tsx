@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 import { User } from "./cabinetTypes";
 import { getBalance } from "@/lib/access";
 import BalanceTopUpModal from "@/components/BalanceTopUpModal";
+
+function useBalance() {
+  const [balance, setBalance] = useState(getBalance);
+  const refresh = useCallback(() => setBalance(getBalance()), []);
+  useEffect(() => {
+    window.addEventListener("pdd_balance_change", refresh);
+    return () => window.removeEventListener("pdd_balance_change", refresh);
+  }, [refresh]);
+  return { balance, refresh };
+}
 
 type Tab = "home" | "tests" | "tools";
 
@@ -23,7 +33,7 @@ const NAV_ITEMS = [
 // Мобильная навигация — используется внутри <main> в Cabinet.tsx
 export function CabinetMobileNav({ activeTab, onTabChange, onLogoClick, onLogout }: Omit<Props, "user">) {
   const [showTopUp, setShowTopUp] = useState(false);
-  const [balance, setBalance] = useState(getBalance);
+  const { balance } = useBalance();
 
   return (
     <>
@@ -59,7 +69,7 @@ export function CabinetMobileNav({ activeTab, onTabChange, onLogoClick, onLogout
       {showTopUp && (
         <BalanceTopUpModal
           onClose={() => setShowTopUp(false)}
-          onSuccess={() => setBalance(getBalance())}
+          onSuccess={() => setShowTopUp(false)}
         />
       )}
     </>
@@ -69,7 +79,7 @@ export function CabinetMobileNav({ activeTab, onTabChange, onLogoClick, onLogout
 // Десктопный сайдбар
 export default function CabinetSidebar({ user, activeTab, onTabChange, onLogoClick, onLogout }: Props) {
   const [showTopUp, setShowTopUp] = useState(false);
-  const [balance, setBalance] = useState(getBalance);
+  const { balance } = useBalance();
 
   return (
     <>
@@ -135,7 +145,7 @@ export default function CabinetSidebar({ user, activeTab, onTabChange, onLogoCli
     {showTopUp && (
       <BalanceTopUpModal
         onClose={() => setShowTopUp(false)}
-        onSuccess={() => setBalance(getBalance())}
+        onSuccess={() => setShowTopUp(false)}
       />
     )}
     </>

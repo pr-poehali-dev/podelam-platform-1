@@ -183,7 +183,6 @@ export default function PsychBot() {
     const u = localStorage.getItem("pdd_user");
     if (!u) return;
     const userData = JSON.parse(u);
-    activatePaidOnce("psych-bot");
     localStorage.setItem(`psych_paid_${userData.email}`, "true");
     setHasAccess(true);
   };

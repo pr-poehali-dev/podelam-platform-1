@@ -106,7 +106,6 @@ export default function BarrierBot() {
   const handlePay = () => {
     const email = getUserEmail();
     if (!email) return;
-    activatePaidOnce("barrier-bot");
     localStorage.setItem(`barrier_paid_${email}`, "true");
     setHasAccess(true);
   };
