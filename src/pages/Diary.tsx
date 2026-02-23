@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { checkAccess } from "@/lib/access";
+import PaywallModal from "@/components/PaywallModal";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -145,6 +147,7 @@ export default function Diary() {
   const [step, setStep] = useState(-1); // -1 = init, 0-4 = questions, 5 = done
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [msgId, setMsgId] = useState(0);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const [tpl, setTpl] = useState<Templates | null>(null);
   const [emoDict, setEmoDict] = useState<Record<string, string[]> | null>(null);
@@ -169,6 +172,13 @@ export default function Diary() {
   }, []);
 
   // ── Init chat ─────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const u = localStorage.getItem("pdd_user");
+    if (!u) { navigate("/auth"); return; }
+    const access = checkAccess("diary");
+    if (access === "locked") { setShowPaywall(true); }
+  }, [navigate]);
 
   useEffect(() => {
     if (!tpl) return;
@@ -323,6 +333,19 @@ export default function Diary() {
   const entries: DiaryEntry[] = JSON.parse(
     localStorage.getItem(ENTRIES_KEY) ?? "[]"
   );
+
+  if (showPaywall) {
+    return (
+      <div className="min-h-screen font-golos flex flex-col" style={{ background: "hsl(248, 50%, 98%)" }}>
+        <PaywallModal
+          toolId="diary"
+          toolName="Дневник самоанализа"
+          onClose={() => navigate("/cabinet")}
+          onSuccess={() => setShowPaywall(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen font-golos flex flex-col" style={{ background: "hsl(248, 50%, 98%)" }}>

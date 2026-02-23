@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { checkAccess, getToolCompletions, getLatestCareerResult } from "@/lib/access";
+import PaywallModal from "@/components/PaywallModal";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -114,6 +116,7 @@ function buildResult(
 
 export default function Progress() {
   const navigate = useNavigate();
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const [tpl, setTpl] = useState<Templates | null>(null);
   const [phase, setPhase] = useState<Phase>("intro");
@@ -131,6 +134,14 @@ export default function Progress() {
   const [messages, setMessages] = useState<Message[]>([]);
   const idRef = useRef(0);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // ── Auth + access check ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const u = localStorage.getItem("pdd_user");
+    if (!u) { navigate("/auth"); return; }
+    const access = checkAccess("progress");
+    if (access === "locked") setShowPaywall(true);
+  }, [navigate]);
 
   // ── Load templates ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -256,6 +267,21 @@ export default function Progress() {
 
   const entries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? "[]");
   const currentMetric = tpl?.metrics[metricIndex];
+  const completions = getToolCompletions();
+  const careerResult = getLatestCareerResult();
+
+  if (showPaywall) {
+    return (
+      <div className="min-h-screen font-golos flex flex-col" style={{ background: "hsl(248, 50%, 98%)" }}>
+        <PaywallModal
+          toolId="progress"
+          toolName="Прогресс развития"
+          onClose={() => navigate("/cabinet")}
+          onSuccess={() => setShowPaywall(false)}
+        />
+      </div>
+    );
+  }
 
   // ─── Render ──────────────────────────────────────────────────────────────────
 
@@ -432,6 +458,37 @@ export default function Progress() {
 
         <div ref={bottomRef} />
       </div>
+
+      {/* ПСИХОЛОГИЧЕСКИЙ ПОРТРЕТ — пройденные инструменты */}
+      {(completions.length > 0 || careerResult) && (
+        <div className="px-4 pb-8 max-w-2xl mx-auto w-full space-y-4">
+          <h3 className="font-bold text-foreground text-sm mt-4">Психологический портрет</h3>
+
+          {careerResult && (
+            <div className="bg-white border border-border rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center shrink-0">
+                <Icon name="Compass" size={18} className="text-violet-600" />
+              </div>
+              <div>
+                <div className="font-semibold text-sm text-foreground">Тест профессий — {careerResult.topTypeName}</div>
+                <div className="text-xs text-muted-foreground">{careerResult.date} · {careerResult.professions.slice(0, 3).join(", ")}</div>
+              </div>
+            </div>
+          )}
+
+          {completions.map((c, i) => (
+            <div key={i} className="bg-white border border-border rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                <Icon name="CheckCircle2" size={18} className="text-blue-600" />
+              </div>
+              <div>
+                <div className="font-semibold text-sm text-foreground">{c.summary}</div>
+                <div className="text-xs text-muted-foreground">{c.date}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { checkAccess, saveToolCompletion, getLatestCareerResult } from "@/lib/access";
+import PaywallModal from "@/components/PaywallModal";
+import Icon from "@/components/ui/icon";
 import {
   INITIAL_PLAN_STATE,
   Message,
@@ -22,6 +25,9 @@ export default function PlanBot() {
   const [loading, setLoading] = useState(false);
   const [sliderValues, setSliderValues] = useState<SliderValues>({ energy: 5, motivation: 5, confidence: 5 });
   const [currentPlan, setCurrentPlan] = useState<FinalPlan | null>(null);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [showSourceChoice, setShowSourceChoice] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const addMsg = (from: "bot" | "user", text: string) => {
@@ -41,6 +47,11 @@ export default function PlanBot() {
     const u = localStorage.getItem("pdd_user");
     if (!u) { navigate("/auth"); return; }
 
+    const access = checkAccess("plan-bot");
+    if (access === "locked") { setShowPaywall(true); return; }
+    setHasAccess(true);
+
+    const u2 = JSON.parse(u);
     const savedMessages = localStorage.getItem("plan_chat");
     const savedState = localStorage.getItem("plan_state");
     const savedPlan = localStorage.getItem("plan_result");
@@ -50,6 +61,9 @@ export default function PlanBot() {
       setBotState(JSON.parse(savedState));
       if (savedPlan) setCurrentPlan(JSON.parse(savedPlan));
     } else {
+      const hasPsych = !!localStorage.getItem(`psych_result_${u2.email}`);
+      const hasCareer = !!getLatestCareerResult();
+      if (hasPsych && hasCareer) { setShowSourceChoice(true); return; }
       setTimeout(() => {
         addMsg("bot", `Привет! Я помогу составить **персональный план развития на 3 месяца**.
 
@@ -189,6 +203,80 @@ export default function PlanBot() {
   const handleSliderChange = (key: keyof SliderValues, value: number) => {
     setSliderValues((s) => ({ ...s, [key]: value }));
   };
+
+  const startFromSource = (source: "career" | "psych") => {
+    setShowSourceChoice(false);
+    const hint = source === "career"
+      ? "Использую результат теста профессий (рациональный профиль)."
+      : "Использую результат психологического анализа (глубинный профиль).";
+    setTimeout(() => {
+      addMsg("bot", `Привет! Я помогу составить **персональный план развития на 3 месяца**.
+
+${hint}
+
+Сначала несколько вопросов — потом пошаговый план.`);
+      setTimeout(() => {
+        addMsg("bot", "**Шаг 1 из 7 — Направление**\n\nВыбери, в каком направлении хочешь развиваться:");
+        setBotState((s) => ({ ...s, step: "ask_direction" }));
+      }, 800);
+    }, 300);
+  };
+
+  if (showPaywall) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">
+        <PlanBotHeader onBack={() => navigate("/cabinet")} onReset={() => {}} showReset={false} />
+        <PaywallModal
+          toolId="plan-bot"
+          toolName="Шаги развития"
+          onClose={() => navigate("/cabinet")}
+          onSuccess={() => { setShowPaywall(false); setHasAccess(true); }}
+        />
+      </div>
+    );
+  }
+
+  if (showSourceChoice) {
+    const career = getLatestCareerResult();
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">
+        <PlanBotHeader onBack={() => navigate("/cabinet")} onReset={() => {}} showReset={false} />
+        <div className="flex-1 flex items-center justify-center px-6 py-12">
+          <div className="w-full max-w-md space-y-5 animate-fade-in-up">
+            <div className="text-center">
+              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Icon name="GitCompare" size={24} className="text-emerald-600" />
+              </div>
+              <h2 className="text-xl font-black text-foreground mb-2">Два результата</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                У тебя есть рациональный тест и глубинный психологический анализ. От какого хочешь строить план?
+              </p>
+            </div>
+            <button
+              onClick={() => startFromSource("career")}
+              className="w-full bg-white border-2 border-violet-200 hover:border-violet-400 rounded-2xl p-5 text-left transition-all"
+            >
+              <div className="font-bold text-foreground mb-1">🧭 Тест профессий — {career?.topTypeName}</div>
+              <div className="text-xs text-muted-foreground">Рациональный взгляд — что ты думаешь о своих склонностях</div>
+            </button>
+            <button
+              onClick={() => startFromSource("psych")}
+              className="w-full gradient-brand text-white rounded-2xl p-5 text-left"
+            >
+              <div className="font-bold mb-1">🧠 Психологический анализ</div>
+              <div className="text-xs text-white/80">Глубинный профиль — истинные таланты и мотивация</div>
+            </button>
+            <button
+              onClick={() => startFromSource("career")}
+              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+            >
+              Сделать оба варианта плана →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">

@@ -1,211 +1,277 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
-import {
-  PROFILE_DESCRIPTIONS,
-  SEGMENT_NAMES,
-  ENERGY_TEXT,
-  BURNOUT_TEXT,
-} from "@/components/psych-bot/psychBotData";
+import { SEGMENT_NAMES } from "@/components/psych-bot/psychBotData";
 import { User, TestResult, PsychResult, printPsychResult } from "./cabinetTypes";
+import { CareerResult, hasSubscription, getToolCompletions } from "@/lib/access";
+import { CAREER_TYPES } from "@/lib/careerTestEngine";
 
 type Props = {
   user: User;
   psychTest: TestResult | undefined;
   psychResult: PsychResult | null;
+  careerResult: CareerResult | null;
   profileComplete: number;
   onNavigate: (path: string) => void;
 };
 
-export default function CabinetHomeTab({ user, psychTest, psychResult, profileComplete, onNavigate }: Props) {
+export default function CabinetHomeTab({ user, psychTest, psychResult, careerResult, profileComplete, onNavigate }: Props) {
+  const [careerExpanded, setCareerExpanded] = useState(false);
+  const hasSub = hasSubscription();
+  const completions = getToolCompletions();
+  const hasBarrier = getToolCompletions("barrier-bot").length > 0;
+  const hasPsychDone = !!psychResult;
+
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="animate-fade-in-up space-y-5">
+      {/* Приветствие */}
       <div>
         <h1 className="text-2xl md:text-3xl font-black text-foreground">Привет, {user.name} 👋</h1>
-        <p className="text-muted-foreground mt-1">
-          {psychTest ? "Твой профиль призвания готов" : "Начни с теста на призвание"}
+        <p className="text-muted-foreground mt-1 text-sm">
+          {careerResult
+            ? hasPsychDone
+              ? "Твой психологический профиль готов — изучай инструменты"
+              : "Тест пройден. Рекомендуем психологический анализ"
+            : "Начни с теста — узнай, какая профессия тебе подходит"}
         </p>
       </div>
 
-      {/* PROFILE COMPLETE */}
-      <div className="bg-white rounded-3xl border border-border p-6">
-        <div className="flex items-center justify-between mb-4">
+      {/* Прогресс профиля */}
+      <div className="bg-white rounded-3xl border border-border p-5">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="font-bold text-foreground">Профиль заполнен</h3>
-            <p className="text-muted-foreground text-sm mt-0.5">
-              {profileComplete < 50 ? "Пройдите тест, чтобы получить рекомендации" : "Профиль призвания построен"}
+            <h3 className="font-bold text-foreground text-sm">Профиль заполнен</h3>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              {profileComplete < 30 ? "Пройди тест — это первый шаг" : profileComplete < 70 ? "Пройди психоанализ для полного профиля" : "Профиль почти готов"}
             </p>
           </div>
-          <div className="text-3xl font-black text-gradient">{profileComplete}%</div>
+          <div className="text-2xl font-black text-gradient">{profileComplete}%</div>
         </div>
-        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
           <div className="h-full gradient-brand rounded-full transition-all duration-1000" style={{ width: `${profileComplete}%` }} />
+        </div>
+        {/* Шаги */}
+        <div className="flex gap-2 mt-3 flex-wrap">
+          <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${careerResult ? "bg-green-50 text-green-600" : "bg-secondary text-muted-foreground"}`}>
+            <Icon name={careerResult ? "CheckCircle2" : "Circle"} size={11} />
+            Тест профессий
+          </span>
+          <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${hasPsychDone ? "bg-green-50 text-green-600" : "bg-secondary text-muted-foreground"}`}>
+            <Icon name={hasPsychDone ? "CheckCircle2" : "Circle"} size={11} />
+            Психоанализ
+          </span>
+          <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${hasBarrier ? "bg-green-50 text-green-600" : "bg-secondary text-muted-foreground"}`}>
+            <Icon name={hasBarrier ? "CheckCircle2" : "Circle"} size={11} />
+            Барьеры
+          </span>
         </div>
       </div>
 
-      {/* РЕЗУЛЬТАТ ТЕСТА — если пройден */}
-      {psychTest && psychResult ? (
-        <div className="space-y-4">
-          {/* HERO КАРТОЧКА */}
-          <div className="gradient-brand rounded-3xl p-6 text-white relative overflow-hidden">
-            <div className="absolute inset-0 opacity-10 text-[160px] flex items-center justify-end pr-6 leading-none select-none">🧠</div>
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Тест на призвание</span>
-                <span className="text-white/60 text-xs">{psychTest.date}</span>
+      {/* ШАГ 1: Тест профессий — отправная точка */}
+      {!careerResult ? (
+        <div className="bg-white rounded-3xl border-2 border-primary/30 p-6 relative overflow-hidden">
+          <div className="absolute top-4 right-4 bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">Шаг 1</div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-11 h-11 gradient-brand rounded-2xl flex items-center justify-center">
+              <Icon name="Compass" size={20} className="text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-foreground">Какая профессия тебе подходит?</h3>
+              <p className="text-xs text-muted-foreground">10 вопросов · бесплатно</p>
+            </div>
+          </div>
+          <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
+            Рациональный тест — что ты думаешь о своих склонностях. Отправная точка для дальнейшего анализа.
+          </p>
+          <button
+            onClick={() => onNavigate("/career-test")}
+            className="gradient-brand text-white font-bold px-5 py-3 rounded-xl hover:opacity-90 transition-opacity text-sm w-full"
+          >
+            Пройти тест — бесплатно
+          </button>
+        </div>
+      ) : (
+        /* Результат теста профессий */
+        <div className="bg-white rounded-3xl border border-border overflow-hidden">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{CAREER_TYPES[careerResult.topType as keyof typeof CAREER_TYPES]?.emoji}</span>
+                <div>
+                  <div className="text-xs text-muted-foreground">Тест профессий · {careerResult.date}</div>
+                  <h3 className="font-bold text-foreground">{careerResult.topTypeName} тип</h3>
+                </div>
               </div>
-              <h2 className="text-2xl md:text-3xl font-black mb-1">{psychResult.profileName}</h2>
-              <p className="text-white/80 mb-5">{SEGMENT_NAMES[psychResult.topSeg]}</p>
-              <div className="flex gap-3 flex-wrap mb-5">
-                <div className="bg-white/15 rounded-2xl px-4 py-2.5">
-                  <div className="text-xl font-black">{psychTest.score}%</div>
-                  <div className="text-xs text-white/70">совпадение</div>
-                </div>
-                <div className="bg-white/15 rounded-2xl px-4 py-2.5">
-                  <div className="text-xl font-black">{psychResult.professions.length}</div>
-                  <div className="text-xs text-white/70">профессии</div>
-                </div>
-                <div className="bg-white/15 rounded-2xl px-4 py-2.5">
-                  <div className="text-xl font-black">{psychResult.topSegs.length}</div>
-                  <div className="text-xs text-white/70">направления</div>
-                </div>
-              </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="bg-green-50 text-green-600 text-xs font-bold px-2 py-0.5 rounded-full">Пройден</span>
                 <button
-                  onClick={() => onNavigate(`/results/${psychTest.id}`)}
-                  className="flex items-center gap-2 bg-white text-primary font-bold px-4 py-2.5 rounded-xl hover:bg-white/90 transition-colors text-sm"
+                  onClick={() => onNavigate("/career-test")}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
                 >
-                  <Icon name="Eye" size={15} />
-                  Подробный результат
-                </button>
-                <button
-                  onClick={() => printPsychResult(psychResult, psychTest.date, psychTest.score)}
-                  className="flex items-center gap-2 bg-white/20 text-white font-semibold px-4 py-2.5 rounded-xl hover:bg-white/30 transition-colors text-sm"
-                >
-                  <Icon name="Download" size={15} />
-                  Скачать PDF
+                  <Icon name="RefreshCw" size={12} />
+                  Заново
                 </button>
               </div>
             </div>
-          </div>
+            <p className="text-sm text-muted-foreground mb-3">{careerResult.topTypeDesc}</p>
 
-          {/* ОПИСАНИЕ ПРОФИЛЯ */}
-          {PROFILE_DESCRIPTIONS[psychResult.primMotiv]?.[psychResult.topSeg] && (
-            <div className="bg-white rounded-3xl border border-border p-6">
-              <h3 className="font-bold text-foreground mb-2">Твой портрет призвания</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {PROFILE_DESCRIPTIONS[psychResult.primMotiv][psychResult.topSeg]}
-              </p>
-            </div>
-          )}
-
-          {/* НАПРАВЛЕНИЯ */}
-          <div className="bg-white rounded-3xl border border-border p-6">
-            <h3 className="font-bold text-foreground mb-4">Ведущие направления</h3>
-            <div className="space-y-3">
-              {psychResult.topSegs.map((seg) => (
-                <div key={seg.key}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-foreground">{seg.name}</span>
-                    <span className="font-bold text-primary">{seg.pct}%</span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full gradient-brand rounded-full" style={{ width: `${seg.pct}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ПРОФЕССИИ */}
-          {psychResult.professions.length > 0 && (
-            <div className="bg-white rounded-3xl border border-border p-6">
-              <h3 className="font-bold text-foreground mb-4">Подходящие профессии</h3>
-              <div className="space-y-3">
-                {psychResult.professions.map((p, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-secondary/40 rounded-2xl">
-                    <div className="w-10 h-10 gradient-brand rounded-xl flex items-center justify-center shrink-0">
-                      <span className="text-white font-black text-xs">{p.match}%</span>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-sm text-foreground">{p.name}</div>
-                      <div className="text-xs text-muted-foreground">Совпадение с профилем</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* МОТИВАЦИЯ */}
-          {psychResult.topMotivations.length > 0 && (
-            <div className="bg-white rounded-3xl border border-border p-6">
-              <h3 className="font-bold text-foreground mb-3">Мотивация</h3>
-              <div className="flex flex-wrap gap-2">
-                {psychResult.topMotivations.map((m) => (
-                  <span key={m.key} className="bg-violet-50 text-violet-700 text-sm font-semibold px-3 py-1.5 rounded-xl border border-violet-100">
-                    {m.name} — {m.pct}%
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ЭНЕРГИЯ / ВЫГОРАНИЕ */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            {ENERGY_TEXT[psychResult.topSeg] && (
-              <div className="bg-white rounded-3xl border border-border p-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon name="Zap" size={16} className="text-amber-500" />
-                  <h3 className="font-bold text-foreground text-sm">Что заряжает</h3>
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">{ENERGY_TEXT[psychResult.topSeg]}</p>
-              </div>
-            )}
-            {BURNOUT_TEXT[psychResult.topSeg] && (
-              <div className="bg-white rounded-3xl border border-border p-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon name="AlertTriangle" size={16} className="text-red-400" />
-                  <h3 className="font-bold text-foreground text-sm">Где выгоришь</h3>
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">{BURNOUT_TEXT[psychResult.topSeg]}</p>
-              </div>
-            )}
-          </div>
-
-          {/* ПОВТОР / ПЛАН */}
-          <div className="flex gap-3 flex-wrap">
             <button
-              onClick={() => onNavigate("/psych-bot")}
-              className="flex items-center gap-2 bg-white border border-border text-muted-foreground font-medium px-4 py-2.5 rounded-xl hover:bg-secondary transition-colors text-sm"
+              onClick={() => setCareerExpanded(!careerExpanded)}
+              className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
             >
-              <Icon name="RotateCcw" size={15} />
-              Пройти заново
+              {careerExpanded ? "Скрыть" : "Профессии и склонности"}
+              <Icon name={careerExpanded ? "ChevronUp" : "ChevronDown"} size={13} />
             </button>
-            <button
-              onClick={() => onNavigate("/plan-bot")}
-              className="flex items-center gap-2 gradient-brand text-white font-bold px-4 py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm"
+
+            {careerExpanded && (
+              <div className="mt-3 space-y-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {careerResult.professions.map((p) => (
+                    <span key={p} className="bg-violet-50 text-violet-700 text-xs font-medium px-2.5 py-1 rounded-lg border border-violet-100">{p}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Призыв к психоанализу */}
+          {!hasPsychDone && (
+            <div className="bg-amber-50 border-t border-amber-100 p-4">
+              <div className="flex items-start gap-3">
+                <Icon name="Lightbulb" size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                    Это рациональный результат. Твои глубинные таланты откроет психологический анализ.
+                  </p>
+                  <button
+                    onClick={() => onNavigate("/psych-bot")}
+                    className="mt-2 text-xs font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    Пройти психологический анализ →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Результат психологического анализа */}
+      {psychTest && psychResult && (
+        <div className="gradient-brand rounded-3xl p-5 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10 text-[120px] flex items-center justify-end pr-4 leading-none select-none">🧠</div>
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="bg-white/20 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">Психологический анализ</span>
+              <span className="text-white/60 text-xs">{psychTest.date}</span>
+            </div>
+            <h2 className="text-xl font-black mb-1">{psychResult.profileName}</h2>
+            <p className="text-white/80 text-sm mb-4">{SEGMENT_NAMES[psychResult.topSeg]}</p>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => onNavigate(`/results/${psychTest.id}`)}
+                className="flex items-center gap-1.5 bg-white text-primary font-bold px-3 py-2 rounded-xl hover:bg-white/90 transition-colors text-xs"
+              >
+                <Icon name="Eye" size={14} />
+                Подробно
+              </button>
+              <button
+                onClick={() => printPsychResult(psychResult, psychTest.date, psychTest.score)}
+                className="flex items-center gap-1.5 bg-white/20 text-white font-semibold px-3 py-2 rounded-xl hover:bg-white/30 transition-colors text-xs"
+              >
+                <Icon name="Download" size={14} />
+                PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Блок: инструменты после тестов */}
+      {careerResult && (
+        <div className="bg-white rounded-3xl border border-border p-5">
+          <h3 className="font-bold text-foreground mb-4">Следующие шаги</h3>
+          <div className="space-y-3">
+
+            {/* Психологический анализ */}
+            <div
+              onClick={() => onNavigate("/psych-bot")}
+              className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all ${hasPsychDone ? "bg-green-50 border border-green-100" : "bg-indigo-50 border border-indigo-100 hover:border-indigo-300"}`}
             >
-              <Icon name="Map" size={15} />
-              Составить план развития
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${hasPsychDone ? "bg-green-100" : "bg-indigo-100"}`}>
+                <Icon name={hasPsychDone ? "CheckCircle2" : "Brain"} size={18} className={hasPsychDone ? "text-green-600" : "text-indigo-600"} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm text-foreground">Психологический анализ</div>
+                <div className="text-xs text-muted-foreground">Профориентация и предотвращение выгорания · 290 ₽</div>
+              </div>
+              {!hasPsychDone && <Icon name="ChevronRight" size={16} className="text-indigo-400 shrink-0" />}
+            </div>
+
+            {/* Барьеры и тревога */}
+            <div
+              onClick={() => onNavigate("/barrier-bot")}
+              className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all ${hasBarrier ? "bg-green-50 border border-green-100" : "bg-rose-50 border border-rose-100 hover:border-rose-300"}`}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${hasBarrier ? "bg-green-100" : "bg-rose-100"}`}>
+                <Icon name={hasBarrier ? "CheckCircle2" : "ShieldAlert"} size={18} className={hasBarrier ? "text-green-600" : "text-rose-600"} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm text-foreground">Барьеры и тревога</div>
+                <div className="text-xs text-muted-foreground">Страхи, самозванец, прокрастинация · 290 ₽</div>
+              </div>
+              {!hasBarrier && <Icon name="ChevronRight" size={16} className="text-rose-400 shrink-0" />}
+            </div>
+
+            {/* Прогресс развития */}
+            {(hasPsychDone || hasBarrier) && (
+              <div
+                onClick={() => onNavigate("/progress")}
+                className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all bg-blue-50 border border-blue-100 hover:border-blue-300"
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                  <Icon name="BarChart3" size={18} className="text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm text-foreground">Прогресс развития</div>
+                  <div className="text-xs text-muted-foreground">Психологический портрет и динамика</div>
+                </div>
+                <Icon name="ChevronRight" size={16} className="text-blue-400 shrink-0" />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Подписка — баннер если нет */}
+      {!hasSub && careerResult && (
+        <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-100 rounded-3xl p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h4 className="font-bold text-foreground mb-1">Полный доступ — 990 ₽/мес</h4>
+              <p className="text-muted-foreground text-xs leading-relaxed">Все инструменты + Дневник самоанализа. Без ограничений 30 дней.</p>
+            </div>
+            <button
+              onClick={() => onNavigate("/tools")}
+              className="shrink-0 gradient-brand text-white font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90 transition-opacity"
+            >
+              990 ₽
             </button>
           </div>
         </div>
+      )}
 
-      ) : (
-        /* НЕТ ТЕСТА */
-        <div className="bg-white rounded-3xl border border-border p-8 text-center">
-          <div className="w-16 h-16 gradient-brand rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Icon name="Brain" size={28} className="text-white" />
+      {completions.length > 0 && (
+        <div className="bg-white rounded-3xl border border-border p-5">
+          <h3 className="font-bold text-foreground mb-3 text-sm">Недавняя активность</h3>
+          <div className="space-y-2">
+            {completions.slice(0, 3).map((c, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                <span className="text-muted-foreground flex-1">{c.summary}</span>
+                <span className="text-xs text-muted-foreground shrink-0">{c.date}</span>
+              </div>
+            ))}
           </div>
-          <h3 className="font-bold text-foreground text-lg mb-2">Тест: Какая профессия тебе подходит</h3>
-          <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">
-            15 вопросов — и ты узнаешь своё направление, мотивацию и подходящие профессии
-          </p>
-          <button
-            onClick={() => onNavigate("/psych-bot")}
-            className="gradient-brand text-white font-bold px-8 py-3 rounded-2xl hover:opacity-90 transition-opacity"
-          >
-            Пройти тест · 299 ₽
-          </button>
         </div>
       )}
     </div>

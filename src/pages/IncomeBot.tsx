@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { checkAccess, saveToolCompletion, getLatestCareerResult } from "@/lib/access";
+import PaywallModal from "@/components/PaywallModal";
 
 type Message = {
   id: number;
@@ -167,6 +169,8 @@ export default function IncomeBot() {
   const [analyzing, setAnalyzing] = useState(false);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [msgId, setMsgId] = useState(0);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [showSourceChoice, setShowSourceChoice] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const addMsg = (from: "bot" | "user", text: string) => {
@@ -180,6 +184,15 @@ export default function IncomeBot() {
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) { navigate("/auth"); return; }
+
+    const access = checkAccess("income-bot");
+    if (access === "locked") { setShowPaywall(true); return; }
+
+    const u2 = JSON.parse(u);
+    const hasPsych = !!localStorage.getItem(`psych_result_${u2.email}`);
+    const hasCareer = !!getLatestCareerResult();
+    if (hasPsych && hasCareer) { setShowSourceChoice(true); return; }
+
     setTimeout(() => {
       addMsg("bot", "Привет! Я помогу подобрать тебе подходящий вариант дополнительного дохода.");
       setTimeout(() => {
@@ -226,11 +239,70 @@ export default function IncomeBot() {
           setResult("Не удалось загрузить результат. Попробуй обновить страницу.");
         }
         setAnalyzing(false);
+        saveToolCompletion("income-bot", "Подбор дохода завершён");
       }, 2200);
     }
   };
 
+  const startBot = (hint?: string) => {
+    setShowSourceChoice(false);
+    setTimeout(() => {
+      addMsg("bot", hint
+        ? `Привет! Подбираю доход с учётом ${hint}.\n\nОтвечай честно — результат зависит от точности ответов.`
+        : "Привет! Я помогу подобрать тебе подходящий вариант дополнительного дохода."
+      );
+      setTimeout(() => addMsg("bot", QUESTIONS[0].text), 700);
+    }, 300);
+  };
+
   const currentOptions = !finished && step < QUESTIONS.length ? QUESTIONS[step].options : [];
+
+  if (showPaywall) {
+    return (
+      <div className="min-h-screen font-golos" style={{ background: "hsl(248, 50%, 98%)" }}>
+        <PaywallModal
+          toolId="income-bot"
+          toolName="Подбор дохода"
+          onClose={() => navigate("/cabinet")}
+          onSuccess={() => { setShowPaywall(false); startBot(); }}
+        />
+      </div>
+    );
+  }
+
+  if (showSourceChoice) {
+    const career = getLatestCareerResult();
+    return (
+      <div className="min-h-screen font-golos flex flex-col items-center justify-center px-6" style={{ background: "hsl(248, 50%, 98%)" }}>
+        <div className="w-full max-w-md space-y-5 animate-fade-in-up">
+          <div className="text-center">
+            <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Icon name="GitCompare" size={24} className="text-green-600" />
+            </div>
+            <h2 className="text-xl font-black text-foreground mb-2">На основе какого профиля?</h2>
+            <p className="text-muted-foreground text-sm">У тебя два результата. Выбери, от чего отталкиваться при подборе дохода.</p>
+          </div>
+          <button
+            onClick={() => startBot(`тестового профиля (${career?.topTypeName})`)}
+            className="w-full bg-white border-2 border-violet-200 hover:border-violet-400 rounded-2xl p-5 text-left transition-all"
+          >
+            <div className="font-bold text-foreground mb-1">🧭 Тест — {career?.topTypeName}</div>
+            <div className="text-xs text-muted-foreground">Рациональный профиль</div>
+          </button>
+          <button
+            onClick={() => startBot("психологического анализа (глубинный профиль)")}
+            className="w-full gradient-brand text-white rounded-2xl p-5 text-left"
+          >
+            <div className="font-bold mb-1">🧠 Психологический анализ</div>
+            <div className="text-xs text-white/80">Истинные таланты</div>
+          </button>
+          <button onClick={() => navigate("/cabinet")} className="w-full text-sm text-muted-foreground py-2 hover:text-foreground transition-colors">
+            ← В кабинет
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen font-golos flex flex-col" style={{ background: "hsl(248, 50%, 98%)" }}>

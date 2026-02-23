@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { checkAccess, activatePaidOnce, saveToolCompletion } from "@/lib/access";
 import Icon from "@/components/ui/icon";
 import BarrierBotPaywall from "@/components/barrier-bot/BarrierBotPaywall";
 import BarrierBotChat from "@/components/barrier-bot/BarrierBotChat";
@@ -64,15 +65,20 @@ export default function BarrierBot() {
     if (!u) { navigate("/auth"); return; }
     const userData = JSON.parse(u);
 
-    const paid = localStorage.getItem(`barrier_paid_${userData.email}`);
-    if (paid === "true") setHasAccess(true);
+    const access = checkAccess("barrier-bot");
+    const legacyPaid = localStorage.getItem(`barrier_paid_${userData.email}`);
+    const hasAcc = access !== "locked" || legacyPaid === "true";
+    if (hasAcc) {
+      setHasAccess(true);
+      if (legacyPaid === "true" && access === "locked") activatePaidOnce("barrier-bot");
+    }
 
     loadSessions(userData.email);
 
     const savedMessages = localStorage.getItem(`barrier_chat_${userData.email}`);
     const savedState = localStorage.getItem(`barrier_state_${userData.email}`);
 
-    if (savedMessages && savedState && paid === "true") {
+    if (savedMessages && savedState && hasAcc) {
       setMessages(JSON.parse(savedMessages));
       setBotState(JSON.parse(savedState));
     }
@@ -100,6 +106,7 @@ export default function BarrierBot() {
   const handlePay = () => {
     const email = getUserEmail();
     if (!email) return;
+    activatePaidOnce("barrier-bot");
     localStorage.setItem(`barrier_paid_${email}`, "true");
     setHasAccess(true);
   };
@@ -238,6 +245,7 @@ export default function BarrierBot() {
         allResults.push(record);
         localStorage.setItem(`barrier_results_${email}`, JSON.stringify(allResults));
         setSessions(allResults);
+        saveToolCompletion("barrier-bot", `Анализ барьеров завершён — сфера «${newState.selectedContext}», профиль ${PROFILE_TEXTS[newState.psychProfile]?.title ?? "определён"}`);
 
         return {
           text: `## Сессия завершена\n\nТы прошёл полный цикл анализа. Вот что ты узнал:\n\n• **Сфера:** ${newState.selectedContext}\n• **Слабость:** ${newState.mainWeakness}\n• **Сила:** ${newState.mainStrength.join(", ")}\n• **Дополнительная опора:** ${newState.additionalStrength.join(", ")}\n• **Профиль:** ${PROFILE_TEXTS[newState.psychProfile]?.title}\n\n---\n\nСессия сохранена. Посмотри историю — там можно скачать PDF или начать новый анализ.`,
