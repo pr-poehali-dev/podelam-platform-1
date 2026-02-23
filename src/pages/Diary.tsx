@@ -3,179 +3,20 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { checkAccess } from "@/lib/access";
 import PaywallModal from "@/components/PaywallModal";
+import DiaryChat from "@/components/diary/DiaryChat";
+import DiaryHistory from "@/components/diary/DiaryHistory";
+import {
+  Message,
+  DiaryEntry,
+  Templates,
+  CHAT_KEY,
+  ENTRIES_KEY,
+  detectEmotions,
+  detectPatterns,
+  buildResult,
+  generateSupport,
+} from "@/components/diary/diaryEngine";
 
-type Message = { id: number; from: "bot" | "user"; text: string };
-
-type DiaryEntry = {
-  date: string;
-  situation: string;
-  thoughts: string;
-  emotions: string;
-  body: string;
-  action: string;
-  emotion_tags: string[];
-  pattern_tags: string[];
-  intensity_score: number;
-  reflectionAnswers?: string[];
-  supportText?: string;
-};
-
-type Templates = {
-  steps: { key: string; question: string }[];
-  emotion_labels: Record<string, string>;
-  pattern_labels: Record<string, string>;
-  summary: string;
-  emotions_found: string;
-  emotions_none: string;
-  patterns_new: string;
-  patterns_repeat: string;
-  dynamic_up: string;
-  dynamic_down: string;
-  dynamic_same: string;
-  questions: string[];
-  start_message: string;
-};
-
-const CHAT_KEY = "diary_chat";
-const ENTRIES_KEY = "diary_entries";
-
-function matchKeywords(text: string, keywords: string[]): string[] {
-  const lower = text.toLowerCase();
-  return keywords.filter((kw) => lower.includes(kw));
-}
-
-function detectEmotions(
-  texts: string[],
-  dict: Record<string, string[]>
-): { tags: string[]; score: number } {
-  const combined = texts.join(" ");
-  const tags: string[] = [];
-  let score = 0;
-  for (const [cat, keywords] of Object.entries(dict)) {
-    const hits = matchKeywords(combined, keywords);
-    if (hits.length > 0) {
-      tags.push(cat);
-      if (hits.length >= 4) score += 2;
-      else if (hits.length >= 2) score += 1;
-    }
-  }
-  return { tags, score };
-}
-
-function detectPatterns(
-  texts: string[],
-  rules: Record<string, string[]>
-): string[] {
-  const combined = texts.join(" ");
-  const tags: string[] = [];
-  for (const [pat, phrases] of Object.entries(rules)) {
-    if (matchKeywords(combined, phrases).length > 0) tags.push(pat);
-  }
-  return tags;
-}
-
-function pickQuestions(all: string[], count = 3): string[] {
-  const shuffled = [...all].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-}
-
-function buildResult(
-  entry: DiaryEntry,
-  history: DiaryEntry[],
-  tpl: Templates
-): { analysis: string; questions: string[] } {
-  const lines: string[] = [];
-
-  lines.push(tpl.summary.replace("{situation}", entry.situation));
-
-  if (entry.emotion_tags.length > 0) {
-    const list = entry.emotion_tags
-      .map((t) => tpl.emotion_labels[t] ?? t)
-      .join(", ");
-    lines.push(tpl.emotions_found.replace("{emotion_list}", list));
-  } else {
-    lines.push(tpl.emotions_none);
-  }
-
-  if (entry.pattern_tags.length > 0) {
-    const list = entry.pattern_tags
-      .map((t) => tpl.pattern_labels[t] ?? t)
-      .join(", ");
-    lines.push(tpl.patterns_new.replace("{pattern_list}", list));
-    const repeatCount = history.filter((e) =>
-      entry.pattern_tags.some((p) => e.pattern_tags.includes(p))
-    ).length;
-    if (repeatCount >= 2) lines.push(tpl.patterns_repeat);
-  }
-
-  if (history.length > 0) {
-    const prev = history[history.length - 1];
-    if (entry.intensity_score > prev.intensity_score) lines.push(tpl.dynamic_up);
-    else if (entry.intensity_score < prev.intensity_score) lines.push(tpl.dynamic_down);
-    else lines.push(tpl.dynamic_same);
-  }
-
-  const qs = pickQuestions(tpl.questions);
-  return { analysis: lines.join("\n\n"), questions: qs };
-}
-
-const SUPPORT_TEMPLATES = [
-  {
-    keywords: ["тревога", "страх", "нервничаю", "переживаю", "волнуюсь", "паника", "беспокоюсь"],
-    texts: [
-      "Тревога — это сигнал, а не приговор. Ты уже делаешь важный шаг — наблюдаешь за ней вместо того, чтобы убегать.",
-      "Когда мы признаём тревогу, она теряет часть своей силы. Ты справляешься — и это видно по твоим ответам.",
-    ],
-  },
-  {
-    keywords: ["злость", "раздражение", "бесит", "злюсь", "агрессия", "ненавижу"],
-    texts: [
-      "Злость — это энергия. Вопрос не в том, чтобы её подавить, а в том, куда её направить. Ты уже начал разбираться.",
-      "Раздражение часто говорит о нарушенных границах. Это здоровая реакция — и важно, что ты её заметил.",
-    ],
-  },
-  {
-    keywords: ["грусть", "печаль", "тоска", "пустота", "одиночество", "одинок", "плачу"],
-    texts: [
-      "Грусть — это часть жизни, и она не делает тебя слабым. Наоборот, способность чувствовать — это твоя сила.",
-      "Ты не один в этом. Само решение записать свои мысли — уже акт заботы о себе.",
-    ],
-  },
-  {
-    keywords: ["устал", "нет сил", "выгорание", "выдохся", "истощён", "не могу"],
-    texts: [
-      "Усталость — это тело говорит: «Нужна пауза». Ты не ленишься — ты заслуживаешь восстановления.",
-      "Когда энергии мало, даже маленькие шаги считаются. И эта запись — один из них.",
-    ],
-  },
-  {
-    keywords: ["вина", "виноват", "стыдно", "стыд", "должен был"],
-    texts: [
-      "Чувство вины часто значит, что тебе не всё равно. Но самокритика без действия только отнимает силы. Ты уже на пути.",
-      "Ты не обязан быть идеальным. Достаточно быть честным с собой — и ты это делаешь прямо сейчас.",
-    ],
-  },
-];
-
-function generateSupport(answers: string[], entry: DiaryEntry): string {
-  const combined = [...answers, entry.situation, entry.thoughts, entry.emotions].join(" ").toLowerCase();
-
-  for (const tpl of SUPPORT_TEMPLATES) {
-    const matched = tpl.keywords.some((kw) => combined.includes(kw));
-    if (matched) {
-      return tpl.texts[Math.floor(Math.random() * tpl.texts.length)];
-    }
-  }
-
-  const generic = [
-    "Ты проделал важную работу сегодня. Само наблюдение за собой — это уже шаг к изменениям.",
-    "Каждый раз, когда ты останавливаешься и рефлексируешь — ты становишься чуть ближе к себе. Это ценно.",
-    "Ты не просто записал мысли — ты дал себе пространство подумать. Это больше, чем кажется.",
-  ];
-  return generic[Math.floor(Math.random() * generic.length)];
-}
-
-// step: -1=init, 0-4=questions, 5=analysis shown + reflection questions, 6=answering reflection, 7=done
 type ViewTab = "chat" | "history";
 
 export default function Diary() {
@@ -196,7 +37,6 @@ export default function Diary() {
   const [patRules, setPatRules] = useState<Record<string, string[]> | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const idRef = useRef(0);
 
   useEffect(() => {
@@ -272,7 +112,6 @@ export default function Diary() {
     if (!input.trim() || !tpl || !emoDict || !patRules) return;
     const text = input.trim();
     setInput("");
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
 
     if (step >= 0 && step < 5) {
       const stepKey = tpl.steps[step]?.key ?? "";
@@ -364,22 +203,7 @@ export default function Diary() {
     freshStart();
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
-  }
-
-  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setInput(e.target.value);
-    const el = e.target;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 160) + "px";
-  }
-
   const entries: DiaryEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? "[]");
-  const isInputActive = (step >= 0 && step < 5) || step === 6;
 
   if (showPaywall) {
     return (
@@ -442,239 +266,21 @@ export default function Diary() {
       )}
 
       {tab === "history" ? (
-        <HistoryView entries={entries} onNewEntry={startNew} />
+        <DiaryHistory entries={entries} onNewEntry={startNew} />
       ) : (
-        <>
-          <div className="flex-1 overflow-y-auto px-4 py-5 space-y-3 max-w-2xl mx-auto w-full">
-            {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
-                {msg.from === "bot" && (
-                  <div className="w-7 h-7 rounded-xl bg-violet-100 flex items-center justify-center shrink-0 mr-2 mt-0.5">
-                    <Icon name="BookOpen" size={13} className="text-violet-600" />
-                  </div>
-                )}
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                    msg.from === "user"
-                      ? "gradient-brand text-white rounded-tr-sm"
-                      : "bg-white border border-border rounded-tl-sm"
-                  }`}
-                >
-                  {msg.text.split("\n\n").map((block, bi) => {
-                    if (block === "---") return <hr key={bi} className="my-2 border-gray-200" />;
-                    const formatted = block
-                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-                    return (
-                      <p
-                        key={bi}
-                        className={`leading-relaxed ${bi > 0 ? "mt-2" : ""} ${msg.from === "user" ? "text-white" : "text-foreground"}`}
-                        dangerouslySetInnerHTML={{ __html: formatted }}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-
-            {step === 7 && (
-              <div className="flex justify-center pt-4">
-                <button
-                  onClick={startNew}
-                  className="bg-violet-100 text-violet-700 font-semibold px-5 py-2.5 rounded-2xl hover:bg-violet-200 transition-colors text-sm flex items-center gap-2"
-                >
-                  <Icon name="Plus" size={15} />
-                  Новая запись
-                </button>
-              </div>
-            )}
-
-            <div ref={bottomRef} />
-          </div>
-
-          {isInputActive && (
-            <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-border px-4 py-3 shrink-0">
-              <div className="max-w-2xl mx-auto">
-                {step >= 0 && step < 5 && tpl && (
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Шаг {step + 1} из {tpl.steps.length}
-                  </p>
-                )}
-                {step === 6 && (
-                  <p className="text-xs text-violet-600 font-medium mb-2">
-                    Рефлексия — вопрос {reflectionIdx + 1} из {reflectionQs.length}
-                  </p>
-                )}
-                <div className="flex items-end gap-2">
-                  <textarea
-                    ref={textareaRef}
-                    rows={1}
-                    value={input}
-                    onChange={handleInput}
-                    onKeyDown={handleKeyDown}
-                    placeholder={step === 6 ? "Ваш ответ на вопрос..." : "Напишите ответ..."}
-                    className="flex-1 resize-none rounded-2xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-violet-300 leading-relaxed"
-                    style={{ minHeight: "42px", maxHeight: "160px" }}
-                  />
-                  <button
-                    onClick={send}
-                    disabled={!input.trim()}
-                    className="w-10 h-10 rounded-2xl bg-violet-500 flex items-center justify-center shrink-0 hover:bg-violet-600 transition-colors disabled:opacity-40"
-                  >
-                    <Icon name="Send" size={16} className="text-white" />
-                  </button>
-                </div>
-                <p className="text-center text-xs text-muted-foreground mt-2">
-                  Enter — отправить · Shift+Enter — новая строка
-                </p>
-              </div>
-            </div>
-          )}
-        </>
+        <DiaryChat
+          messages={messages}
+          step={step}
+          totalSteps={tpl?.steps.length ?? 5}
+          reflectionIdx={reflectionIdx}
+          reflectionTotal={reflectionQs.length}
+          input={input}
+          onInputChange={setInput}
+          onSend={send}
+          onStartNew={startNew}
+          bottomRef={bottomRef as React.RefObject<HTMLDivElement>}
+        />
       )}
-    </div>
-  );
-}
-
-function HistoryView({ entries, onNewEntry }: { entries: DiaryEntry[]; onNewEntry: () => void }) {
-  const [expanded, setExpanded] = useState<number | null>(null);
-  const sorted = [...entries].reverse();
-
-  if (sorted.length === 0) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mb-4">
-          <Icon name="BookOpen" size={28} className="text-violet-500" />
-        </div>
-        <h3 className="font-bold text-lg text-foreground mb-1">Записей пока нет</h3>
-        <p className="text-sm text-muted-foreground mb-4">Создайте первую запись — ответьте на 5 вопросов</p>
-        <button
-          onClick={onNewEntry}
-          className="bg-violet-600 text-white font-semibold px-5 py-2.5 rounded-2xl hover:bg-violet-700 transition-colors text-sm"
-        >
-          Новая запись
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex-1 overflow-y-auto px-4 py-5 max-w-2xl mx-auto w-full space-y-3">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="font-bold text-lg text-foreground">История записей</h2>
-        <button
-          onClick={onNewEntry}
-          className="bg-violet-100 text-violet-700 font-semibold px-4 py-2 rounded-xl hover:bg-violet-200 transition-colors text-xs flex items-center gap-1.5"
-        >
-          <Icon name="Plus" size={14} />
-          Новая
-        </button>
-      </div>
-
-      {sorted.map((entry, idx) => {
-        const isOpen = expanded === idx;
-        const d = new Date(entry.date);
-        const dateStr = d.toLocaleDateString("ru-RU", {
-          day: "2-digit", month: "long", year: "numeric",
-          timeZone: "Europe/Moscow",
-        });
-        const timeStr = d.toLocaleTimeString("ru-RU", {
-          hour: "2-digit", minute: "2-digit",
-          timeZone: "Europe/Moscow",
-        });
-
-        const emotionLabels: Record<string, string> = {
-          anxiety: "Тревога", anger: "Злость", sadness: "Грусть",
-          guilt: "Вина", fatigue: "Усталость", shame: "Стыд", loneliness: "Одиночество",
-        };
-
-        return (
-          <div key={idx} className="bg-white rounded-2xl border border-border overflow-hidden">
-            <button
-              onClick={() => setExpanded(isOpen ? null : idx)}
-              className="w-full text-left px-4 py-3.5 flex items-center gap-3"
-            >
-              <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-                <Icon name="FileText" size={16} className="text-violet-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-foreground truncate">{entry.situation}</div>
-                <div className="text-xs text-muted-foreground">{dateStr}, {timeStr} (МСК)</div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {entry.emotion_tags.length > 0 && (
-                  <div className="flex gap-1">
-                    {entry.emotion_tags.slice(0, 2).map((tag) => (
-                      <span key={tag} className="text-[10px] bg-violet-50 text-violet-600 px-1.5 py-0.5 rounded-full">
-                        {emotionLabels[tag] ?? tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <Icon
-                  name="ChevronDown"
-                  size={16}
-                  className={`text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
-                />
-              </div>
-            </button>
-
-            {isOpen && (
-              <div className="px-4 pb-4 border-t border-border pt-3 space-y-3 animate-fade-in">
-                <div className="grid grid-cols-1 gap-2">
-                  {[
-                    { label: "Что произошло", value: entry.situation },
-                    { label: "Мысли", value: entry.thoughts },
-                    { label: "Эмоции", value: entry.emotions },
-                    { label: "Реакция тела", value: entry.body },
-                    { label: "Действие", value: entry.action },
-                  ].map((item) => (
-                    <div key={item.label} className="bg-gray-50 rounded-xl px-3 py-2">
-                      <div className="text-[11px] text-muted-foreground font-medium mb-0.5">{item.label}</div>
-                      <div className="text-sm text-foreground">{item.value}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {entry.emotion_tags.length > 0 && (
-                  <div>
-                    <div className="text-[11px] text-muted-foreground font-medium mb-1">Определённые эмоции</div>
-                    <div className="flex flex-wrap gap-1">
-                      {entry.emotion_tags.map((tag) => (
-                        <span key={tag} className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-medium">
-                          {emotionLabels[tag] ?? tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {entry.reflectionAnswers && entry.reflectionAnswers.length > 0 && (
-                  <div>
-                    <div className="text-[11px] text-muted-foreground font-medium mb-1">Рефлексия</div>
-                    <div className="space-y-1.5">
-                      {entry.reflectionAnswers.map((ans, ri) => (
-                        <div key={ri} className="bg-violet-50 rounded-xl px-3 py-2 text-sm text-foreground">
-                          {ans}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {entry.supportText && (
-                  <div className="bg-green-50 border border-green-100 rounded-xl px-3 py-2.5">
-                    <div className="text-[11px] text-green-600 font-medium mb-1 flex items-center gap-1">
-                      <Icon name="Heart" size={11} />
-                      Поддержка
-                    </div>
-                    <div className="text-sm text-green-800">{entry.supportText}</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
     </div>
   );
 }
