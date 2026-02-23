@@ -228,11 +228,11 @@ ${hint}
   if (showPaywall) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">
-        <PlanBotHeader onBack={() => navigate("/cabinet")} onReset={() => {}} showReset={false} />
+        <PlanBotHeader onBack={() => navigate("/cabinet?tab=tools")} onReset={() => {}} showReset={false} />
         <PaywallModal
           toolId="plan-bot"
           toolName="Шаги развития"
-          onClose={() => navigate("/cabinet")}
+          onClose={() => navigate("/cabinet?tab=tools")}
           onSuccess={() => { setShowPaywall(false); setHasAccess(true); }}
         />
       </div>
@@ -243,7 +243,7 @@ ${hint}
     const career = getLatestCareerResult();
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">
-        <PlanBotHeader onBack={() => navigate("/cabinet")} onReset={() => {}} showReset={false} />
+        <PlanBotHeader onBack={() => navigate("/cabinet?tab=tools")} onReset={() => {}} showReset={false} />
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="w-full max-w-md space-y-5 animate-fade-in-up">
             <div className="text-center">
@@ -284,7 +284,7 @@ ${hint}
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col">
       <PlanBotHeader
-        onBack={() => navigate("/cabinet")}
+        onBack={() => navigate("/cabinet?tab=tools")}
         onReset={handleReset}
         showReset={messages.length > 1}
       />

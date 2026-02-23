@@ -363,7 +363,7 @@ export default function PsychBot() {
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50 flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate("/cabinet")} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+        <button onClick={() => navigate("/cabinet?tab=tools")} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
           <Icon name="ArrowLeft" size={18} className="text-gray-600" />
         </button>
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0">

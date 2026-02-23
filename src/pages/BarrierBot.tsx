@@ -318,7 +318,7 @@ export default function BarrierBot() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
         <button
-          onClick={() => navigate("/cabinet")}
+          onClick={() => navigate("/cabinet?tab=tools")}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
         >
           <Icon name="ArrowLeft" size={18} className="text-gray-600" />

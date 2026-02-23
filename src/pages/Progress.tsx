@@ -163,7 +163,7 @@ export default function Progress() {
         <PaywallModal
           toolId="progress"
           toolName="Прогресс развития"
-          onClose={() => navigate("/cabinet")}
+          onClose={() => navigate("/cabinet?tab=tools")}
           onSuccess={() => setShowPaywall(false)}
         />
       </div>
@@ -175,7 +175,7 @@ export default function Progress() {
 
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-border px-4 h-14 flex items-center justify-between shrink-0">
         <button
-          onClick={() => navigate("/cabinet")}
+          onClick={() => navigate("/cabinet?tab=tools")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <Icon name="ArrowLeft" size={18} />

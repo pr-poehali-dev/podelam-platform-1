@@ -263,7 +263,7 @@ export default function IncomeBot() {
         <PaywallModal
           toolId="income-bot"
           toolName="Подбор дохода"
-          onClose={() => navigate("/cabinet")}
+          onClose={() => navigate("/cabinet?tab=tools")}
           onSuccess={() => { setShowPaywall(false); startBot(); }}
         />
       </div>
@@ -296,7 +296,7 @@ export default function IncomeBot() {
             <div className="font-bold mb-1">🧠 Психологический анализ</div>
             <div className="text-xs text-white/80">Истинные таланты</div>
           </button>
-          <button onClick={() => navigate("/cabinet")} className="w-full text-sm text-muted-foreground py-2 hover:text-foreground transition-colors">
+          <button onClick={() => navigate("/cabinet?tab=tools")} className="w-full text-sm text-muted-foreground py-2 hover:text-foreground transition-colors">
             ← В кабинет
           </button>
         </div>
@@ -308,7 +308,7 @@ export default function IncomeBot() {
     <div className="min-h-screen font-golos flex flex-col" style={{ background: "hsl(248, 50%, 98%)" }}>
       {/* HEADER */}
       <header className="sticky top-0 z-40 bg-white border-b border-border px-4 h-14 flex items-center gap-3">
-        <button onClick={() => navigate("/cabinet")} className="p-2 rounded-xl hover:bg-secondary transition-colors">
+        <button onClick={() => navigate("/cabinet?tab=tools")} className="p-2 rounded-xl hover:bg-secondary transition-colors">
           <Icon name="ArrowLeft" size={18} className="text-muted-foreground" />
         </button>
         <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center shrink-0">
@@ -388,7 +388,7 @@ export default function IncomeBot() {
         {result && !analyzing && (
           <div className="flex justify-center pt-2">
             <button
-              onClick={() => navigate("/cabinet")}
+              onClick={() => navigate("/cabinet?tab=tools")}
               className="gradient-brand text-white font-bold px-6 py-3 rounded-2xl hover:opacity-90 transition-opacity text-sm"
             >
               Вернуться в кабинет

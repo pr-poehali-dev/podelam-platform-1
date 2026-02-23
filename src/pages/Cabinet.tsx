@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { User, TestResult, PsychResult } from "@/components/cabinet/cabinetTypes";
 import CabinetSidebar, { CabinetMobileNav } from "@/components/cabinet/CabinetSidebar";
 import CabinetHomeTab from "@/components/cabinet/CabinetHomeTab";
@@ -11,11 +11,13 @@ type Tab = "home" | "tests" | "tools";
 
 export default function Cabinet() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [tests, setTests] = useState<TestResult[]>([]);
   const [psychResult, setPsychResult] = useState<PsychResult | null>(null);
   const [careerResult, setCareerResult] = useState<CareerResult | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const initialTab = (searchParams.get("tab") as Tab) || "home";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
