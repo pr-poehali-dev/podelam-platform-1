@@ -12,9 +12,10 @@ type Props = {
   careerResult: CareerResult | null;
   profileComplete: number;
   onNavigate: (path: string) => void;
+  onTabChange?: (tab: string) => void;
 };
 
-export default function CabinetHomeTab({ user, psychTest, psychResult, careerResult, profileComplete, onNavigate }: Props) {
+export default function CabinetHomeTab({ user, psychTest, psychResult, careerResult, profileComplete, onNavigate, onTabChange }: Props) {
   const [careerExpanded, setCareerExpanded] = useState(false);
   const hasSub = hasSubscription();
   const completions = getToolCompletions();
@@ -252,7 +253,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
               <p className="text-muted-foreground text-xs leading-relaxed">Все инструменты + Дневник самоанализа. Без ограничений 30 дней.</p>
             </div>
             <button
-              onClick={() => onNavigate("/tools")}
+              onClick={() => onTabChange?.("tools")}
               className="shrink-0 gradient-brand text-white font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90 transition-opacity"
             >
               990 ₽

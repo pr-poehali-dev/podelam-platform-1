@@ -87,6 +87,7 @@ export default function Cabinet() {
                 careerResult={careerResult}
                 profileComplete={profileComplete}
                 onNavigate={navigate}
+                onTabChange={setActiveTab}
               />
             )}
 
