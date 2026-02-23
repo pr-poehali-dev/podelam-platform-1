@@ -2,6 +2,18 @@
 // Тарифы: 290₽ за один инструмент / 990₽ подписка на 30 дней (все инструменты)
 // Баланс: хранится в pdd_balance_{email}
 
+const ADD_PAYMENT_URL = "https://functions.poehali.dev/55a42126-88c7-4b99-b0b5-831a53a24325";
+
+function savePaymentToServer(amount: number, tariff: string) {
+  const email = getEmail();
+  const name = (() => { try { return JSON.parse(localStorage.getItem("pdd_user") || "{}").name || ""; } catch { return ""; } })();
+  fetch(ADD_PAYMENT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_email: email, user_name: name, amount, tariff, status: "paid" }),
+  }).catch(() => {});
+}
+
 export type ToolId =
   | "career-test"    // Тест «Какая профессия тебе подходит» — БЕСПЛАТНО
   | "psych-bot"      // Психологический анализ — 290₽ / подписка
@@ -63,17 +75,33 @@ export function chargeBalance(amount: number): boolean {
   return true;
 }
 
+/** Названия инструментов для платежей */
+const TOOL_NAMES: Record<string, string> = {
+  "psych-bot": "Психологический анализ",
+  "barrier-bot": "Барьеры и тревога",
+  "income-bot": "Подбор дохода",
+  "plan-bot": "Шаги развития",
+  "progress": "Прогресс развития",
+  "diary": "Дневник самоанализа",
+};
+
 /** Списать с баланса и активировать разовый доступ к инструменту */
 export function payFromBalanceOnce(toolId: ToolId): boolean {
   const ok = chargeBalance(TOOL_PRICE);
-  if (ok) activatePaidOnce(toolId);
+  if (ok) {
+    activatePaidOnce(toolId);
+    savePaymentToServer(TOOL_PRICE, TOOL_NAMES[toolId] || toolId);
+  }
   return ok;
 }
 
 /** Списать с баланса и активировать подписку на 30 дней */
 export function payFromBalanceSub(): boolean {
   const ok = chargeBalance(SUB_PRICE);
-  if (ok) activateSubscription();
+  if (ok) {
+    activateSubscription();
+    savePaymentToServer(SUB_PRICE, "Подписка 30 дней");
+  }
   return ok;
 }
 
