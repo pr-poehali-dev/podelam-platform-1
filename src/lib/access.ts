@@ -63,6 +63,7 @@ export function topUpBalance(amount: number): void {
   const current = getBalance();
   localStorage.setItem(balanceKey(email), String(current + amount));
   notifyBalanceChange();
+  savePaymentToServer(amount, "Пополнение баланса");
 }
 
 /** Списать с баланса. Возвращает true если успешно */
