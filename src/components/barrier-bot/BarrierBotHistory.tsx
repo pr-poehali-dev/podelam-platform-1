@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { PROFILE_TEXTS, Step } from "./barrierBotEngine";
 import BarrierBotChart from "./BarrierBotChart";
+import BarrierBotCompare from "./BarrierBotCompare";
 import Icon from "@/components/ui/icon";
 
 export type BarrierSession = {
@@ -155,22 +157,42 @@ function exportPDF(session: BarrierSession, index: number) {
 }
 
 export default function BarrierBotHistory({ sessions, onNewSession }: Props) {
+  const [tab, setTab] = useState<"list" | "compare">("list");
+
   if (sessions.length === 0) return null;
 
   return (
-    <div className="px-4 py-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-gray-900">История сессий</h2>
+    <div className="py-4 space-y-4">
+      {/* Шапка */}
+      <div className="flex items-center justify-between px-4">
+        <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+          <button
+            onClick={() => setTab("list")}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${tab === "list" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+          >
+            Все сессии
+          </button>
+          {sessions.length >= 2 && (
+            <button
+              onClick={() => setTab("compare")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${tab === "compare" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+            >
+              Сравнение
+            </button>
+          )}
+        </div>
         <button
           onClick={onNewSession}
           className="flex items-center gap-1.5 text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors"
         >
           <Icon name="Plus" size={16} />
-          Новая сессия
+          Новая
         </button>
       </div>
 
-      <div className="space-y-3">
+      {tab === "compare" && <BarrierBotCompare sessions={sessions} />}
+
+      {tab === "list" && <div className="space-y-3 px-4">
         {[...sessions].reverse().map((s, revIdx) => {
           const idx = sessions.length - 1 - revIdx;
           const profile = PROFILE_TEXTS[s.profile];
@@ -225,7 +247,7 @@ export default function BarrierBotHistory({ sessions, onNewSession }: Props) {
             </div>
           );
         })}
-      </div>
+      </div>}
     </div>
   );
 }
