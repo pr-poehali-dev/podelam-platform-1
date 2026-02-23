@@ -56,7 +56,13 @@ def handler(event: dict, context) -> dict:
         return {
             'statusCode': 200,
             'headers': cors,
-            'body': json.dumps({'user': {'id': row[0], 'name': row[1], 'email': row[2], 'created_at': str(row[3])}, 'test_results': []})
+            'body': json.dumps({
+                'user': {'id': row[0], 'name': row[1], 'email': row[2], 'created_at': str(row[3])},
+                'test_results': [],
+                'balance': 0,
+                'subscription_expires': None,
+                'paid_tools': [],
+            })
         }
 
     elif action == 'login':
@@ -64,13 +70,17 @@ def handler(event: dict, context) -> dict:
         password = body.get('password', '')
         pw_hash = hash_password(password)
 
-        cur.execute(f'SELECT id, name, email FROM "{S}".users WHERE email = %s AND password_hash = %s', (email, pw_hash))
+        cur.execute(f'SELECT id, name, email, balance, subscription_expires, paid_tools FROM "{S}".users WHERE email = %s AND password_hash = %s', (email, pw_hash))
         row = cur.fetchone()
         if not row:
             conn.close()
             return {'statusCode': 401, 'headers': cors, 'body': json.dumps({'error': 'Неверный email или пароль'})}
 
         user_id = row[0]
+        balance = row[3] or 0
+        sub_expires = str(row[4]) if row[4] else None
+        paid_tools = [t.strip() for t in (row[5] or '').split(',') if t.strip()]
+
         cur.execute(f'UPDATE "{S}".users SET last_login = %s WHERE id = %s', (datetime.now(), user_id))
         conn.commit()
 
@@ -91,7 +101,13 @@ def handler(event: dict, context) -> dict:
         return {
             'statusCode': 200,
             'headers': cors,
-            'body': json.dumps({'user': {'id': user_id, 'name': row[1], 'email': row[2]}, 'test_results': results})
+            'body': json.dumps({
+                'user': {'id': user_id, 'name': row[1], 'email': row[2]},
+                'test_results': results,
+                'balance': balance,
+                'subscription_expires': sub_expires,
+                'paid_tools': paid_tools,
+            })
         }
 
     elif action == 'save_test_result':

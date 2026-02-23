@@ -48,30 +48,34 @@ export default function Auth() {
       }
       keysToRemove.forEach(k => localStorage.removeItem(k));
 
-      const results: { test_type: string; score: number; result_data: Record<string, unknown>; created_at: string | null }[] = data.test_results ?? [];
+      if (data.balance && data.balance > 0) {
+        localStorage.setItem(`pdd_balance_${user.email}`, String(data.balance));
+      }
+      if (data.subscription_expires) {
+        localStorage.setItem(`pdd_sub_${user.email}`, new Date(data.subscription_expires).toISOString());
+      }
+      const paidTools: string[] = data.paid_tools ?? [];
+      for (const t of paidTools) {
+        localStorage.setItem(`pdd_once_${user.email}_${t}`, "1");
+      }
 
+      const results: { test_type: string; score: number; result_data: Record<string, unknown>; created_at: string | null }[] = data.test_results ?? [];
       const testsArr: { id: string; type: string; date: string; score: number }[] = [];
 
       for (const r of results) {
         if (r.test_type === "career-test" && r.result_data) {
           const rd = r.result_data as Record<string, unknown>;
-          const existing = localStorage.getItem(`career_result_${user.email}`);
-          const arr = existing ? JSON.parse(existing) : [];
-          if (arr.length === 0) {
-            arr.push({
-              id: Date.now().toString(),
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString("ru-RU") : new Date().toLocaleDateString("ru-RU"),
-              ...rd,
-            });
-            localStorage.setItem(`career_result_${user.email}`, JSON.stringify(arr));
-          }
+          const arr = [{
+            id: Date.now().toString(),
+            date: r.created_at ? new Date(r.created_at).toLocaleDateString("ru-RU") : new Date().toLocaleDateString("ru-RU"),
+            ...rd,
+          }];
+          localStorage.setItem(`career_result_${user.email}`, JSON.stringify(arr));
         }
 
         if (r.test_type === "psych-bot" && r.result_data) {
-          if (!localStorage.getItem(`psych_result_${user.email}`)) {
-            localStorage.setItem(`psych_result_${user.email}`, JSON.stringify(r.result_data));
-          }
-          activatePaidOnce("psych-bot");
+          localStorage.setItem(`psych_result_${user.email}`, JSON.stringify(r.result_data));
+          if (!paidTools.includes("psych-bot")) activatePaidOnce("psych-bot");
           testsArr.push({
             id: Date.now().toString(),
             type: "Тест на призвание",
@@ -81,11 +85,9 @@ export default function Auth() {
         }
 
         if (r.test_type === "barrier-bot" && r.result_data) {
-          if (!localStorage.getItem(`barrier_results_${user.email}`)) {
-            const barrierData = Array.isArray(r.result_data) ? r.result_data : [r.result_data];
-            localStorage.setItem(`barrier_results_${user.email}`, JSON.stringify(barrierData));
-          }
-          activatePaidOnce("barrier-bot");
+          const barrierData = Array.isArray(r.result_data) ? r.result_data : [r.result_data];
+          localStorage.setItem(`barrier_results_${user.email}`, JSON.stringify(barrierData));
+          if (!paidTools.includes("barrier-bot")) activatePaidOnce("barrier-bot");
         }
       }
 

@@ -4,13 +4,16 @@
 
 const ADD_PAYMENT_URL = "https://functions.poehali.dev/55a42126-88c7-4b99-b0b5-831a53a24325";
 
-function savePaymentToServer(amount: number, tariff: string) {
-  const email = getEmail();
-  const name = (() => { try { return JSON.parse(localStorage.getItem("pdd_user") || "{}").name || ""; } catch { return ""; } })();
+function getUserData() {
+  try { const u = JSON.parse(localStorage.getItem("pdd_user") || "{}"); return { email: u.email || "", name: u.name || "" }; } catch { return { email: "", name: "" }; }
+}
+
+function sendPayment(amount: number, tariff: string, action: string, toolId?: string) {
+  const { email, name } = getUserData();
   fetch(ADD_PAYMENT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_email: email, user_name: name, amount, tariff, status: "paid" }),
+    body: JSON.stringify({ user_email: email, user_name: name, amount, tariff, status: "paid", action, tool_id: toolId || "" }),
   }).catch(() => {});
 }
 
@@ -63,7 +66,7 @@ export function topUpBalance(amount: number): void {
   const current = getBalance();
   localStorage.setItem(balanceKey(email), String(current + amount));
   notifyBalanceChange();
-  savePaymentToServer(amount, "Пополнение баланса");
+  sendPayment(amount, "Пополнение баланса", "topup");
 }
 
 /** Списать с баланса. Возвращает true если успешно */
@@ -91,7 +94,7 @@ export function payFromBalanceOnce(toolId: ToolId): boolean {
   const ok = chargeBalance(TOOL_PRICE);
   if (ok) {
     activatePaidOnce(toolId);
-    savePaymentToServer(TOOL_PRICE, TOOL_NAMES[toolId] || toolId);
+    sendPayment(TOOL_PRICE, TOOL_NAMES[toolId] || toolId, "pay_tool", toolId);
   }
   return ok;
 }
@@ -101,7 +104,7 @@ export function payFromBalanceSub(): boolean {
   const ok = chargeBalance(SUB_PRICE);
   if (ok) {
     activateSubscription();
-    savePaymentToServer(SUB_PRICE, "Подписка 30 дней");
+    sendPayment(SUB_PRICE, "Подписка 30 дней", "pay_sub");
   }
   return ok;
 }

@@ -1,0 +1,1 @@
+UPDATE t_p13403005_podelam_platform_1.users SET balance = 990 WHERE id = 7;

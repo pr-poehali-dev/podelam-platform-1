@@ -1,0 +1,4 @@
+ALTER TABLE t_p13403005_podelam_platform_1.users
+ADD COLUMN balance INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN subscription_expires TIMESTAMP NULL,
+ADD COLUMN paid_tools TEXT NOT NULL DEFAULT '';
