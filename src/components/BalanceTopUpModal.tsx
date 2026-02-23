@@ -50,8 +50,8 @@ export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
   const balance = getBalance();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-4 sm:pb-0">
-      <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl animate-fade-in-up overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl animate-fade-in-up overflow-hidden my-auto">
         <div className="bg-gradient-to-br from-violet-600 to-purple-700 px-6 pt-6 pb-5 text-white">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
