@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { activatePaidOnce } from "@/lib/access";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ export default function Auth() {
           if (!localStorage.getItem(`psych_result_${user.email}`)) {
             localStorage.setItem(`psych_result_${user.email}`, JSON.stringify(r.result_data));
           }
-          localStorage.setItem(`psych_paid_${user.email}`, "true");
+          activatePaidOnce("psych-bot");
           testsArr.push({
             id: Date.now().toString(),
             type: "Тест на призвание",
@@ -74,7 +75,7 @@ export default function Auth() {
             const barrierData = Array.isArray(r.result_data) ? r.result_data : [r.result_data];
             localStorage.setItem(`barrier_results_${user.email}`, JSON.stringify(barrierData));
           }
-          localStorage.setItem(`barrier_paid_${user.email}`, "true");
+          activatePaidOnce("barrier-bot");
         }
       }
 

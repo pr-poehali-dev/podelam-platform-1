@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { checkAccess, activatePaidOnce, saveToolCompletion } from "@/lib/access";
+import { checkAccess, saveToolCompletion } from "@/lib/access";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import PsychBotPaywall from "@/components/psych-bot/PsychBotPaywall";
@@ -55,11 +55,6 @@ export default function PsychBot() {
     const access = checkAccess("psych-bot");
     if (access !== "locked") {
       setHasAccess(true);
-      // Синхронизация со старым ключом
-      localStorage.setItem(`psych_paid_${userData.email}`, "true");
-    } else {
-      const paid = localStorage.getItem(`psych_paid_${userData.email}`);
-      if (paid === "true") { setHasAccess(true); activatePaidOnce("psych-bot"); }
     }
 
     const savedMessages = localStorage.getItem(`psych_chat3_${userData.email}`);
@@ -194,10 +189,6 @@ export default function PsychBot() {
   };
 
   const handlePay = () => {
-    const u = localStorage.getItem("pdd_user");
-    if (!u) return;
-    const userData = JSON.parse(u);
-    localStorage.setItem(`psych_paid_${userData.email}`, "true");
     setHasAccess(true);
   };
 

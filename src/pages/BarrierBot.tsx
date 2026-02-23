@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { checkAccess, activatePaidOnce, saveToolCompletion } from "@/lib/access";
+import { checkAccess, saveToolCompletion } from "@/lib/access";
 import Icon from "@/components/ui/icon";
 import BarrierBotPaywall from "@/components/barrier-bot/BarrierBotPaywall";
 import BarrierBotChat from "@/components/barrier-bot/BarrierBotChat";
@@ -66,11 +66,9 @@ export default function BarrierBot() {
     const userData = JSON.parse(u);
 
     const access = checkAccess("barrier-bot");
-    const legacyPaid = localStorage.getItem(`barrier_paid_${userData.email}`);
-    const hasAcc = access !== "locked" || legacyPaid === "true";
+    const hasAcc = access !== "locked";
     if (hasAcc) {
       setHasAccess(true);
-      if (legacyPaid === "true" && access === "locked") activatePaidOnce("barrier-bot");
     }
 
     loadSessions(userData.email);
@@ -104,9 +102,6 @@ export default function BarrierBot() {
   }, [messages, botState, hasAccess]);
 
   const handlePay = () => {
-    const email = getUserEmail();
-    if (!email) return;
-    localStorage.setItem(`barrier_paid_${email}`, "true");
     setHasAccess(true);
   };
 
