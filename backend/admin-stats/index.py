@@ -12,7 +12,7 @@ def handler(event: dict, context) -> dict:
     """Статистика для админки: клиенты, платежи, общая сумма"""
     cors = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
     }
 
