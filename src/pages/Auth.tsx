@@ -36,7 +36,53 @@ export default function Auth() {
 
       const user = data.user;
       localStorage.setItem("pdd_user", JSON.stringify({ id: user.id, name: user.name, email: user.email }));
-      if (mode === "register") localStorage.setItem("pdd_tests", JSON.stringify([]));
+
+      const results: { test_type: string; score: number; result_data: Record<string, unknown>; created_at: string | null }[] = data.test_results ?? [];
+
+      const testsArr: { id: string; type: string; date: string; score: number }[] = [];
+
+      for (const r of results) {
+        if (r.test_type === "career-test" && r.result_data) {
+          const rd = r.result_data as Record<string, unknown>;
+          const existing = localStorage.getItem(`career_result_${user.email}`);
+          const arr = existing ? JSON.parse(existing) : [];
+          if (arr.length === 0) {
+            arr.push({
+              id: Date.now().toString(),
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString("ru-RU") : new Date().toLocaleDateString("ru-RU"),
+              ...rd,
+            });
+            localStorage.setItem(`career_result_${user.email}`, JSON.stringify(arr));
+          }
+        }
+
+        if (r.test_type === "psych-bot" && r.result_data) {
+          if (!localStorage.getItem(`psych_result_${user.email}`)) {
+            localStorage.setItem(`psych_result_${user.email}`, JSON.stringify(r.result_data));
+          }
+          localStorage.setItem(`psych_paid_${user.email}`, "true");
+          testsArr.push({
+            id: Date.now().toString(),
+            type: "Тест на призвание",
+            date: r.created_at ? new Date(r.created_at).toLocaleDateString("ru-RU") : new Date().toLocaleDateString("ru-RU"),
+            score: r.score ?? 0,
+          });
+        }
+
+        if (r.test_type === "barrier-bot" && r.result_data) {
+          if (!localStorage.getItem(`barrier_results_${user.email}`)) {
+            const barrierData = Array.isArray(r.result_data) ? r.result_data : [r.result_data];
+            localStorage.setItem(`barrier_results_${user.email}`, JSON.stringify(barrierData));
+          }
+          localStorage.setItem(`barrier_paid_${user.email}`, "true");
+        }
+      }
+
+      const existingTests = localStorage.getItem("pdd_tests");
+      if (!existingTests || JSON.parse(existingTests).length === 0) {
+        localStorage.setItem("pdd_tests", JSON.stringify(testsArr));
+      }
+
       navigate("/cabinet");
     } catch {
       setError("Ошибка соединения. Попробуйте ещё раз.");

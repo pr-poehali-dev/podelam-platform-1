@@ -161,6 +161,19 @@ export default function PsychBot() {
     localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(psychResult));
     saveToolCompletion("psych-bot", `Психологический анализ завершён — профиль «${profileName}»`);
 
+    if (userData.id) {
+      fetch(AUTH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "save_test_result",
+          userId: userData.id,
+          testType: "psych-bot",
+          resultData: psychResult,
+        }),
+      }).catch(() => { /* ignore */ });
+    }
+
     const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(
       localStorage.getItem("pdd_tests") || "[]"
     );

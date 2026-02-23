@@ -56,7 +56,7 @@ def handler(event: dict, context) -> dict:
         return {
             'statusCode': 200,
             'headers': cors,
-            'body': json.dumps({'user': {'id': row[0], 'name': row[1], 'email': row[2], 'created_at': str(row[3])}})
+            'body': json.dumps({'user': {'id': row[0], 'name': row[1], 'email': row[2], 'created_at': str(row[3])}, 'test_results': []})
         }
 
     elif action == 'login':
@@ -70,13 +70,28 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 401, 'headers': cors, 'body': json.dumps({'error': 'Неверный email или пароль'})}
 
-        cur.execute(f'UPDATE "{S}".users SET last_login = %s WHERE id = %s', (datetime.now(), row[0]))
+        user_id = row[0]
+        cur.execute(f'UPDATE "{S}".users SET last_login = %s WHERE id = %s', (datetime.now(), user_id))
         conn.commit()
+
+        cur.execute(
+            f'SELECT test_type, score, result_data, created_at FROM "{S}".test_results WHERE user_id = %s ORDER BY created_at DESC',
+            (user_id,)
+        )
+        results = []
+        for r in cur.fetchall():
+            results.append({
+                'test_type': r[0],
+                'score': r[1],
+                'result_data': r[2] if isinstance(r[2], dict) else json.loads(r[2]) if r[2] else {},
+                'created_at': str(r[3]) if r[3] else None,
+            })
+
         conn.close()
         return {
             'statusCode': 200,
             'headers': cors,
-            'body': json.dumps({'user': {'id': row[0], 'name': row[1], 'email': row[2]}})
+            'body': json.dumps({'user': {'id': user_id, 'name': row[1], 'email': row[2]}, 'test_results': results})
         }
 
     elif action == 'save_test_result':

@@ -18,7 +18,8 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
   const [careerExpanded, setCareerExpanded] = useState(false);
   const hasSub = hasSubscription();
   const completions = getToolCompletions();
-  const hasBarrier = getToolCompletions("barrier-bot").length > 0;
+  const barrierResults = localStorage.getItem(`barrier_results_${user.email}`);
+  const hasBarrier = getToolCompletions("barrier-bot").length > 0 || (!!barrierResults && JSON.parse(barrierResults).length > 0);
   const hasPsychDone = !!psychResult;
 
   return (
@@ -41,7 +42,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
           <div>
             <h3 className="font-bold text-foreground text-sm">Профиль заполнен</h3>
             <p className="text-muted-foreground text-xs mt-0.5">
-              {profileComplete < 30 ? "Пройди тест — это первый шаг" : profileComplete < 70 ? "Пройди психоанализ для полного профиля" : "Профиль почти готов"}
+              {profileComplete === 0 ? "Пройди тест — это первый шаг" : profileComplete < 65 ? "Продолжай — проходи инструменты" : profileComplete < 100 ? "Профиль почти готов" : "Все инструменты пройдены!"}
             </p>
           </div>
           <div className="text-2xl font-black text-gradient">{profileComplete}%</div>

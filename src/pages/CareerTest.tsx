@@ -9,6 +9,27 @@ import {
 } from "@/lib/careerTestEngine";
 import { saveCareerResult } from "@/lib/access";
 
+const AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
+
+function saveCareerToServer(resultData: Record<string, unknown>) {
+  try {
+    const u = localStorage.getItem("pdd_user");
+    if (!u) return;
+    const userData = JSON.parse(u);
+    if (!userData.id) return;
+    fetch(AUTH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "save_test_result",
+        userId: userData.id,
+        testType: "career-test",
+        resultData,
+      }),
+    }).catch(() => { /* ignore */ });
+  } catch { /* ignore */ }
+}
+
 export default function CareerTest() {
   const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
@@ -33,7 +54,7 @@ export default function CareerTest() {
       const res = calcCareerResult(newAnswers);
       setResult(res);
       const topInfo = CAREER_TYPES[res.topType];
-      saveCareerResult({
+      const careerData = {
         id: "",
         date: "",
         topType: res.topType,
@@ -45,7 +66,9 @@ export default function CareerTest() {
           name: CAREER_TYPES[k as CareerType].name,
           score: v,
         })),
-      });
+      };
+      saveCareerResult(careerData);
+      saveCareerToServer(careerData);
       setDone(true);
       return;
     }

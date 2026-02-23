@@ -246,6 +246,25 @@ export default function BarrierBot() {
         setSessions(allResults);
         saveToolCompletion("barrier-bot", `Анализ барьеров завершён — сфера «${newState.selectedContext}», профиль ${PROFILE_TEXTS[newState.psychProfile]?.title ?? "определён"}`);
 
+        try {
+          const u = localStorage.getItem("pdd_user");
+          if (u) {
+            const userData = JSON.parse(u);
+            if (userData.id) {
+              fetch("https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  action: "save_test_result",
+                  userId: userData.id,
+                  testType: "barrier-bot",
+                  resultData: record,
+                }),
+              }).catch(() => { /* ignore */ });
+            }
+          }
+        } catch { /* ignore */ }
+
         return {
           text: `## Сессия завершена\n\nТы прошёл полный цикл анализа. Вот что ты узнал:\n\n• **Сфера:** ${newState.selectedContext}\n• **Слабость:** ${newState.mainWeakness}\n• **Сила:** ${newState.mainStrength.join(", ")}\n• **Дополнительная опора:** ${newState.additionalStrength.join(", ")}\n• **Профиль:** ${PROFILE_TEXTS[newState.psychProfile]?.title}\n\n---\n\nСессия сохранена. Посмотри историю — там можно скачать PDF или начать новый анализ.`,
           widget: { type: "confirm" },

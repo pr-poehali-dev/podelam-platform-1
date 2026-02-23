@@ -40,13 +40,22 @@ export default function Cabinet() {
 
   if (!user) return null;
 
-  const psychTest = tests.find((t) => t.type === "Тест на призвание");
+  let psychTest = tests.find((t) => t.type === "Тест на призвание");
+  if (!psychTest && psychResult) {
+    psychTest = {
+      id: Date.now().toString(),
+      type: "Тест на призвание",
+      date: new Date().toLocaleDateString("ru-RU"),
+      score: psychResult.topSegScore ?? 0,
+    };
+  }
 
   // Профиль: 20% за career-тест + 40% за psych-bot + 20% за barrier + 20% за 3+ инструмента
   let profileComplete = 0;
   if (careerResult) profileComplete += 20;
   if (psychResult) profileComplete += 45;
-  if (localStorage.getItem(`barrier_results_${user.email}`)) profileComplete += 20;
+  const barrierRaw = localStorage.getItem(`barrier_results_${user.email}`);
+  if (barrierRaw && JSON.parse(barrierRaw).length > 0) profileComplete += 20;
   const completionsCount = JSON.parse(localStorage.getItem(`pdd_completions_${user.email}`) || "[]").length;
   if (completionsCount >= 3) profileComplete += 15;
 
