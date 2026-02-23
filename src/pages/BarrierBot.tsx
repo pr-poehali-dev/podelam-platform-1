@@ -1,0 +1,280 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Icon from "@/components/ui/icon";
+import BarrierBotPaywall from "@/components/barrier-bot/BarrierBotPaywall";
+import BarrierBotChat from "@/components/barrier-bot/BarrierBotChat";
+import {
+  BotState,
+  Message,
+  Widget,
+  INITIAL_STATE,
+  applyAnswer,
+  detectBreakPoint,
+  recalcY,
+  detectProfile,
+  PROFILE_TEXTS,
+  CONTEXTS,
+  STRENGTHS,
+  WEAKNESSES,
+} from "@/components/barrier-bot/barrierBotEngine";
+
+const WELCOME_TEXT = `Привет! Это инструмент **«Барьеры, тревоги и стресс»**.
+
+Мы воссоздадим твой прошлый провал по шагам, найдём точку срыва и покажем — как её можно было удержать.
+
+Никакого AI — только твои ответы, логика и координатная модель X–Y.
+
+Готов начать?`;
+
+export default function BarrierBot() {
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [botState, setBotState] = useState<BotState>(INITIAL_STATE);
+  const [loading, setLoading] = useState(false);
+  const [hasAccess, setHasAccess] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const addMsg = (from: "bot" | "user", text: string, widget?: Widget) => {
+    const id = Date.now() + Math.random();
+    setMessages((m) => [...m, { id, from, text, widget }]);
+  };
+
+  const botReply = (text: string, widget?: Widget, delay = 500) => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      addMsg("bot", text, widget);
+    }, delay);
+  };
+
+  useEffect(() => {
+    const u = localStorage.getItem("pdd_user");
+    if (!u) { navigate("/auth"); return; }
+    const userData = JSON.parse(u);
+
+    const paid = localStorage.getItem(`barrier_paid_${userData.email}`);
+    if (paid === "true") setHasAccess(true);
+
+    const savedMessages = localStorage.getItem(`barrier_chat_${userData.email}`);
+    const savedState = localStorage.getItem(`barrier_state_${userData.email}`);
+
+    if (savedMessages && savedState && paid === "true") {
+      setMessages(JSON.parse(savedMessages));
+      setBotState(JSON.parse(savedState));
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (hasAccess && messages.length === 0) {
+      botReply(WELCOME_TEXT, { type: "choices", options: ["Начать →"] });
+    }
+  }, [hasAccess]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  useEffect(() => {
+    const u = localStorage.getItem("pdd_user");
+    if (!u || !hasAccess) return;
+    const userData = JSON.parse(u);
+    if (messages.length > 0) {
+      localStorage.setItem(`barrier_chat_${userData.email}`, JSON.stringify(messages));
+      localStorage.setItem(`barrier_state_${userData.email}`, JSON.stringify(botState));
+    }
+  }, [messages, botState, hasAccess]);
+
+  const handlePay = () => {
+    const u = localStorage.getItem("pdd_user");
+    if (!u) return;
+    const userData = JSON.parse(u);
+    localStorage.setItem(`barrier_paid_${userData.email}`, "true");
+    setHasAccess(true);
+  };
+
+  const getNextBotMessage = (newState: BotState, answer: string | number | string[]): { text: string; widget?: Widget } => {
+    const stepNum = newState.currentStepIndex + 1;
+
+    switch (newState.phase) {
+      case "context":
+        return {
+          text: "Выбери сферу, в которой был провал:",
+          widget: { type: "choices", options: CONTEXTS },
+        };
+
+      case "strength":
+        return {
+          text: `Сфера: **${newState.selectedContext}**\n\nВыбери свои сильные стороны — то, что тебе помогало двигаться вперёд. Можно выбрать до 2:`,
+          widget: { type: "multi_choices", options: STRENGTHS, max: 2 },
+        };
+
+      case "weakness":
+        return {
+          text: `Теперь выбери **основную слабую реакцию** — то, что тебя тормозит или ломает изнутри:`,
+          widget: { type: "choices", options: WEAKNESSES },
+        };
+
+      case "steps_intro":
+        return {
+          text: `Отлично. Теперь восстановим провал по шагам.\n\nВведи минимум **5 шагов** (максимум 10) — по порядку, от начала до момента, когда ты сдался.\n\nДля каждого шага ты укажешь:\n- Что именно происходило\n- Насколько это приближало к цели (X, 1–10)\n- Какой уровень напряжения ты чувствовал (Y, 0–10)\n\nГотов?`,
+          widget: { type: "choices", options: ["Начать →"] },
+        };
+
+      case "step_text":
+        return {
+          text: `**Шаг ${newState.currentStepIndex + 1}**\n\nОпиши, что происходило на этом шаге:`,
+          widget: { type: "text_input", placeholder: "Например: я отправил резюме / сделал первый звонок..." },
+        };
+
+      case "step_x": {
+        const last = newState.steps[newState.currentStepIndex];
+        return {
+          text: `Шаг ${last?.index}: «${last?.text}»\n\nНасколько этот шаг **приближал вас к успеху**?`,
+          widget: { type: "slider", min: 1, max: 10, label: "1 — почти не приближал, 10 — огромный шаг вперёд" },
+        };
+      }
+
+      case "step_y": {
+        const last = newState.steps[newState.currentStepIndex];
+        return {
+          text: `Какой **уровень напряжения** вы чувствовали в этот момент?`,
+          widget: { type: "slider", min: 0, max: 10, label: "0 — спокойно, 10 — паника / невыносимо" },
+        };
+      }
+
+      case "step_more": {
+        const done = newState.currentStepIndex;
+        const canAdd = done < 10;
+        const opts = done >= 5
+          ? (canAdd ? ["Добавить ещё шаг", "Всё, завершить ввод"] : ["Всё, завершить ввод"])
+          : (canAdd ? ["Добавить ещё шаг"] : ["Всё, завершить ввод"]);
+        return {
+          text: `Шаг ${done} сохранён.\n\nДобавить ещё один?`,
+          widget: { type: "choices", options: opts },
+        };
+      }
+
+      case "break_point": {
+        const bp = newState.breakStep;
+        if (bp >= 0) {
+          const bs = newState.steps[bp];
+          return {
+            text: `Алгоритм нашёл **возможную точку срыва** — шаг ${bp + 1}: «${bs?.text}»\n\nНа этом шаге тревога достигла **${bs?.y}/10**.\n\nПодтвердить эту точку или указать другую?`,
+            widget: { type: "choices", options: ["Да, это он", "Указать другой шаг"] },
+          };
+        }
+        return {
+          text: "Алгоритм не нашёл явной точки срыва автоматически.\n\nНа каком шаге ты внутренне начал сдаваться? Укажи номер:",
+          widget: { type: "slider", min: 1, max: newState.steps.length, label: "Номер шага" },
+        };
+      }
+
+      case "break_manual":
+        return {
+          text: "На каком шаге ты начал внутренне сдаваться? Укажи номер шага:",
+          widget: { type: "slider", min: 1, max: newState.steps.length, label: "Номер шага" },
+        };
+
+      case "insight": {
+        const bp = newState.breakStep;
+        const bs = newState.steps[bp] ?? newState.steps[newState.steps.length - 1];
+        const profile = PROFILE_TEXTS[newState.psychProfile];
+        return {
+          text: `## Вот твой путь\n\nТы дошёл до шага ${bp + 1}. Прогресс рос. Но тревога тоже росла — и на шаге ${bp + 1} достигла **${bs?.y}/10**.\n\nПосле этого движение остановилось.\n\n---\n\n**Ты не слабый.**\nТы не выдержал уровень внутреннего напряжения — это не одно и то же.\n\n---\n\n**Твой психологический профиль:**\n${profile?.title}\n\n${profile?.desc}`,
+          widget: { type: "chart", steps: newState.steps, breakStep: bp },
+        };
+      }
+
+      case "additional_strength":
+        return {
+          text: `Теперь — ключевой вопрос.\n\nКакая ещё твоя сильная сторона могла бы **помочь удержаться** в точке срыва? Выбери до 2:`,
+          widget: { type: "multi_choices", options: STRENGTHS.filter((s) => !newState.mainStrength.includes(s)), max: 2 },
+        };
+
+      case "recalc": {
+        const bp = newState.breakStep;
+        const bs = newState.steps[bp] ?? newState.steps[newState.steps.length - 1];
+        const origY = bs?.y ?? 0;
+        const newY = recalcY(origY, newState.mainWeakness, newState.additionalStrength.length);
+        const held = newY < 7;
+        return {
+          text: `## Что было бы иначе\n\nЕсли бы ты опирался на **${newState.additionalStrength.join(" и ")}**:\n\n• Было: тревога = **${origY}/10** → срыв\n• Стало: тревога = **${newY}/10** → ${held ? "✓ удержание позиции" : "напряжение снизилось"}\n\nПри добавлении второй опоры уровень напряжения снижается. Ты мог бы продолжить движение.`,
+          widget: { type: "chart", steps: newState.steps, breakStep: bp, newY },
+        };
+      }
+
+      case "result": {
+        const u = localStorage.getItem("pdd_user");
+        const email = u ? JSON.parse(u).email : "";
+        const savedResults = localStorage.getItem(`barrier_results_${email}`) ?? "[]";
+        const allResults = JSON.parse(savedResults);
+        const record = {
+          date: new Date().toLocaleDateString("ru-RU"),
+          context: newState.selectedContext,
+          mainStrength: newState.mainStrength,
+          mainWeakness: newState.mainWeakness,
+          additionalStrength: newState.additionalStrength,
+          breakStep: newState.breakStep,
+          profile: newState.psychProfile,
+          steps: newState.steps,
+        };
+        allResults.push(record);
+        localStorage.setItem(`barrier_results_${email}`, JSON.stringify(allResults));
+
+        return {
+          text: `## Сессия завершена\n\nТы прошёл полный цикл анализа. Вот что ты узнал:\n\n• **Сфера:** ${newState.selectedContext}\n• **Слабость:** ${newState.mainWeakness}\n• **Сила:** ${newState.mainStrength.join(", ")}\n• **Дополнительная опора:** ${newState.additionalStrength.join(", ")}\n• **Профиль:** ${PROFILE_TEXTS[newState.psychProfile]?.title}\n\n---\n\nЭто сохранено в твоём кабинете. В следующий раз — ты уже знаешь, где держаться крепче.`,
+          widget: { type: "confirm" },
+        };
+      }
+
+      case "done":
+        return { text: "Анализ сохранён. Возвращайся, когда будет следующий вызов — сравним динамику." };
+
+      default:
+        return { text: "..." };
+    }
+  };
+
+  const handleAnswer = (answer: string | number | string[]) => {
+    const displayText = Array.isArray(answer) ? answer.join(", ") : String(answer);
+    addMsg("user", displayText);
+
+    const newState = applyAnswer(botState, answer);
+    setBotState(newState);
+
+    const { text, widget } = getNextBotMessage(newState, answer);
+    botReply(text, widget);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+        <button
+          onClick={() => navigate("/cabinet")}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <Icon name="ArrowLeft" size={18} className="text-gray-600" />
+        </button>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-400 to-pink-600 flex items-center justify-center">
+          <Icon name="ShieldAlert" size={18} className="text-white" />
+        </div>
+        <div>
+          <div className="font-semibold text-sm text-gray-900">Барьеры, тревоги и стресс</div>
+          <div className="text-xs text-gray-400">Координатный анализ X–Y</div>
+        </div>
+      </div>
+
+      {!hasAccess ? (
+        <BarrierBotPaywall onPay={handlePay} />
+      ) : (
+        <BarrierBotChat
+          messages={messages}
+          loading={loading}
+          onAnswer={handleAnswer}
+          bottomRef={bottomRef as React.RefObject<HTMLDivElement>}
+        />
+      )}
+    </div>
+  );
+}

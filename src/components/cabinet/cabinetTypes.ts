@@ -22,7 +22,7 @@ export type PsychResult = {
 
 export const tools = [
   { icon: "Brain", title: "Психологический анализ", desc: "Профориентация и предотвращение выгорания", color: "bg-indigo-50 text-indigo-600", link: "/psych-bot", badge: "299 ₽" },
-  { icon: "ShieldAlert", title: "Барьеры, тревоги и стресс", desc: "Выявляет страхи, синдром самозванца, прокрастинацию и усталость — даёт персональные рекомендации", color: "bg-rose-50 text-rose-600", link: null, badge: "290 ₽" },
+  { icon: "ShieldAlert", title: "Барьеры, тревоги и стресс", desc: "Выявляет страхи, синдром самозванца, прокрастинацию и усталость — даёт персональные рекомендации", color: "bg-rose-50 text-rose-600", link: "/barrier-bot", badge: "290 ₽" },
   { icon: "Banknote", title: "Подбор дохода", desc: "Найди подходящий вариант дополнительного заработка", color: "bg-green-50 text-green-600", link: "/income-bot" },
   { icon: "BookOpen", title: "Дневник самоанализа", desc: "Фиксируй мысли и наблюдай динамику", color: "bg-violet-50 text-violet-600", link: "/diary" },
   { icon: "Map", title: "Шаги развития", desc: "Персональный план на 3 месяца", color: "bg-emerald-50 text-emerald-600", link: "/plan-bot" },
