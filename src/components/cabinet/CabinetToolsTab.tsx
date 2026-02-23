@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
-import { checkAccess, hasSubscription, subscriptionExpires, ToolId, activateSubscription } from "@/lib/access";
+import { checkAccess, hasSubscription, subscriptionExpires, ToolId, getBalance, payFromBalanceSub } from "@/lib/access";
 import PaywallModal from "@/components/PaywallModal";
+import BalanceTopUpModal from "@/components/BalanceTopUpModal";
 
 type ToolDef = {
   id: ToolId;
@@ -90,6 +91,9 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
   const [paywall, setPaywall] = useState<{ tool: ToolDef } | null>(null);
   const [hasSub, setHasSub] = useState(false);
   const [subExp, setSubExp] = useState<Date | null>(null);
+  const [balance, setBalance] = useState(getBalance);
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [subLoading, setSubLoading] = useState(false);
 
   const refresh = () => {
     const map = {} as Record<ToolId, ReturnType<typeof checkAccess>>;
@@ -97,6 +101,7 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
     setAccessMap(map);
     setHasSub(hasSubscription());
     setSubExp(subscriptionExpires());
+    setBalance(getBalance());
   };
 
   useEffect(() => { refresh(); }, []);
@@ -110,14 +115,23 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
     }
   };
 
-  const handlePaySuccess = () => {
+  const handlePaySuccess = (toolLink?: string) => {
     setPaywall(null);
     refresh();
+    if (toolLink) onNavigate(toolLink);
   };
 
-  const buySubscription = async () => {
-    activateSubscription();
-    refresh();
+  const buySubscription = () => {
+    if (balance >= 990) {
+      setSubLoading(true);
+      setTimeout(() => {
+        const ok = payFromBalanceSub();
+        setSubLoading(false);
+        if (ok) refresh();
+      }, 700);
+    } else {
+      setShowTopUp(true);
+    }
   };
 
   return (
@@ -149,10 +163,19 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
               <div className="text-white/70 text-xs mb-2">/ 30 дней</div>
               <button
                 onClick={buySubscription}
-                className="bg-white text-primary font-bold px-4 py-2 rounded-xl text-sm hover:bg-white/90 transition-colors"
+                disabled={subLoading}
+                className="bg-white text-primary font-bold px-4 py-2 rounded-xl text-sm hover:bg-white/90 transition-colors flex items-center gap-1.5 disabled:opacity-70"
               >
-                Купить
+                {subLoading
+                  ? <><Icon name="Loader2" size={14} className="animate-spin" />Списываем...</>
+                  : balance >= 990
+                    ? <><Icon name="Wallet" size={14} />Списать 990 ₽</>
+                    : <><Icon name="Plus" size={14} />Пополнить</>
+                }
               </button>
+              {balance > 0 && balance < 990 && (
+                <div className="text-white/60 text-[11px] mt-1">Баланс: {balance} ₽</div>
+              )}
             </div>
           </div>
         </div>
@@ -214,7 +237,14 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
           toolId={paywall.tool.id}
           toolName={paywall.tool.title}
           onClose={() => setPaywall(null)}
-          onSuccess={handlePaySuccess}
+          onSuccess={() => handlePaySuccess(paywall.tool.link)}
+        />
+      )}
+
+      {showTopUp && (
+        <BalanceTopUpModal
+          onClose={() => setShowTopUp(false)}
+          onSuccess={() => { refresh(); setShowTopUp(false); }}
         />
       )}
     </div>
