@@ -63,6 +63,7 @@ export default function Index() {
   const [activeTest, setActiveTest] = useState<null | "склонности" | "психологический">(null);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const demoQuestions = [
     {
@@ -97,7 +98,7 @@ export default function Index() {
 
       {/* NAV */}
       <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center">
               <Icon name="Compass" size={16} className="text-white" />
@@ -110,34 +111,64 @@ export default function Index() {
             <button onClick={() => scrollTo("faq")} className="hover:text-foreground transition-colors">FAQ</button>
             <button onClick={() => navigate("/blog")} className="hover:text-foreground transition-colors">Статьи</button>
           </div>
-          {isLoggedIn ? (
+          <div className="flex items-center gap-2">
+            {isLoggedIn ? (
+              <button
+                onClick={() => navigate("/cabinet")}
+                className="gradient-brand text-white text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2"
+              >
+                <Icon name="LayoutDashboard" size={15} />
+                <span className="hidden sm:inline">В кабинет</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/auth")}
+                className="gradient-brand text-white text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+              >
+                Начать тест
+              </button>
+            )}
             <button
-              onClick={() => navigate("/cabinet")}
-              className="gradient-brand text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="md:hidden p-2 rounded-xl hover:bg-secondary transition-colors text-foreground"
             >
-              <Icon name="LayoutDashboard" size={15} />
-              В кабинет
+              <Icon name={menuOpen ? "X" : "Menu"} size={22} />
             </button>
-          ) : (
-            <button
-              onClick={() => navigate("/auth")}
-              className="gradient-brand text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
-            >
-              Начать тест
-            </button>
-          )}
+          </div>
         </div>
+        {menuOpen && (
+          <div className="md:hidden border-t border-border bg-white/95 backdrop-blur-md animate-fade-in">
+            <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-1">
+              <button onClick={() => { scrollTo("how"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+                <Icon name="Lightbulb" size={18} className="text-primary" />
+                Как работает
+              </button>
+              <button onClick={() => { scrollTo("tools"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+                <Icon name="Wrench" size={18} className="text-primary" />
+                Инструменты
+              </button>
+              <button onClick={() => { scrollTo("faq"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+                <Icon name="HelpCircle" size={18} className="text-primary" />
+                FAQ
+              </button>
+              <button onClick={() => { navigate("/blog"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+                <Icon name="BookOpen" size={18} className="text-primary" />
+                Статьи
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* HERO */}
-      <section className="max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 md:pt-24 md:pb-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-2 mb-6 text-sm text-primary font-medium shadow-sm">
               <Icon name="Sparkles" size={14} />
               Психологическое ориентирование
             </div>
-            <h1 className="text-4xl md:text-5xl font-black leading-[1.15] text-foreground mb-5">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black leading-[1.15] text-foreground mb-5">
               Узнай, какое дело{" "}
               <span className="text-gradient">тебе подходит</span>{" "}
               и не приведёт к выгоранию
@@ -159,7 +190,7 @@ export default function Index() {
                 Узнать свои ценности
               </button>
             </div>
-            <div className="flex items-center gap-6 mt-8 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5"><Icon name="Sparkles" size={14} className="text-primary" />Первый тест бесплатно</div>
               <div className="flex items-center gap-1.5"><Icon name="Clock" size={14} className="text-primary" />15–20 минут</div>
               <div className="flex items-center gap-1.5"><Icon name="Users" size={14} className="text-primary" />2 400+ прошли</div>
@@ -172,7 +203,7 @@ export default function Index() {
               alt="Найди своё дело"
               className="relative w-full rounded-3xl shadow-2xl object-cover aspect-square glow-soft"
             />
-            <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3 border border-border">
+            <div className="absolute -bottom-4 left-2 sm:-left-4 bg-white rounded-2xl shadow-lg px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-3 border border-border">
               <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center">
                 <Icon name="TrendingUp" size={18} className="text-green-600" />
               </div>
@@ -186,8 +217,8 @@ export default function Index() {
       </section>
 
       {/* PROBLEM */}
-      <section className="py-20 bg-white/60">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="py-12 md:py-20 bg-white/60">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Проблема</p>
             <h2 className="text-3xl md:text-4xl font-black text-foreground">Узнаёшь себя?</h2>
@@ -210,8 +241,8 @@ export default function Index() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how" className="py-20">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="how" className="py-12 md:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Решение</p>
             <h2 className="text-3xl md:text-4xl font-black text-foreground">Как работает сервис</h2>
@@ -236,15 +267,15 @@ export default function Index() {
       </section>
 
       {/* DEMO TEST */}
-      <section id="demo" className="py-20 bg-white/60">
-        <div className="max-w-2xl mx-auto px-6">
+      <section id="demo" className="py-12 md:py-20 bg-white/60">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Демо</p>
             <h2 className="text-3xl font-black text-foreground">Попробуй прямо сейчас</h2>
             <p className="text-muted-foreground mt-2">Три вопроса из настоящего теста</p>
           </div>
 
-          <div className="bg-white rounded-3xl border border-border shadow-sm p-8">
+          <div className="bg-white rounded-3xl border border-border shadow-sm p-5 sm:p-8">
             {step < demoQuestions.length ? (
               <div className="animate-fade-in-up" key={step}>
                 <div className="flex items-center justify-between mb-6">
@@ -304,8 +335,8 @@ export default function Index() {
       </section>
 
       {/* TOOLS */}
-      <section id="tools" className="py-20">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="tools" className="py-12 md:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Инструменты</p>
             <h2 className="text-3xl md:text-4xl font-black text-foreground">6 инструментов для поиска себя</h2>
@@ -334,7 +365,7 @@ export default function Index() {
               <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-2">Этапы</p>
               <h3 className="text-2xl font-black text-foreground">Этапы работы с инструментами</h3>
             </div>
-            <div className="grid sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
               {[
                 { icon: "MessageCircle", label: "Отвечаешь", text: "на точные вопросы о себе — честно и без правильных ответов" },
                 { icon: "Lightbulb", label: "Осознаёшь", text: "свои ценности, барьеры и то, что действительно важно" },
@@ -365,8 +396,8 @@ export default function Index() {
       </section>
 
       {/* AUDIENCE */}
-      <section className="py-20 bg-white/60">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="py-12 md:py-20 bg-white/60">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-black text-foreground">Кому подойдёт</h2>
           </div>
@@ -385,8 +416,8 @@ export default function Index() {
       </section>
 
       {/* TRUST */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="py-12 md:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Доверие</p>
             <h2 className="text-3xl md:text-4xl font-black text-foreground">Почему нам доверяют</h2>
@@ -410,8 +441,8 @@ export default function Index() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-20 bg-white/60">
-        <div className="max-w-3xl mx-auto px-6">
+      <section id="faq" className="py-12 md:py-20 bg-white/60">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">FAQ</p>
             <h2 className="text-3xl md:text-4xl font-black text-foreground">Частые вопросы</h2>
@@ -425,9 +456,9 @@ export default function Index() {
       </section>
 
       {/* CTA */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="gradient-brand rounded-3xl p-10 md:p-14 text-center text-white relative overflow-hidden">
+      <section className="py-12 md:py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="gradient-brand rounded-3xl p-8 sm:p-10 md:p-14 text-center text-white relative overflow-hidden">
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -457,8 +488,8 @@ export default function Index() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-border py-10">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-border py-8 md:py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
               <Icon name="Compass" size={14} className="text-white" />

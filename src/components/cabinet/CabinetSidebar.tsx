@@ -31,21 +31,20 @@ const NAV_ITEMS = [
   { id: "blog" as Tab, icon: "BookOpen", label: "Статьи" },
 ];
 
-// Мобильная навигация — используется внутри <main> в Cabinet.tsx
 export function CabinetMobileNav({ activeTab, onTabChange, onLogoClick, onLogout }: Omit<Props, "user">) {
   const [showTopUp, setShowTopUp] = useState(false);
   const { balance } = useBalance();
 
   return (
     <>
-      <div className="md:hidden sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-border px-4 h-14 flex items-center justify-between">
+      <div className="md:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-border/50 px-4 h-13 flex items-center justify-between">
         <button onClick={onLogoClick} className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
             <Icon name="Compass" size={13} className="text-white" />
           </div>
-          <span className="font-bold text-foreground">ПоДелам</span>
+          <span className="font-bold text-foreground text-sm">ПоДелам</span>
         </button>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setShowTopUp(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 border border-violet-200 text-violet-700 text-xs font-bold hover:bg-violet-100 transition-colors"
@@ -53,20 +52,31 @@ export function CabinetMobileNav({ activeTab, onTabChange, onLogoClick, onLogout
             <Icon name="Wallet" size={13} />
             {balance} ₽
           </button>
+          <button onClick={onLogout} className="p-2 rounded-lg text-muted-foreground">
+            <Icon name="LogOut" size={17} />
+          </button>
+        </div>
+      </div>
+
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-border/50 safe-bottom">
+        <div className="flex items-center justify-around px-2 py-1.5">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
-              className={`p-2 rounded-lg transition-colors ${activeTab === item.id ? "text-primary" : "text-muted-foreground"}`}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all min-w-[60px] ${
+                activeTab === item.id
+                  ? "text-primary"
+                  : "text-muted-foreground/60"
+              }`}
             >
               <Icon name={item.icon as "LayoutDashboard"} size={20} />
+              <span className="text-[10px] font-medium leading-tight">{item.label}</span>
             </button>
           ))}
-          <button onClick={onLogout} className="p-2 rounded-lg text-muted-foreground ml-1">
-            <Icon name="LogOut" size={18} />
-          </button>
         </div>
       </div>
+
       {showTopUp && (
         <BalanceTopUpModal
           onClose={() => setShowTopUp(false)}

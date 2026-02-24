@@ -139,7 +139,7 @@ export default function Cabinet() {
               />
             )}
           </div>
-          <footer className="border-t border-border/40 py-4 px-6 md:px-8 mt-16">
+          <footer className="border-t border-border/40 py-4 px-6 md:px-8 mt-16 pb-20 md:pb-4">
             <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground/50">
               <div className="text-center md:text-left space-y-0.5">
                 <p>© 2025 ПоДелам · ИП Уварова А. С. · ОГРНИП 322508100398078</p>

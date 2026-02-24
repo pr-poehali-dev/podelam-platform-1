@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { SEGMENT_NAMES } from "@/components/psych-bot/psychBotData";
 import { User, TestResult, PsychResult, printPsychResult } from "./cabinetTypes";
@@ -14,6 +14,25 @@ type Props = {
   onNavigate: (path: string) => void;
   onTabChange?: (tab: string) => void;
 };
+
+function AccordionSection({ icon, title, defaultOpen = false, children }: { icon: string; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="bg-white rounded-3xl border border-border overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 p-5 text-left"
+      >
+        <div className="w-9 h-9 rounded-xl gradient-brand flex items-center justify-center shrink-0">
+          <Icon name={icon} size={16} className="text-white" />
+        </div>
+        <h3 className="font-bold text-foreground flex-1">{title}</h3>
+        <Icon name={open ? "ChevronUp" : "ChevronDown"} size={18} className="text-muted-foreground shrink-0" />
+      </button>
+      {open && <div className="px-5 pb-5">{children}</div>}
+    </div>
+  );
+}
 
 export default function CabinetHomeTab({ user, psychTest, psychResult, careerResult, profileComplete, onNavigate, onTabChange }: Props) {
   const [careerExpanded, setCareerExpanded] = useState(false);
@@ -190,8 +209,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
 
       {/* Блок: инструменты после тестов */}
       {careerResult && (
-        <div className="bg-white rounded-3xl border border-border p-5">
-          <h3 className="font-bold text-foreground mb-4">Следующие шаги</h3>
+        <AccordionSection icon="Rocket" title="Следующие шаги" defaultOpen>
           <div className="space-y-3">
 
             {/* Психологический анализ */}
@@ -241,7 +259,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
               </div>
             )}
           </div>
-        </div>
+        </AccordionSection>
       )}
 
       {/* Подписка — баннер если нет */}
@@ -263,10 +281,9 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
       )}
 
       {completions.length > 0 && (
-        <div className="bg-white rounded-3xl border border-border p-5">
-          <h3 className="font-bold text-foreground mb-3 text-sm">Недавняя активность</h3>
+        <AccordionSection icon="Activity" title="Недавняя активность">
           <div className="space-y-2">
-            {completions.slice(0, 3).map((c, i) => (
+            {completions.slice(0, 5).map((c, i) => (
               <div key={i} className="flex items-center gap-3 text-sm">
                 <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                 <span className="text-muted-foreground flex-1">{c.summary}</span>
@@ -274,7 +291,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
               </div>
             ))}
           </div>
-        </div>
+        </AccordionSection>
       )}
     </div>
   );

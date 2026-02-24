@@ -157,7 +157,7 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
       {/* Подписка — баннер */}
       {!hasSub && (
         <div className="gradient-brand rounded-3xl p-5 text-white">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
             <div>
               <div className="font-black text-lg mb-1">Полный доступ</div>
               <div className="text-white/80 text-sm mb-3">Все инструменты на 30 дней, включая Дневник</div>
@@ -167,13 +167,15 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
                 ))}
               </div>
             </div>
-            <div className="text-right shrink-0">
-              <div className="text-3xl font-black">990 ₽</div>
-              <div className="text-white/70 text-xs mb-2">/ 30 дней</div>
+            <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-0 w-full sm:w-auto sm:text-right shrink-0">
+              <div>
+                <div className="text-3xl font-black">990 ₽</div>
+                <div className="text-white/70 text-xs mb-2">/ 30 дней</div>
+              </div>
               <button
                 onClick={buySubscription}
                 disabled={subLoading}
-                className="bg-white text-primary font-bold px-4 py-2 rounded-xl text-sm hover:bg-white/90 transition-colors flex items-center gap-1.5 disabled:opacity-70"
+                className="bg-white text-primary font-bold px-4 py-2 rounded-xl text-sm hover:bg-white/90 transition-colors flex items-center gap-1.5 disabled:opacity-70 whitespace-nowrap"
               >
                 {subLoading
                   ? <><Icon name="Loader2" size={14} className="animate-spin" />Списываем...</>
