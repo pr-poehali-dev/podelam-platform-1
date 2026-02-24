@@ -268,8 +268,11 @@ export function applyAnswer(state: BotState, answer: string | number | string[])
     }
 
     case "break_point": {
-      if (String(answer) === "Определить автоматически") {
-        s.breakStep = detectBreakPoint(s.steps);
+      const ans = String(answer);
+      if (ans === "Да, это он" || ans === "Определить автоматически") {
+        if (s.breakStep === -1) {
+          s.breakStep = detectBreakPoint(s.steps);
+        }
         if (s.breakStep === -1) {
           s.phase = "break_manual";
         } else {

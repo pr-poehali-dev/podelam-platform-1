@@ -172,7 +172,19 @@ function WidgetRenderer({ widget, onAnswer, isLast }: { widget: Widget; onAnswer
     return <TextInputWidget placeholder={widget.placeholder} onSubmit={onAnswer} />;
   }
   if (widget.type === "chart") {
-    return <BarrierBotChart steps={widget.steps} breakStep={widget.breakStep} newY={widget.newY} />;
+    return (
+      <div>
+        <BarrierBotChart steps={widget.steps} breakStep={widget.breakStep} newY={widget.newY} />
+        {isLast && (
+          <button
+            onClick={() => onAnswer("ok")}
+            className="mt-3 w-full bg-rose-500 text-white font-semibold py-2.5 rounded-xl hover:bg-rose-600 transition-colors text-sm"
+          >
+            Продолжить →
+          </button>
+        )}
+      </div>
+    );
   }
   if (widget.type === "confirm") {
     return (
