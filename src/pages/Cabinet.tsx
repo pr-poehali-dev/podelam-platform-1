@@ -146,6 +146,7 @@ export default function Cabinet() {
               </div>
               <div className="flex flex-wrap items-center gap-4">
                 <InstallPWA />
+                <a href="/pricing" className="hover:text-muted-foreground transition-colors">Тарифы</a>
                 <a href="/privacy" className="hover:text-muted-foreground transition-colors">Политика конфиденциальности</a>
                 <a href="/oferta" className="hover:text-muted-foreground transition-colors">Оферта</a>
               </div>
