@@ -64,10 +64,10 @@ function ArticleCard({ article, onClick }: { article: ArticlePreview; onClick: (
 
 function CategoryChips({ categories, active, onChange }: { categories: Category[]; active: string; onChange: (slug: string) => void }) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div className="grid grid-cols-3 gap-2">
       <button
         onClick={() => onChange("")}
-        className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+        className={`px-4 py-2 rounded-full text-sm font-medium transition-all text-center ${
           !active
             ? "gradient-brand text-white shadow-sm"
             : "bg-white border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
@@ -79,7 +79,7 @@ function CategoryChips({ categories, active, onChange }: { categories: Category[
         <button
           key={cat.slug}
           onClick={() => onChange(cat.slug)}
-          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-all text-center ${
             active === cat.slug
               ? "gradient-brand text-white shadow-sm"
               : "bg-white border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
@@ -150,8 +150,8 @@ export default function Blog() {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-foreground mb-1">Блог</h1>
-          <p className="text-sm text-muted-foreground">Полезные статьи о карьере, психологии и развитии</p>
+          <h1 className="text-2xl font-extrabold text-foreground mb-1">Инсайты</h1>
+          <p className="text-sm text-muted-foreground">Идеи и открытия для карьеры, роста и внутренней опоры</p>
         </div>
 
         {categories.length > 0 && (
