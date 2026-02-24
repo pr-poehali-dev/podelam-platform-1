@@ -8,6 +8,7 @@ import random
 import string
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.utils import formataddr, formatdate, make_msgid
 from datetime import datetime
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
@@ -28,9 +29,12 @@ def send_email(to_email: str, code: str):
     smtp_password = os.environ.get('SMTP_PASSWORD', '')
 
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = 'Восстановление пароля — ПоДелам'
-    msg['From'] = smtp_user
+    msg['Subject'] = 'Ваш код для восстановления пароля'
+    msg['From'] = formataddr(('ПоДелам', smtp_user))
     msg['To'] = to_email
+    msg['Date'] = formatdate(localtime=True)
+    msg['Message-ID'] = make_msgid(domain='mail.ru')
+    msg['X-Mailer'] = 'PoDelam Mailer'
 
     html = f"""
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
