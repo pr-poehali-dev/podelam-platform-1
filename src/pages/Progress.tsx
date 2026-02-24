@@ -6,6 +6,7 @@ import useToolSync from "@/hooks/useToolSync";
 import PaywallModal from "@/components/PaywallModal";
 import ProgressChat from "@/components/progress/ProgressChat";
 import ToolHint from "@/components/ToolHint";
+import SyncIndicator from "@/components/SyncIndicator";
 import ProgressPortrait from "@/components/progress/ProgressPortrait";
 import {
   Templates,
@@ -34,7 +35,7 @@ export default function Progress() {
   const [messages, setMessages] = useState<Message[]>([]);
   const idRef = useRef(0);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { sessions: syncedEntries, saveSession: saveProgressEntry } = useToolSync<ProgressEntry>("progress", "progress_entries");
+  const { sessions: syncedEntries, saveSession: saveProgressEntry, syncing } = useToolSync<ProgressEntry>("progress", "progress_entries");
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
@@ -192,6 +193,7 @@ export default function Progress() {
             <Icon name="BarChart3" size={14} className="text-blue-600" />
           </div>
           <span className="font-bold text-sm text-foreground">Прогресс</span>
+          <SyncIndicator syncing={syncing} />
           {entries.length > 0 && (
             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
               {entries.length} {entries.length === 1 ? "запись" : entries.length < 5 ? "записи" : "записей"}

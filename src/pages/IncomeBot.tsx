@@ -7,6 +7,7 @@ import IncomeBotHistory, { IncomeSession } from "@/components/income-bot/IncomeB
 import IncomeBotSourceChoice from "@/components/income-bot/IncomeBotSourceChoice";
 import IncomeBotChat from "@/components/income-bot/IncomeBotChat";
 import ToolHint from "@/components/ToolHint";
+import SyncIndicator from "@/components/SyncIndicator";
 import { QUESTIONS, RESULT_LABELS } from "@/components/income-bot/types";
 import type { Message, ResultKey, Plan } from "@/components/income-bot/types";
 import { calcScores, pickResult, getUserEmail } from "@/components/income-bot/engine";
@@ -27,7 +28,7 @@ export default function IncomeBot() {
   const [showSourceChoice, setShowSourceChoice] = useState(false);
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState<"chat" | "history">("chat");
-  const { sessions, saveSession } = useToolSync<IncomeSession>("income-bot", "income_results");
+  const { sessions, saveSession, syncing } = useToolSync<IncomeSession>("income-bot", "income_results");
 
   const addMsg = (from: "bot" | "user", text: string) => {
     setMsgId((prev) => {
@@ -190,7 +191,7 @@ export default function IncomeBot() {
           <div className="font-bold text-sm text-foreground leading-tight">Подбор дохода</div>
           <div className="text-xs text-muted-foreground">Автоматический навигатор</div>
         </div>
-
+        <SyncIndicator syncing={syncing} />
         {sessions.length > 0 && (
           <div className="flex gap-1 bg-gray-100 rounded-xl p-0.5">
             <button

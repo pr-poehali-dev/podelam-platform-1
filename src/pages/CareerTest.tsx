@@ -9,10 +9,11 @@ import {
 } from "@/lib/careerTestEngine";
 import { saveCareerResult } from "@/lib/access";
 import useToolSync from "@/hooks/useToolSync";
+import SyncIndicator from "@/components/SyncIndicator";
 
 export default function CareerTest() {
   const navigate = useNavigate();
-  const { saveSession } = useToolSync<Record<string, unknown>>("career-test", "career_sessions");
+  const { saveSession, syncing } = useToolSync<Record<string, unknown>>("career-test", "career_sessions");
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<CareerType[]>([]);
   const [animating, setAnimating] = useState(false);
@@ -173,6 +174,7 @@ export default function CareerTest() {
             </div>
             <span className="font-bold text-foreground text-sm">ПоДелам</span>
           </div>
+          <SyncIndicator syncing={syncing} />
           <div className="text-sm text-muted-foreground">{current + 1} / {CAREER_QUESTIONS.length}</div>
         </div>
         <div className="h-1 bg-secondary">

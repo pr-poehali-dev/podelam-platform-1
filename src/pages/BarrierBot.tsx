@@ -6,6 +6,7 @@ import Icon from "@/components/ui/icon";
 import BarrierBotPaywall from "@/components/barrier-bot/BarrierBotPaywall";
 import BarrierBotChat from "@/components/barrier-bot/BarrierBotChat";
 import ToolHint from "@/components/ToolHint";
+import SyncIndicator from "@/components/SyncIndicator";
 import BarrierBotHistory, { BarrierSession } from "@/components/barrier-bot/BarrierBotHistory";
 import {
   BotState,
@@ -37,7 +38,7 @@ export default function BarrierBot() {
   const [hasAccess, setHasAccess] = useState(false);
   const [tab, setTab] = useState<"chat" | "history">("chat");
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { sessions, saveSession, forceSync } = useToolSync<BarrierSession>("barrier-bot", "barrier_results");
+  const { sessions, saveSession, forceSync, syncing } = useToolSync<BarrierSession>("barrier-bot", "barrier_results");
 
   const getUserEmail = () => {
     const u = localStorage.getItem("pdd_user");
@@ -288,6 +289,7 @@ export default function BarrierBot() {
           <div className="font-semibold text-sm text-gray-900">Барьеры, тревоги и стресс</div>
           <div className="text-xs text-gray-400">Координатный анализ X–Y</div>
         </div>
+        <SyncIndicator syncing={syncing} />
         {hasAccess && sessions.length > 0 && (
           <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
             <button

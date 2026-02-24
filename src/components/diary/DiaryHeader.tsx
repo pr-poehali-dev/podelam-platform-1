@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import SyncIndicator from "@/components/SyncIndicator";
 import { Phase, JournalEntry, stageLabel } from "./diaryEngine";
 
 type ViewTab = "chat" | "history";
@@ -10,9 +11,10 @@ type Props = {
   entries: JournalEntry[];
   tab: ViewTab;
   onTabChange: (tab: ViewTab) => void;
+  syncing?: boolean;
 };
 
-export default function DiaryHeader({ onBack, phase, stageNumber, entries, tab, onTabChange }: Props) {
+export default function DiaryHeader({ onBack, phase, stageNumber, entries, tab, onTabChange, syncing = false }: Props) {
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-border px-4 h-14 flex items-center justify-between shrink-0">
       <button
@@ -34,6 +36,8 @@ export default function DiaryHeader({ onBack, phase, stageNumber, entries, tab, 
           </span>
         )}
       </div>
+
+      <SyncIndicator syncing={syncing} />
 
       {entries.length > 0 ? (
         <div className="flex gap-1 bg-gray-100 rounded-xl p-0.5">

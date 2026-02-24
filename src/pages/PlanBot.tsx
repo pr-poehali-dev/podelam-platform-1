@@ -23,6 +23,7 @@ import { Direction, DIRECTION_NAMES } from "@/components/plan-bot/planBotData";
 import PlanBotHeader from "@/components/plan-bot/PlanBotHeader";
 import PlanBotMessages from "@/components/plan-bot/PlanBotMessages";
 import PlanBotHistory from "@/components/plan-bot/PlanBotHistory";
+import SyncIndicator from "@/components/SyncIndicator";
 
 type SliderValues = { energy: number; motivation: number; confidence: number };
 type ViewTab = "chat" | "history";
@@ -39,7 +40,7 @@ export default function PlanBot() {
   const [showSourceChoice, setShowSourceChoice] = useState(false);
   const [testProfile, setTestProfile] = useState<TestProfile>({});
   const [tab, setTab] = useState<ViewTab>("chat");
-  const { sessions: savedPlans, saveSession: savePlanToServer } = useToolSync<SavedPlanEntry>("plan-bot", "plan_history");
+  const { sessions: savedPlans, saveSession: savePlanToServer, syncing } = useToolSync<SavedPlanEntry>("plan-bot", "plan_history");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const addMsg = (from: "bot" | "user", text: string) => {
@@ -311,7 +312,7 @@ ${insight}`);
           <p className="font-semibold text-gray-900 text-sm leading-tight">Шаги развития</p>
           <p className="text-xs text-gray-500">Персональный план на 3 месяца</p>
         </div>
-
+        <SyncIndicator syncing={syncing} />
         {savedPlans.length > 0 ? (
           <div className="flex gap-1 bg-gray-100 rounded-xl p-0.5">
             <button

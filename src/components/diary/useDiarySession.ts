@@ -26,7 +26,7 @@ export function useDiarySession() {
   const [currentSlider, setCurrentSlider] = useState<{ min: number; max: number; label: string } | undefined>();
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const { sessions: syncedEntries, saveSession: saveDiaryEntry } = useToolSync<JournalEntry>("diary", "diary_entries");
+  const { sessions: syncedEntries, saveSession: saveDiaryEntry, syncing } = useToolSync<JournalEntry>("diary", "diary_entries");
 
   const [entry, setEntryState] = useState<Omit<JournalEntry, "report" | "date">>({
     context_area: "",
@@ -572,5 +572,6 @@ export function useDiarySession() {
     handleAddMore,
     handleFinish,
     startNew,
+    syncing,
   };
 }

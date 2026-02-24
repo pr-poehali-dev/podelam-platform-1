@@ -31,6 +31,7 @@ export default function Diary() {
         entries={s.entries}
         tab={s.tab}
         onTabChange={s.setTab}
+        syncing={s.syncing}
       />
 
       {s.tab === "history" ? (

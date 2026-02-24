@@ -6,6 +6,7 @@ import Icon from "@/components/ui/icon";
 import PsychBotPaywall from "@/components/psych-bot/PsychBotPaywall";
 import PsychBotChat from "@/components/psych-bot/PsychBotChat";
 import ToolHint from "@/components/ToolHint";
+import SyncIndicator from "@/components/SyncIndicator";
 import {
   BotState,
   Message,
@@ -35,7 +36,7 @@ export default function PsychBot() {
   const [loading, setLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { saveSession, forceSync } = useToolSync<Record<string, unknown>>("psych-bot", "psych_result_history");
+  const { saveSession, forceSync, syncing } = useToolSync<Record<string, unknown>>("psych-bot", "psych_result_history");
 
   const addMsg = (from: "bot" | "user", text: string, widget?: Widget) => {
     const id = Date.now() + Math.random();
@@ -349,7 +350,7 @@ export default function PsychBot() {
             <p className="text-xs text-gray-500">Анализ завершён</p>
           )}
         </div>
-        {/* Прогресс-бар */}
+        <SyncIndicator syncing={syncing} />
         {botState.step === "quiz" && (
           <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div

@@ -1,12 +1,14 @@
 import Icon from "@/components/ui/icon";
+import SyncIndicator from "@/components/SyncIndicator";
 
 type Props = {
   onBack: () => void;
   onReset: () => void;
   showReset: boolean;
+  syncing?: boolean;
 };
 
-export default function PlanBotHeader({ onBack, onReset, showReset }: Props) {
+export default function PlanBotHeader({ onBack, onReset, showReset, syncing = false }: Props) {
   return (
     <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100 px-4 py-3 flex items-center gap-3">
       <button onClick={onBack} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
@@ -19,6 +21,7 @@ export default function PlanBotHeader({ onBack, onReset, showReset }: Props) {
         <p className="font-semibold text-gray-900 text-sm leading-tight">Шаги развития</p>
         <p className="text-xs text-gray-500">Персональный план на 3 месяца</p>
       </div>
+      <SyncIndicator syncing={syncing} />
       {showReset && (
         <button
           onClick={onReset}
