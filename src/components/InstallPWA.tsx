@@ -28,10 +28,6 @@ export default function InstallPWA() {
   }, []);
 
   const handleInstall = async () => {
-    if (isIOS) {
-      setShowIOSHint(true);
-      return;
-    }
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -40,12 +36,21 @@ export default function InstallPWA() {
   };
 
   if (installed) return null;
-  if (!deferredPrompt && !isIOS) return null;
+
+  const handleClick = () => {
+    if (isIOS) {
+      setShowIOSHint(true);
+    } else if (deferredPrompt) {
+      handleInstall();
+    } else {
+      setShowIOSHint(true);
+    }
+  };
 
   return (
     <>
       <button
-        onClick={handleInstall}
+        onClick={handleClick}
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         title="Установить приложение"
       >
