@@ -434,7 +434,7 @@ export default function Index() {
             <div className="relative">
               <h2 className="text-3xl md:text-4xl font-black mb-4">Начни с одного шага</h2>
               <p className="text-white/80 text-lg mb-8 max-w-md mx-auto">
-                15 минут сегодня могут изменить направление на годы вперёд
+                5 минут сегодня могут изменить направление на годы вперёд
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
