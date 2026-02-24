@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { checkAccess, saveToolCompletion } from "@/lib/access";
+import useToolSync from "@/hooks/useToolSync";
 import Icon from "@/components/ui/icon";
 import BarrierBotPaywall from "@/components/barrier-bot/BarrierBotPaywall";
 import BarrierBotChat from "@/components/barrier-bot/BarrierBotChat";
@@ -28,8 +29,6 @@ const WELCOME_TEXT = `Привет! Это инструмент **«Барьер
 
 Готов начать?`;
 
-const BARRIER_API = "https://functions.poehali.dev/817cc650-9d57-4575-8a6d-072b98b1b815";
-
 export default function BarrierBot() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -37,50 +36,12 @@ export default function BarrierBot() {
   const [loading, setLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [tab, setTab] = useState<"chat" | "history">("chat");
-  const [sessions, setSessions] = useState<BarrierSession[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { sessions, saveSession, forceSync } = useToolSync<BarrierSession>("barrier-bot", "barrier_results");
 
   const getUserEmail = () => {
     const u = localStorage.getItem("pdd_user");
     return u ? JSON.parse(u).email : "";
-  };
-
-  const getUserData = () => {
-    const u = localStorage.getItem("pdd_user");
-    return u ? JSON.parse(u) : null;
-  };
-
-  const loadSessions = async (email: string, userId?: number) => {
-    const localRaw = localStorage.getItem(`barrier_results_${email}`) ?? "[]";
-    const localSessions = JSON.parse(localRaw);
-    
-    if (localSessions.length > 0) {
-      setSessions(localSessions);
-    }
-
-    if (!userId) return;
-
-    try {
-      const resp = await fetch(BARRIER_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "sync", userId, sessions: localSessions }),
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data.sessions) {
-          setSessions(data.sessions);
-          localStorage.setItem(`barrier_results_${email}`, JSON.stringify(data.sessions));
-          if (data.sessions.length > 0) {
-            localStorage.setItem(`pdd_ever_done_${email}_barrier-bot`, "1");
-          }
-        }
-      }
-    } catch {
-      if (localSessions.length > 0) {
-        localStorage.setItem(`pdd_ever_done_${email}_barrier-bot`, "1");
-      }
-    }
   };
 
   const addMsg = (from: "bot" | "user", text: string, widget?: Widget) => {
@@ -106,8 +67,6 @@ export default function BarrierBot() {
     if (hasAcc) {
       setHasAccess(true);
     }
-
-    loadSessions(userData.email, userData.id);
 
     const savedMessages = localStorage.getItem(`barrier_chat_${userData.email}`);
     const savedState = localStorage.getItem(`barrier_state_${userData.email}`);
@@ -265,8 +224,6 @@ export default function BarrierBot() {
       }
 
       case "result": {
-        const email = getUserEmail();
-        const userData = getUserData();
         const record: BarrierSession = {
           date: new Date().toLocaleDateString("ru-RU"),
           context: newState.selectedContext,
@@ -278,33 +235,7 @@ export default function BarrierBot() {
           steps: newState.steps,
         };
 
-        if (userData?.id) {
-          fetch(BARRIER_API, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "save", userId: userData.id, sessionData: record }),
-          })
-            .then((r) => r.json())
-            .then((data) => {
-              if (data.id) {
-                const withId = { ...record, _server_id: data.id };
-                const updated = [...sessions, withId];
-                setSessions(updated);
-                localStorage.setItem(`barrier_results_${email}`, JSON.stringify(updated));
-              }
-            })
-            .catch(() => {
-              const updated = [...sessions, record];
-              setSessions(updated);
-              localStorage.setItem(`barrier_results_${email}`, JSON.stringify(updated));
-            });
-        } else {
-          const updated = [...sessions, record];
-          setSessions(updated);
-          localStorage.setItem(`barrier_results_${email}`, JSON.stringify(updated));
-        }
-
-        localStorage.setItem(`pdd_ever_done_${email}_barrier-bot`, "1");
+        saveSession(record);
         saveToolCompletion("barrier-bot", `Анализ барьеров завершён — сфера «${newState.selectedContext}», профиль ${PROFILE_TEXTS[newState.psychProfile]?.title ?? "определён"}`);
 
         return {
@@ -336,29 +267,9 @@ export default function BarrierBot() {
   const [saved, setSaved] = useState(false);
 
   const handleSave = async () => {
-    const userData = getUserData();
-    if (!userData) return;
-    const email = userData.email;
-
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
-
-    if (userData.id) {
-      try {
-        const resp = await fetch(BARRIER_API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "sync", userId: userData.id, sessions }),
-        });
-        if (resp.ok) {
-          const data = await resp.json();
-          if (data.sessions) {
-            setSessions(data.sessions);
-            localStorage.setItem(`barrier_results_${email}`, JSON.stringify(data.sessions));
-          }
-        }
-      } catch { /* localStorage fallback already done */ }
-    }
+    await forceSync();
   };
 
   return (

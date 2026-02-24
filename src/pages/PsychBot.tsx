@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { checkAccess, saveToolCompletion } from "@/lib/access";
+import useToolSync from "@/hooks/useToolSync";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import PsychBotPaywall from "@/components/psych-bot/PsychBotPaywall";
@@ -34,6 +35,7 @@ export default function PsychBot() {
   const [loading, setLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { saveSession, forceSync } = useToolSync<Record<string, unknown>>("psych-bot", "psych_result_history");
 
   const addMsg = (from: "bot" | "user", text: string, widget?: Widget) => {
     const id = Date.now() + Math.random();
@@ -85,29 +87,8 @@ export default function PsychBot() {
     }
   }, [messages, botState]);
 
-  const AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
-
   const handleSaveToServer = async () => {
-    const u = localStorage.getItem("pdd_user");
-    if (!u) return;
-    const userData = JSON.parse(u);
-    const result = localStorage.getItem(`psych_result_${userData.email}`);
-    if (!result || !userData.id) return;
-
-    try {
-      await fetch(AUTH_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "save_test_result",
-          userId: userData.id,
-          testType: "psych-bot",
-          resultData: JSON.parse(result),
-        }),
-      });
-    } catch {
-      // локальное сохранение уже есть — не критично
-    }
+    await forceSync();
   };
 
   const savePsychResult = (
@@ -157,18 +138,7 @@ export default function PsychBot() {
     localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(psychResult));
     saveToolCompletion("psych-bot", `Психологический анализ завершён — профиль «${profileName}»`);
 
-    if (userData.id) {
-      fetch(AUTH_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "save_test_result",
-          userId: userData.id,
-          testType: "psych-bot",
-          resultData: psychResult,
-        }),
-      }).catch(() => { /* ignore */ });
-    }
+    saveSession(psychResult);
 
     const userEmail = JSON.parse(localStorage.getItem("pdd_user") || "{}").email || "";
     const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(

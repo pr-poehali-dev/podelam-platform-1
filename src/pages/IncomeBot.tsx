@@ -9,7 +9,8 @@ import IncomeBotChat from "@/components/income-bot/IncomeBotChat";
 import ToolHint from "@/components/ToolHint";
 import { QUESTIONS, RESULT_LABELS } from "@/components/income-bot/types";
 import type { Message, ResultKey, Plan } from "@/components/income-bot/types";
-import { calcScores, pickResult, getUserEmail, getIncomeSessions, saveIncomeSession } from "@/components/income-bot/engine";
+import { calcScores, pickResult, getUserEmail } from "@/components/income-bot/engine";
+import useToolSync from "@/hooks/useToolSync";
 
 export default function IncomeBot() {
   const navigate = useNavigate();
@@ -25,8 +26,8 @@ export default function IncomeBot() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSourceChoice, setShowSourceChoice] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [sessions, setSessions] = useState<IncomeSession[]>([]);
   const [tab, setTab] = useState<"chat" | "history">("chat");
+  const { sessions, saveSession } = useToolSync<IncomeSession>("income-bot", "income_results");
 
   const addMsg = (from: "bot" | "user", text: string) => {
     setMsgId((prev) => {
@@ -42,8 +43,6 @@ export default function IncomeBot() {
 
     const access = checkAccess("income-bot");
     if (access === "locked") { setShowPaywall(true); return; }
-
-    setSessions(getIncomeSessions());
 
     const u2 = JSON.parse(u);
     const hasPsych = !!localStorage.getItem(`psych_result_${u2.email}`);
@@ -100,8 +99,7 @@ export default function IncomeBot() {
             planSteps: planObj?.steps ?? [],
             answers: newAnswers,
           };
-          saveIncomeSession(session);
-          setSessions(getIncomeSessions());
+          saveSession(session);
         } catch {
           setResult("Не удалось загрузить результат. Попробуй обновить страницу.");
         }

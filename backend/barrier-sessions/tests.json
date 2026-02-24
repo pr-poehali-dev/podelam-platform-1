@@ -10,22 +10,29 @@
       "name": "Missing userId",
       "method": "POST",
       "path": "/",
-      "body": {"action": "load"},
+      "body": {"action": "load", "toolType": "barrier-bot"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Missing toolType",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "load", "userId": 1},
       "expectedStatus": 400
     },
     {
       "name": "Load sessions",
       "method": "POST",
       "path": "/",
-      "body": {"action": "load", "userId": 1},
+      "body": {"action": "load", "userId": 9999, "toolType": "barrier-bot"},
       "expectedStatus": 200
     },
     {
-      "name": "Unknown action",
+      "name": "Sync sessions",
       "method": "POST",
       "path": "/",
-      "body": {"action": "unknown", "userId": 1},
-      "expectedStatus": 400
+      "body": {"action": "sync", "userId": 9999, "toolType": "psych-bot", "sessions": []},
+      "expectedStatus": 200
     }
   ]
 }

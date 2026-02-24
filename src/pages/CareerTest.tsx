@@ -8,30 +8,11 @@ import {
   calcCareerResult,
 } from "@/lib/careerTestEngine";
 import { saveCareerResult } from "@/lib/access";
-
-const AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
-
-function saveCareerToServer(resultData: Record<string, unknown>) {
-  try {
-    const u = localStorage.getItem("pdd_user");
-    if (!u) return;
-    const userData = JSON.parse(u);
-    if (!userData.id) return;
-    fetch(AUTH_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "save_test_result",
-        userId: userData.id,
-        testType: "career-test",
-        resultData,
-      }),
-    }).catch(() => { /* ignore */ });
-  } catch { /* ignore */ }
-}
+import useToolSync from "@/hooks/useToolSync";
 
 export default function CareerTest() {
   const navigate = useNavigate();
+  const { saveSession } = useToolSync<Record<string, unknown>>("career-test", "career_sessions");
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<CareerType[]>([]);
   const [animating, setAnimating] = useState(false);
@@ -68,7 +49,7 @@ export default function CareerTest() {
         })),
       };
       saveCareerResult(careerData);
-      saveCareerToServer(careerData);
+      saveSession(careerData);
       setDone(true);
       return;
     }

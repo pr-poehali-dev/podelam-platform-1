@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { checkAccess, getToolCompletions, getLatestCareerResult } from "@/lib/access";
+import useToolSync from "@/hooks/useToolSync";
 import PaywallModal from "@/components/PaywallModal";
 import ProgressChat from "@/components/progress/ProgressChat";
 import ToolHint from "@/components/ToolHint";
@@ -33,6 +34,7 @@ export default function Progress() {
   const [messages, setMessages] = useState<Message[]>([]);
   const idRef = useRef(0);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { sessions: syncedEntries, saveSession: saveProgressEntry } = useToolSync<ProgressEntry>("progress", "progress_entries");
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
@@ -126,6 +128,7 @@ export default function Progress() {
     };
     entries.push(entry);
     localStorage.setItem(ENTRIES_KEY(), JSON.stringify(entries));
+    saveProgressEntry(entry);
 
     const resultText = buildResult(entry, prev, tpl);
     msgs = addBotRaw(msgs, resultText);
@@ -153,7 +156,8 @@ export default function Progress() {
     startNew();
   }
 
-  const entries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
+  const localEntries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
+  const entries = syncedEntries.length > 0 ? syncedEntries : localEntries;
   const currentMetric = tpl?.metrics[metricIndex];
   const completions = getToolCompletions();
   const careerResult = getLatestCareerResult();

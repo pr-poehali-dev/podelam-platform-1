@@ -17,9 +17,8 @@ import {
   loadTestProfile,
   suggestDirection,
   formatTestInsight,
-  getSavedPlans,
-  savePlanEntry,
 } from "@/components/plan-bot/planBotEngine";
+import useToolSync from "@/hooks/useToolSync";
 import { Direction, DIRECTION_NAMES } from "@/components/plan-bot/planBotData";
 import PlanBotHeader from "@/components/plan-bot/PlanBotHeader";
 import PlanBotMessages from "@/components/plan-bot/PlanBotMessages";
@@ -39,8 +38,8 @@ export default function PlanBot() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSourceChoice, setShowSourceChoice] = useState(false);
   const [testProfile, setTestProfile] = useState<TestProfile>({});
-  const [savedPlans, setSavedPlans] = useState<SavedPlanEntry[]>([]);
   const [tab, setTab] = useState<ViewTab>("chat");
+  const { sessions: savedPlans, saveSession: savePlanToServer } = useToolSync<SavedPlanEntry>("plan-bot", "plan_history");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const addMsg = (from: "bot" | "user", text: string) => {
@@ -66,9 +65,6 @@ export default function PlanBot() {
 
     const profile = loadTestProfile();
     setTestProfile(profile);
-
-    const plans = getSavedPlans();
-    setSavedPlans(plans);
 
     const u2 = JSON.parse(u);
     const em = u2.email;
@@ -270,8 +266,7 @@ ${insight}`);
       const plan = buildPlan(inputs);
       setCurrentPlan(plan);
 
-      savePlanEntry(plan, testProfile);
-      setSavedPlans(getSavedPlans());
+      savePlanToServer({ date: new Date().toISOString(), plan, testProfile });
 
       const dirName = DIRECTION_NAMES[inputs.direction];
       saveToolCompletion("plan-bot", `План: ${dirName}, ${plan.strategyName}`);

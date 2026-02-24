@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { checkAccess, saveToolCompletion } from "@/lib/access";
+import useToolSync from "@/hooks/useToolSync";
 import {
   Message, JournalEntry, Phase, InputMode,
   CHAT_KEY, ENTRIES_KEY, CONTEXT_AREAS, ALL_EMOTIONS_CHIPS,
@@ -25,6 +26,7 @@ export function useDiarySession() {
   const [currentSlider, setCurrentSlider] = useState<{ min: number; max: number; label: string } | undefined>();
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const { sessions: syncedEntries, saveSession: saveDiaryEntry } = useToolSync<JournalEntry>("diary", "diary_entries");
 
   const [entry, setEntryState] = useState<Omit<JournalEntry, "report" | "date">>({
     context_area: "",
@@ -81,6 +83,12 @@ export function useDiarySession() {
     }
     startFresh();
   }, []);
+
+  useEffect(() => {
+    if (syncedEntries.length > 0) {
+      setEntries(syncedEntries);
+    }
+  }, [syncedEntries]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -248,6 +256,7 @@ export function useDiarySession() {
     const history: JournalEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
     history.push(fullEntry);
     localStorage.setItem(ENTRIES_KEY(), JSON.stringify(history));
+    saveDiaryEntry(fullEntry);
     setEntries([...history]);
 
     const emotionSummary = fullEntry.emotions.map(e => e.emotion).join(", ") || "без эмоций";
