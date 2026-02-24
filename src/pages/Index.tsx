@@ -444,10 +444,10 @@ export default function Index() {
                   Попробовать бесплатно
                 </button>
                 <button
-                  onClick={() => scrollTo("tariffs")}
+                  onClick={() => navigate("/auth")}
                   className="border border-white/40 text-white font-bold px-8 py-4 rounded-2xl hover:bg-white/10 transition-colors text-[15px]"
                 >
-                  Смотреть тарифы
+                  Личный кабинет
                 </button>
               </div>
             </div>
