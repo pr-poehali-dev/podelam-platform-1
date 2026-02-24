@@ -75,7 +75,19 @@ export default function PlanBot() {
     const savedState = localStorage.getItem(`plan_state_${em}`);
     const savedPlan = localStorage.getItem(`plan_result_${em}`);
 
-    if (savedMessages && savedState) {
+    const incomeCtxRaw = localStorage.getItem(`income_context_${em}`);
+    if (incomeCtxRaw) {
+      localStorage.removeItem(`income_context_${em}`);
+      localStorage.removeItem(`plan_chat_${em}`);
+      localStorage.removeItem(`plan_state_${em}`);
+      localStorage.removeItem(`plan_result_${em}`);
+      try {
+        const ctx = JSON.parse(incomeCtxRaw);
+        startFromIncome(ctx.direction, ctx.resultLabel, ctx.incomeTarget, ctx.timePerWeek);
+      } catch {
+        startFresh();
+      }
+    } else if (savedMessages && savedState) {
       setMessages(JSON.parse(savedMessages));
       setBotState(JSON.parse(savedState));
       if (savedPlan) setCurrentPlan(JSON.parse(savedPlan));
@@ -137,6 +149,25 @@ ${insight}`);
           : "";
         addMsg("bot", `**Шаг 1 из 7 — Направление**${dirHint}\n\nВыбери направление развития:`);
         setBotState((s) => ({ ...s, step: "ask_direction" }));
+        setLoading(false);
+      }, 1000);
+    }, 400);
+  }
+
+  function startFromIncome(direction: string, resultLabel: string, incomeTarget: string, timePerWeek: string) {
+    const dirKey = direction as Direction;
+    const dirName = DIRECTION_NAMES[dirKey] || resultLabel;
+
+    const extras: string[] = [];
+    if (incomeTarget) extras.push(`Желаемый доход: **${incomeTarget}**`);
+    if (timePerWeek) extras.push(`Время: **${timePerWeek}**`);
+    const extrasText = extras.length > 0 ? `\n\n${extras.join("\n")}` : "";
+
+    setTimeout(() => {
+      addMsg("bot", `Привет! Ты пришёл из **Подбора дохода** — направление **${resultLabel}**.${extrasText}\n\nСоставлю развёрнутый план развития на 3 месяца именно под это направление.`);
+      setTimeout(() => {
+        addMsg("bot", `Направление выбрано автоматически: **${dirName}**\n\n**Шаг 2 из 7 — Уровень энергии**\n\nОцени, насколько у тебя сейчас есть силы и ресурсы на развитие в этом направлении:`);
+        setBotState((s) => ({ ...s, step: "ask_energy", inputs: { ...s.inputs, direction: dirKey } }));
         setLoading(false);
       }, 1000);
     }, 400);

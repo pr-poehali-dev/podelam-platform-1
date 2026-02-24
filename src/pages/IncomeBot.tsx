@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { checkAccess, saveToolCompletion, getLatestCareerResult } from "@/lib/access";
 import PaywallModal from "@/components/PaywallModal";
+import IncomeBotHistory, { IncomeSession } from "@/components/income-bot/IncomeBotHistory";
 
 type Message = {
   id: number;
@@ -23,6 +24,14 @@ type ResultKey = "body" | "sales" | "online" | "creative" | "soft";
 type Plan = {
   title: string;
   steps: string[];
+};
+
+const RESULT_LABELS: Record<ResultKey, string> = {
+  body: "Телесные практики",
+  sales: "Продажи и коммуникации",
+  online: "Онлайн-работа",
+  creative: "Творчество",
+  soft: "Мягкий старт",
 };
 
 const QUESTIONS = [
@@ -112,7 +121,6 @@ function calcScores(answers: Record<string, string>): Scores {
   const startReadyHigh = start_ready_raw.includes("7") || start_ready_raw.includes("9") || start_ready_raw.includes("10");
   const startReadyLow = start_ready_raw.includes("1") || start_ready_raw.includes("4") || start_ready_raw.includes("5") || start_ready_raw.includes("6");
 
-  // score_body
   if (body_interest.includes("да")) s.score_body += 3;
   else if (body_interest.includes("возможно")) s.score_body += 2;
   if (touch_comfort.includes("да") && !touch_comfort.includes("скорее")) s.score_body += 3;
@@ -122,23 +130,19 @@ function calcScores(answers: Record<string, string>): Scores {
   if (offline_available.includes("да")) s.score_body += 1;
   if (startReadyHigh) s.score_body += 1;
 
-  // score_sales
   if (likes_people.includes("очень")) s.score_sales += 3;
   else if (likes_people.includes("нормально")) s.score_sales += 1;
   if (energy_level.includes("высокий")) s.score_sales += 2;
   else if (energy_level.includes("средний")) s.score_sales += 1;
   if (income_target.includes("50") || income_target.includes("100")) s.score_sales += 1;
 
-  // score_online
   if (online_available.includes("да")) s.score_online += 2;
   if (likes_people.includes("минимум")) s.score_online += 3;
   if (offline_available.includes("нет")) s.score_online += 2;
 
-  // score_creative
   if (goal.includes("реализация")) s.score_creative += 2;
   if (strength.includes("создаю") || strength.includes("придумываю")) s.score_creative += 2;
 
-  // score_soft
   if (energy_level.includes("низкий")) s.score_soft += 3;
   if (startReadyLow) s.score_soft += 2;
   if (time_per_week.includes("до 5") || time_per_week.includes("5 часов")) s.score_soft += 1;
@@ -159,18 +163,41 @@ function pickResult(s: Scores): ResultKey {
   return priority.find((k) => scoreMap[k] === max) ?? "soft";
 }
 
+function getUserEmail(): string {
+  const u = localStorage.getItem("pdd_user");
+  return u ? JSON.parse(u).email : "";
+}
+
+function getIncomeSessions(): IncomeSession[] {
+  const email = getUserEmail();
+  if (!email) return [];
+  return JSON.parse(localStorage.getItem(`income_results_${email}`) ?? "[]");
+}
+
+function saveIncomeSession(session: IncomeSession) {
+  const email = getUserEmail();
+  if (!email) return;
+  const all = getIncomeSessions();
+  all.push(session);
+  localStorage.setItem(`income_results_${email}`, JSON.stringify(all));
+}
+
 export default function IncomeBot() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [step, setStep] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [resultKey, setResultKey] = useState<ResultKey | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [msgId, setMsgId] = useState(0);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSourceChoice, setShowSourceChoice] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [sessions, setSessions] = useState<IncomeSession[]>([]);
+  const [tab, setTab] = useState<"chat" | "history">("chat");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const addMsg = (from: "bot" | "user", text: string) => {
@@ -187,6 +214,8 @@ export default function IncomeBot() {
 
     const access = checkAccess("income-bot");
     if (access === "locked") { setShowPaywall(true); return; }
+
+    setSessions(getIncomeSessions());
 
     const u2 = JSON.parse(u);
     const hasPsych = !!localStorage.getItem(`psych_result_${u2.email}`);
@@ -226,6 +255,7 @@ export default function IncomeBot() {
       setTimeout(async () => {
         const scores = calcScores(newAnswers);
         const key = pickResult(scores);
+        setResultKey(key);
         try {
           const [resResult, resPlan] = await Promise.all([
             fetch("/results.json"),
@@ -233,13 +263,26 @@ export default function IncomeBot() {
           ]);
           const resultData = await resResult.json();
           const planData = await resPlan.json();
-          setResult(resultData[key] ?? "Результат не найден.");
-          setPlan(planData[key] ?? null);
+          const resultText = resultData[key] ?? "Результат не найден.";
+          const planObj = planData[key] ?? null;
+          setResult(resultText);
+          setPlan(planObj);
+
+          const session: IncomeSession = {
+            date: new Date().toLocaleDateString("ru-RU"),
+            resultKey: key,
+            resultText,
+            planTitle: planObj?.title ?? "",
+            planSteps: planObj?.steps ?? [],
+            answers: newAnswers,
+          };
+          saveIncomeSession(session);
+          setSessions(getIncomeSessions());
         } catch {
           setResult("Не удалось загрузить результат. Попробуй обновить страницу.");
         }
         setAnalyzing(false);
-        saveToolCompletion("income-bot", "Подбор дохода завершён");
+        saveToolCompletion("income-bot", `Подбор дохода: ${RESULT_LABELS[key]}`);
       }, 2200);
     }
   };
@@ -255,7 +298,40 @@ export default function IncomeBot() {
     }, 300);
   };
 
+  const handleNewSession = () => {
+    setMessages([]);
+    setAnswers({});
+    setStep(0);
+    setFinished(false);
+    setResult(null);
+    setResultKey(null);
+    setPlan(null);
+    setAnalyzing(false);
+    setSaved(false);
+    setMsgId(0);
+    setTab("chat");
+    setTimeout(() => {
+      addMsg("bot", "Привет! Я помогу подобрать тебе подходящий вариант дополнительного дохода.");
+      setTimeout(() => addMsg("bot", QUESTIONS[0].text), 700);
+    }, 300);
+  };
+
+  const handleGoToPlan = () => {
+    if (!resultKey) return;
+    const email = getUserEmail();
+    if (email) {
+      localStorage.setItem(`income_context_${email}`, JSON.stringify({
+        direction: resultKey,
+        resultLabel: RESULT_LABELS[resultKey],
+        incomeTarget: answers.income_target || "",
+        timePerWeek: answers.time_per_week || "",
+      }));
+    }
+    navigate("/plan-bot");
+  };
+
   const currentOptions = !finished && step < QUESTIONS.length ? QUESTIONS[step].options : [];
+  const isDone = result && !analyzing;
 
   if (showPaywall) {
     return (
@@ -306,7 +382,6 @@ export default function IncomeBot() {
 
   return (
     <div className="min-h-screen font-golos flex flex-col max-w-4xl mx-auto w-full" style={{ background: "hsl(248, 50%, 98%)" }}>
-      {/* HEADER */}
       <header className="sticky top-0 z-40 bg-white border-b border-border px-4 h-14 flex items-center gap-3">
         <button onClick={() => navigate("/cabinet?tab=tools")} className="p-2 rounded-xl hover:bg-secondary transition-colors">
           <Icon name="ArrowLeft" size={18} className="text-muted-foreground" />
@@ -314,105 +389,145 @@ export default function IncomeBot() {
         <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center shrink-0">
           <Icon name="Banknote" size={15} className="text-white" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <div className="font-bold text-sm text-foreground leading-tight">Подбор дохода</div>
           <div className="text-xs text-muted-foreground">Автоматический навигатор</div>
         </div>
-      </header>
 
-      {/* MESSAGES */}
-      <div className="flex-1 overflow-auto px-4 py-6 max-w-2xl w-full mx-auto space-y-3">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
-            {msg.from === "bot" && (
-              <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
-                <Icon name="Banknote" size={13} className="text-white" />
-              </div>
-            )}
-            <div
-              className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
-                msg.from === "bot"
-                  ? "bg-white border border-border text-foreground rounded-tl-sm"
-                  : "gradient-brand text-white rounded-tr-sm"
-              }`}
-            >
-              {msg.text}
-            </div>
-          </div>
-        ))}
-
-        {analyzing && (
-          <div className="flex justify-start">
-            <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
-              <Icon name="Banknote" size={13} className="text-white" />
-            </div>
-            <div className="bg-white border border-border rounded-2xl rounded-tl-sm px-4 py-3">
-              <div className="flex gap-1 items-center h-5">
-                <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {result && !analyzing && (
-          <div className="flex justify-start">
-            <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
-              <Icon name="Banknote" size={13} className="text-white" />
-            </div>
-            <div className="max-w-[85%] bg-white border-2 border-primary/20 rounded-2xl rounded-tl-sm px-5 py-4 text-sm leading-relaxed whitespace-pre-line text-foreground">
-              {result}
-            </div>
-          </div>
-        )}
-
-        {result && !analyzing && plan && (
-          <div className="flex justify-start">
-            <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
-              <Icon name="Banknote" size={13} className="text-white" />
-            </div>
-            <div className="max-w-[85%] bg-white border-2 border-primary/20 rounded-2xl rounded-tl-sm px-5 py-4 text-sm text-foreground space-y-3">
-              <p className="font-bold leading-snug">{plan.title}</p>
-              <ul className="space-y-2">
-                {plan.steps.map((step, i) => (
-                  <li key={i} className="leading-relaxed text-muted-foreground">
-                    {step}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-
-        {result && !analyzing && (
-          <div className="flex justify-center pt-2">
+        {sessions.length > 0 && (
+          <div className="flex gap-1 bg-gray-100 rounded-xl p-0.5">
             <button
-              onClick={() => navigate("/cabinet?tab=tools")}
-              className="gradient-brand text-white font-bold px-6 py-3 rounded-2xl hover:opacity-90 transition-opacity text-sm"
+              onClick={() => setTab("chat")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${tab === "chat" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
             >
-              Вернуться в кабинет
+              Подбор
+            </button>
+            <button
+              onClick={() => setTab("history")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${tab === "history" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}
+            >
+              История ({sessions.length})
             </button>
           </div>
         )}
+      </header>
 
-        <div ref={bottomRef} />
-      </div>
-
-      {/* OPTIONS */}
-      {currentOptions.length > 0 && !analyzing && (
-        <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-border px-4 py-4">
-          <div className="max-w-2xl mx-auto grid grid-cols-1 gap-2">
-            {currentOptions.map((opt) => (
+      {tab === "history" ? (
+        <IncomeBotHistory sessions={sessions} onNewSession={handleNewSession} />
+      ) : (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {isDone && (
+            <div className="px-4 pt-3 flex flex-col gap-2">
               <button
-                key={opt}
-                onClick={() => handleOption(opt)}
-                className="w-full text-left px-4 py-3 rounded-2xl border border-border bg-white hover:bg-secondary hover:border-primary/30 transition-all text-sm font-medium text-foreground"
+                onClick={handleGoToPlan}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
               >
-                {opt}
+                <Icon name="Map" size={15} />
+                Построить шаги развития
               </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleNewSession}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-green-200 bg-green-50 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
+                >
+                  <Icon name="RotateCcw" size={15} />
+                  Новый подбор
+                </button>
+                {sessions.length > 0 && (
+                  <button
+                    onClick={() => setTab("history")}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    <Icon name="History" size={15} />
+                    История
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex-1 overflow-auto px-4 py-6 max-w-2xl w-full mx-auto space-y-3">
+            {messages.map((msg) => (
+              <div key={msg.id} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
+                {msg.from === "bot" && (
+                  <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
+                    <Icon name="Banknote" size={13} className="text-white" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
+                    msg.from === "bot"
+                      ? "bg-white border border-border text-foreground rounded-tl-sm"
+                      : "gradient-brand text-white rounded-tr-sm"
+                  }`}
+                >
+                  {msg.text}
+                </div>
+              </div>
             ))}
+
+            {analyzing && (
+              <div className="flex justify-start">
+                <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
+                  <Icon name="Banknote" size={13} className="text-white" />
+                </div>
+                <div className="bg-white border border-border rounded-2xl rounded-tl-sm px-4 py-3">
+                  <div className="flex gap-1 items-center h-5">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {result && !analyzing && (
+              <div className="flex justify-start">
+                <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
+                  <Icon name="Banknote" size={13} className="text-white" />
+                </div>
+                <div className="max-w-[85%] bg-white border-2 border-primary/20 rounded-2xl rounded-tl-sm px-5 py-4 text-sm leading-relaxed whitespace-pre-line text-foreground">
+                  {result}
+                </div>
+              </div>
+            )}
+
+            {result && !analyzing && plan && (
+              <div className="flex justify-start">
+                <div className="w-7 h-7 rounded-xl gradient-brand flex items-center justify-center shrink-0 mr-2 mt-0.5">
+                  <Icon name="Banknote" size={13} className="text-white" />
+                </div>
+                <div className="max-w-[85%] bg-white border-2 border-primary/20 rounded-2xl rounded-tl-sm px-5 py-4 text-sm text-foreground space-y-3">
+                  <p className="font-bold leading-snug">{plan.title}</p>
+                  <ul className="space-y-2">
+                    {plan.steps.map((s, i) => (
+                      <li key={i} className="leading-relaxed text-muted-foreground">
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            <div ref={bottomRef} />
           </div>
+
+          {currentOptions.length > 0 && !analyzing && (
+            <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-border px-4 py-4">
+              <div className="max-w-2xl mx-auto grid grid-cols-1 gap-2">
+                {currentOptions.map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => handleOption(opt)}
+                    className="w-full text-left px-4 py-3 rounded-2xl border border-border bg-white hover:bg-secondary hover:border-primary/30 transition-all text-sm font-medium text-foreground"
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
