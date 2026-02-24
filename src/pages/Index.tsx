@@ -476,7 +476,10 @@ export default function Index() {
             </div>
             <span className="font-bold text-foreground">ПоДелам</span>
           </div>
-          <p className="text-muted-foreground text-sm">© 2025 ПоДелам. Найди своё дело.</p>
+          <div className="text-center text-sm text-muted-foreground space-y-0.5">
+            <p>© 2025 ПоДелам. Найди своё дело.</p>
+            <p>ИП Уварова А. С. · ОГРНИП 322508100398078 · Права защищены</p>
+          </div>
           <div className="flex gap-5 text-sm text-muted-foreground">
             <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
             <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
