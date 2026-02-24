@@ -5,7 +5,7 @@ import CabinetSidebar, { CabinetMobileNav } from "@/components/cabinet/CabinetSi
 import CabinetHomeTab from "@/components/cabinet/CabinetHomeTab";
 import CabinetTestsTab from "@/components/cabinet/CabinetTestsTab";
 import CabinetToolsTab from "@/components/cabinet/CabinetToolsTab";
-import { getLatestCareerResult, CareerResult } from "@/lib/access";
+import { getLatestCareerResult, CareerResult, wasEverDone } from "@/lib/access";
 import InstallPWA from "@/components/InstallPWA";
 
 type Tab = "home" | "tests" | "tools";
@@ -53,12 +53,11 @@ export default function Cabinet() {
     };
   }
 
-  // Профиль: 20% за career-тест + 40% за psych-bot + 20% за barrier + 20% за 3+ инструмента
+  // Профиль: 20% за career-тест + 45% за psych-bot + 20% за barrier + 15% за 3+ инструмента
   let profileComplete = 0;
   if (careerResult) profileComplete += 20;
   if (psychResult) profileComplete += 45;
-  const barrierRaw = localStorage.getItem(`barrier_results_${user.email}`);
-  if (barrierRaw && JSON.parse(barrierRaw).length > 0) profileComplete += 20;
+  if (wasEverDone("barrier-bot")) profileComplete += 20;
   const completionsCount = JSON.parse(localStorage.getItem(`pdd_completions_${user.email}`) || "[]").length;
   if (completionsCount >= 3) profileComplete += 15;
 

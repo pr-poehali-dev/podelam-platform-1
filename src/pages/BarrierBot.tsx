@@ -44,7 +44,12 @@ export default function BarrierBot() {
 
   const loadSessions = (email: string) => {
     const raw = localStorage.getItem(`barrier_results_${email}`) ?? "[]";
-    setSessions(JSON.parse(raw));
+    const parsed = JSON.parse(raw);
+    setSessions(parsed);
+    // Восстанавливаем постоянный флаг если есть старые результаты
+    if (parsed.length > 0) {
+      localStorage.setItem(`pdd_ever_done_${email}_barrier-bot`, "1");
+    }
   };
 
   const addMsg = (from: "bot" | "user", text: string, widget?: Widget) => {

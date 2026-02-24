@@ -215,6 +215,17 @@ export function saveToolCompletion(toolId: ToolId, summary: string): void {
     summary,
   });
   localStorage.setItem(key, JSON.stringify(existing.slice(0, 50)));
+  // Постоянный флаг — инструмент пройден хотя бы раз (не удаляется)
+  localStorage.setItem(`pdd_ever_done_${email}_${toolId}`, "1");
+}
+
+/** Проверить, был ли инструмент пройден хотя бы раз */
+export function wasEverDone(toolId: ToolId): boolean {
+  const email = getEmail();
+  // Проверяем и постоянный флаг, и наличие completions
+  if (localStorage.getItem(`pdd_ever_done_${email}_${toolId}`) === "1") return true;
+  const completions: ToolCompletion[] = JSON.parse(localStorage.getItem(`pdd_completions_${email}`) || "[]");
+  return completions.some((c) => c.toolId === toolId);
 }
 
 /** Получить историю пройденных инструментов */
