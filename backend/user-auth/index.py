@@ -23,7 +23,7 @@ def generate_code() -> str:
 
 def send_email(to_email: str, code: str):
     smtp_host = os.environ.get('SMTP_HOST', '')
-    smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+    smtp_port = int(os.environ.get('SMTP_PORT', '465'))
     smtp_user = os.environ.get('SMTP_USER', '')
     smtp_password = os.environ.get('SMTP_PASSWORD', '')
 
@@ -49,8 +49,7 @@ def send_email(to_email: str, code: str):
 
     msg.attach(MIMEText(html, 'html'))
 
-    with smtplib.SMTP(smtp_host, smtp_port) as server:
-        server.starttls()
+    with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
         server.login(smtp_user, smtp_password)
         server.sendmail(smtp_user, to_email, msg.as_string())
 
