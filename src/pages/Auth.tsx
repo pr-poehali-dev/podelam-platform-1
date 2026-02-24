@@ -183,7 +183,7 @@ export default function Auth() {
                     Я согласен(а) с{" "}
                     <a href="/privacy" target="_blank" className="text-primary hover:underline">политикой конфиденциальности</a>
                     {" "}и{" "}
-                    <a href="/offer" target="_blank" className="text-primary hover:underline">договором оферты</a>
+                    <a href="/oferta" target="_blank" className="text-primary hover:underline">договором оферты</a>
                   </span>
                 </label>
               )}
