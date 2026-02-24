@@ -310,22 +310,6 @@ export default function Index() {
             <h2 className="text-3xl md:text-4xl font-black text-foreground">6 инструментов для поиска себя</h2>
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Каждый помогает найти своё дело или работу — от внутренних мотивов до конкретного плана действий</p>
           </div>
-          <div className="grid sm:grid-cols-4 gap-3 mb-12 max-w-4xl mx-auto">
-            {[
-              { icon: "MessageCircle", step: "1", label: "Отвечаешь", text: "на точные вопросы о себе — честно и без правильных ответов" },
-              { icon: "Lightbulb", step: "2", label: "Осознаёшь", text: "свои ценности, барьеры и то, что действительно важно" },
-              { icon: "Target", step: "3", label: "Находишь", text: "направление и конкретные шаги с минимумом ошибок" },
-              { icon: "TrendingUp", step: "4", label: "Действуешь", text: "по плану и отслеживаешь реальные изменения" },
-            ].map((s) => (
-              <div key={s.step} className="flex flex-col items-center text-center p-4 rounded-2xl bg-white border border-border">
-                <div className="w-10 h-10 rounded-full gradient-brand flex items-center justify-center mb-3">
-                  <Icon name={s.icon} size={18} className="text-white" />
-                </div>
-                <p className="font-bold text-foreground text-sm mb-1">{s.label}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{s.text}</p>
-              </div>
-            ))}
-          </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               { icon: "Brain", color: "bg-indigo-50", iconColor: "text-indigo-600", border: "border-indigo-100", name: "Психологический анализ", desc: "Глубокий разбор твоей личности: тип мышления, мотивация, риски выгорания. Помогает понять, в каких условиях тебе комфортно работать" },
@@ -344,6 +328,30 @@ export default function Index() {
               </div>
             ))}
           </div>
+          <div className="mt-16">
+            <div className="text-center mb-8">
+              <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-2">Этапы</p>
+              <h3 className="text-2xl font-black text-foreground">Этапы работы с инструментами</h3>
+            </div>
+            <div className="grid sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
+              {[
+                { icon: "MessageCircle", label: "Отвечаешь", text: "на точные вопросы о себе — честно и без правильных ответов" },
+                { icon: "Lightbulb", label: "Осознаёшь", text: "свои ценности, барьеры и то, что действительно важно" },
+                { icon: "Target", label: "Находишь", text: "направление и конкретные шаги с минимумом ошибок" },
+                { icon: "TrendingUp", label: "Действуешь", text: "по плану и отслеживаешь реальные изменения" },
+              ].map((s, i) => (
+                <div key={s.label} className="flex flex-col items-center text-center p-5 rounded-2xl bg-white border border-border">
+                  <div className="w-10 h-10 rounded-full gradient-brand flex items-center justify-center mb-3 shrink-0">
+                    <Icon name={s.icon} size={18} className="text-white" />
+                  </div>
+                  <span className="text-xs text-muted-foreground mb-1">Шаг {i + 1}</span>
+                  <p className="font-bold text-foreground text-sm mb-1">{s.label}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{s.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="text-center mt-10">
             <button
               onClick={() => scrollTo("demo")}
