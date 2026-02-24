@@ -80,7 +80,7 @@ export default function Cabinet() {
             onLogout={logout}
           />
 
-          <div className="p-6 md:p-8 max-w-4xl">
+          <div className="p-6 md:p-8 max-w-4xl mx-auto">
             {activeTab === "home" && (
               <CabinetHomeTab
                 user={user}

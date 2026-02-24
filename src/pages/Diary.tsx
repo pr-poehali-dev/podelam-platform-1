@@ -10,7 +10,7 @@ export default function Diary() {
 
   if (s.showPaywall) {
     return (
-      <div className="min-h-screen font-golos flex flex-col" style={{ background: "hsl(248, 50%, 98%)" }}>
+      <div className="min-h-screen font-golos flex flex-col max-w-4xl mx-auto w-full" style={{ background: "hsl(248, 50%, 98%)" }}>
         <PaywallModal
           toolId="diary"
           toolName="Дневник самоанализа"
@@ -22,7 +22,7 @@ export default function Diary() {
   }
 
   return (
-    <div className="min-h-screen font-golos flex flex-col" style={{ background: "hsl(248, 50%, 98%)" }}>
+    <div className="min-h-screen font-golos flex flex-col max-w-4xl mx-auto w-full" style={{ background: "hsl(248, 50%, 98%)" }}>
       <DiaryHeader
         onBack={() => s.navigate("/cabinet?tab=tools")}
         phase={s.phase}

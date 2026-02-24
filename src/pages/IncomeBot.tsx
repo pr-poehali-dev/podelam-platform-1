@@ -273,7 +273,7 @@ export default function IncomeBot() {
   if (showSourceChoice) {
     const career = getLatestCareerResult();
     return (
-      <div className="min-h-screen font-golos flex flex-col items-center justify-center px-6" style={{ background: "hsl(248, 50%, 98%)" }}>
+      <div className="min-h-screen font-golos flex flex-col max-w-4xl mx-auto w-full items-center justify-center px-6" style={{ background: "hsl(248, 50%, 98%)" }}>
         <div className="w-full max-w-md space-y-5 animate-fade-in-up">
           <div className="text-center">
             <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -305,7 +305,7 @@ export default function IncomeBot() {
   }
 
   return (
-    <div className="min-h-screen font-golos flex flex-col" style={{ background: "hsl(248, 50%, 98%)" }}>
+    <div className="min-h-screen font-golos flex flex-col max-w-4xl mx-auto w-full" style={{ background: "hsl(248, 50%, 98%)" }}>
       {/* HEADER */}
       <header className="sticky top-0 z-40 bg-white border-b border-border px-4 h-14 flex items-center gap-3">
         <button onClick={() => navigate("/cabinet?tab=tools")} className="p-2 rounded-xl hover:bg-secondary transition-colors">

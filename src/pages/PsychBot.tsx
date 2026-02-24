@@ -360,7 +360,7 @@ export default function PsychBot() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50 flex flex-col max-w-4xl mx-auto w-full">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100 px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate("/cabinet?tab=tools")} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">

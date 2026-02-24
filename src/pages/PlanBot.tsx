@@ -260,7 +260,7 @@ ${insight}`);
 
   if (showPaywall) {
     return (
-      <div className="min-h-screen font-golos flex flex-col bg-gray-50">
+      <div className="min-h-screen font-golos flex flex-col bg-gray-50 max-w-4xl mx-auto w-full">
         <PaywallModal
           toolId="plan-bot"
           toolName="Шаги развития"
@@ -272,7 +272,7 @@ ${insight}`);
   }
 
   return (
-    <div className="min-h-screen font-golos flex flex-col bg-gray-50">
+    <div className="min-h-screen font-golos flex flex-col bg-gray-50 max-w-4xl mx-auto w-full">
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100 px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate("/cabinet?tab=tools")} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
           <Icon name="ArrowLeft" size={18} className="text-gray-600" />

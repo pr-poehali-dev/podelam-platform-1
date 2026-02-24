@@ -321,7 +321,7 @@ export default function BarrierBot() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col max-w-4xl mx-auto w-full">
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
         <button
           onClick={() => navigate("/cabinet?tab=tools")}
