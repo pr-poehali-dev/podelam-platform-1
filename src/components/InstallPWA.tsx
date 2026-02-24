@@ -11,17 +11,27 @@ export default function InstallPWA() {
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSHint, setShowIOSHint] = useState(false);
   const [installed, setInstalled] = useState(false);
+  const [canShow, setCanShow] = useState(false);
 
   useEffect(() => {
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window as Window & { MSStream?: unknown }).MSStream;
+    const ua = navigator.userAgent;
+    const ios = /iphone|ipad|ipod/i.test(ua) && !(window as Window & { MSStream?: unknown }).MSStream;
     setIsIOS(ios);
 
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isStandalone) setInstalled(true);
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    if (isStandalone) {
+      setInstalled(true);
+      return;
+    }
+
+    if (ios) setCanShow(true);
 
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setCanShow(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
@@ -35,15 +45,13 @@ export default function InstallPWA() {
     setDeferredPrompt(null);
   };
 
-  if (installed) return null;
+  if (installed || !canShow) return null;
 
   const handleClick = () => {
     if (isIOS) {
       setShowIOSHint(true);
     } else if (deferredPrompt) {
       handleInstall();
-    } else {
-      setShowIOSHint(true);
     }
   };
 
