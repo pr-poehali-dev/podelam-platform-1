@@ -207,7 +207,7 @@ export default function BarrierBotHistory({ sessions, onNewSession }: Props) {
                 Наши коучи с психологическим образованием помогают разобраться с повторяющимися паттернами и выйти на новый уровень без выгорания.
               </p>
               <a
-                href="https://t.me/+QgiLIa1gFRY4Y2Iy"
+                href="https://annauvarova.ru/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
