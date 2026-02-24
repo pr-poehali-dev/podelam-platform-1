@@ -30,7 +30,7 @@ export default function CabinetReferralTab({ user }: { user: User }) {
 
   const copyLink = async () => {
     if (!info?.ref_code) return;
-    const url = `${window.location.origin}/blog?ref=${info.ref_code}`;
+    const url = `https://podelam.su/blog?ref=${info.ref_code}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -111,7 +111,7 @@ export default function CabinetReferralTab({ user }: { user: User }) {
         <div className="text-sm font-semibold text-foreground mb-3">Ваша реферальная ссылка</div>
         <div className="flex items-center gap-2">
           <div className="flex-1 bg-secondary rounded-xl px-4 py-3 text-sm text-muted-foreground truncate font-mono">
-            {info?.ref_code ? `${window.location.origin}/blog?ref=${info.ref_code}` : "Загрузка..."}
+            {info?.ref_code ? `https://podelam.su/blog?ref=${info.ref_code}` : "Загрузка..."}
           </div>
           <button
             onClick={copyLink}

@@ -148,7 +148,7 @@ function ShareButton({ slug }: { slug: string }) {
       }
     } catch { /* no user */ }
 
-    const base = `${window.location.origin}/blog/${slug}`;
+    const base = `https://podelam.su/blog/${slug}`;
     const url = refCode ? `${base}?ref=${refCode}` : base;
 
     try {
