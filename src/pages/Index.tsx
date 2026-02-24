@@ -330,7 +330,7 @@ export default function Index() {
           </div>
           <div className="text-center mt-10">
             <button
-              onClick={() => navigate("/auth")}
+              onClick={() => scrollTo("demo")}
               className="gradient-brand text-white font-bold px-8 py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-[15px]"
             >
               Попробовать бесплатно
