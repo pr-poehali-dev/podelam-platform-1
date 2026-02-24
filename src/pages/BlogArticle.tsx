@@ -267,7 +267,19 @@ export default function BlogArticle() {
             {renderBody(article.body)}
           </div>
 
-          <div className="mt-12 pt-6 border-t border-border/40 flex justify-center">
+          <div className="mt-12 pt-8 border-t border-border/40 flex items-center gap-4">
+            <img
+              src="https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/bucket/b21118f8-5d3b-4a20-8752-d430e8e22e48.jpg"
+              alt="Анна Уварова"
+              className="w-16 h-16 rounded-full object-[center_20%] object-cover border-2 border-violet-100 shrink-0"
+            />
+            <div>
+              <p className="font-bold text-foreground text-[15px]">Анна Уварова</p>
+              <p className="text-sm text-muted-foreground">бизнес-психолог</p>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-border/40 flex justify-center">
             <button
               onClick={() => navigate("/blog")}
               className="flex items-center gap-2 px-6 py-3 rounded-xl gradient-brand text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all"
