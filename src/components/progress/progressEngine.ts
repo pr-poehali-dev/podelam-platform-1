@@ -19,6 +19,7 @@ export type ProgressEntry = {
   values: Record<string, number>;
   main_focus: string;
   key_thought: string;
+  _server_id?: number;
 };
 
 export type Message = { id: number; from: "bot" | "user"; text: string };
@@ -47,7 +48,8 @@ function deltaSign(delta: number): string {
 export function buildResult(
   entry: ProgressEntry,
   prev: ProgressEntry | null,
-  tpl: Templates
+  tpl: Templates,
+  totalEntries?: number
 ): string {
   const lines: string[] = [];
 
@@ -94,8 +96,8 @@ export function buildResult(
   lines.push("");
   lines.push("🧭 Итог\n");
 
-  const allEntries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
-  const conclusionIdx = allEntries.length < 3 ? 2 : Math.floor(Math.random() * 2);
+  const count = totalEntries ?? 1;
+  const conclusionIdx = count < 3 ? 2 : Math.floor(Math.random() * 2);
   lines.push(tpl.conclusions[conclusionIdx]);
 
   return lines.join("\n");

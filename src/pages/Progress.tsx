@@ -35,7 +35,7 @@ export default function Progress() {
   const [messages, setMessages] = useState<Message[]>([]);
   const idRef = useRef(0);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { sessions: syncedEntries, saveSession: saveProgressEntry, syncing } = useToolSync<ProgressEntry>("progress", "progress_entries");
+  const { sessions: syncedEntries, setSessions: setSyncedEntries, saveSession: saveProgressEntry, syncing, saveLocal } = useToolSync<ProgressEntry>("progress", "progress_entries");
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
@@ -112,14 +112,13 @@ export default function Progress() {
     setPhase("thought");
   }
 
-  function submitThought() {
+  async function submitThought() {
     if (!tpl || !thought.trim()) return;
     const kw = thought.trim();
 
     let msgs = addUserRaw(messages, kw);
 
-    const entries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
-    const prev = entries.length > 0 ? entries[entries.length - 1] : null;
+    const prev = syncedEntries.length > 0 ? syncedEntries[syncedEntries.length - 1] : null;
 
     const entry: ProgressEntry = {
       date: new Date().toISOString(),
@@ -127,11 +126,10 @@ export default function Progress() {
       main_focus: focus,
       key_thought: kw,
     };
-    entries.push(entry);
-    localStorage.setItem(ENTRIES_KEY(), JSON.stringify(entries));
-    saveProgressEntry(entry);
 
-    const resultText = buildResult(entry, prev, tpl);
+    await saveProgressEntry(entry);
+
+    const resultText = buildResult(entry, prev, tpl, syncedEntries.length + 1);
     msgs = addBotRaw(msgs, resultText);
     save(msgs);
     setMessages(msgs);
@@ -154,11 +152,12 @@ export default function Progress() {
   function clearAll() {
     localStorage.removeItem(CHAT_KEY());
     localStorage.removeItem(ENTRIES_KEY());
+    setSyncedEntries([]);
+    saveLocal([]);
     startNew();
   }
 
-  const localEntries: ProgressEntry[] = JSON.parse(localStorage.getItem(ENTRIES_KEY()) ?? "[]");
-  const entries = syncedEntries.length > 0 ? syncedEntries : localEntries;
+  const entries = syncedEntries;
   const currentMetric = tpl?.metrics[metricIndex];
   const completions = getToolCompletions();
   const careerResult = getLatestCareerResult();
