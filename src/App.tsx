@@ -17,6 +17,7 @@ import PlanBot from "./pages/PlanBot";
 import BarrierBot from "./pages/BarrierBot";
 import Admin from "./pages/Admin";
 import CareerTest from "./pages/CareerTest";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/barrier-bot" element={<BarrierBot />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/career-test" element={<CareerTest />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
