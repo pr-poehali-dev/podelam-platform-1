@@ -3,6 +3,11 @@ import os
 import hashlib
 import psycopg2
 import psycopg2.extras
+import smtplib
+import random
+import string
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
@@ -13,8 +18,44 @@ def get_conn():
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
+def generate_code() -> str:
+    return ''.join(random.choices(string.digits, k=6))
+
+def send_email(to_email: str, code: str):
+    smtp_host = os.environ.get('SMTP_HOST', '')
+    smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+    smtp_user = os.environ.get('SMTP_USER', '')
+    smtp_password = os.environ.get('SMTP_PASSWORD', '')
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'Восстановление пароля — ПоДелам'
+    msg['From'] = smtp_user
+    msg['To'] = to_email
+
+    html = f"""
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+      <h2 style="color: #7c3aed; margin-bottom: 8px;">ПоДелам</h2>
+      <p style="color: #374151; font-size: 16px; margin-bottom: 24px;">
+        Вы запросили восстановление пароля. Введите код ниже:
+      </p>
+      <div style="background: #f5f3ff; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 40px; font-weight: 900; color: #7c3aed; letter-spacing: 12px;">{code}</span>
+      </div>
+      <p style="color: #6b7280; font-size: 14px;">
+        Код действителен 15 минут. Если вы не запрашивали сброс пароля — просто проигнорируйте это письмо.
+      </p>
+    </div>
+    """
+
+    msg.attach(MIMEText(html, 'html'))
+
+    with smtplib.SMTP(smtp_host, smtp_port) as server:
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.sendmail(smtp_user, to_email, msg.as_string())
+
 def handler(event: dict, context) -> dict:
-    """Регистрация и вход пользователей"""
+    """Регистрация, вход и восстановление пароля пользователей"""
     cors = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -128,6 +169,54 @@ def handler(event: dict, context) -> dict:
             f'INSERT INTO "{S}".test_results (user_id, test_type, score, result_data) VALUES (%s, %s, %s, %s)',
             (user_id, test_type, score, json.dumps(result_data, ensure_ascii=False))
         )
+        conn.commit()
+        conn.close()
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+    elif action == 'reset_request':
+        email = body.get('email', '').strip().lower()
+        if not email:
+            conn.close()
+            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Введите email'})}
+
+        cur.execute(f'SELECT id FROM "{S}".users WHERE email = %s', (email,))
+        if not cur.fetchone():
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        code = generate_code()
+        cur.execute(
+            f'INSERT INTO "{S}".password_reset_codes (email, code) VALUES (%s, %s)',
+            (email, code)
+        )
+        conn.commit()
+        conn.close()
+
+        send_email(email, code)
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+    elif action == 'reset_confirm':
+        email = body.get('email', '').strip().lower()
+        code = body.get('code', '').strip()
+        new_password = body.get('new_password', '')
+
+        if not email or not code or not new_password:
+            conn.close()
+            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Заполните все поля'})}
+
+        cur.execute(
+            f"SELECT id FROM \"{S}\".password_reset_codes WHERE email = %s AND code = %s AND used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
+            (email, code)
+        )
+        row = cur.fetchone()
+        if not row:
+            conn.close()
+            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Неверный или устаревший код'})}
+
+        reset_id = row[0]
+        pw_hash = hash_password(new_password)
+        cur.execute(f'UPDATE "{S}".users SET password_hash = %s WHERE email = %s', (pw_hash, email))
+        cur.execute(f'UPDATE "{S}".password_reset_codes SET used = TRUE WHERE id = %s', (reset_id,))
         conn.commit()
         conn.close()
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}

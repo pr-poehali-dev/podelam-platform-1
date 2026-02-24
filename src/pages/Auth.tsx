@@ -3,21 +3,68 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { activatePaidOnce } from "@/lib/access";
 
+type Mode = "login" | "register" | "reset_email" | "reset_code";
+
 export default function Auth() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccessMsg("");
+
+    if (mode === "reset_email") {
+      if (!email) { setError("Введите email"); return; }
+      setLoading(true);
+      try {
+        await fetch(AUTH_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "reset_request", email: email.trim().toLowerCase() }),
+        });
+        setMode("reset_code");
+        setSuccessMsg("Код отправлен на ваш email. Проверьте почту.");
+      } catch {
+        setError("Ошибка соединения. Попробуйте ещё раз.");
+      }
+      setLoading(false);
+      return;
+    }
+
+    if (mode === "reset_code") {
+      if (!resetCode || !newPassword) { setError("Заполните все поля"); return; }
+      setLoading(true);
+      try {
+        const res = await fetch(AUTH_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "reset_confirm", email: email.trim().toLowerCase(), code: resetCode, new_password: newPassword }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) { setError(data.error || "Ошибка"); setLoading(false); return; }
+        setMode("login");
+        setSuccessMsg("Пароль успешно изменён. Теперь войдите.");
+        setResetCode("");
+        setNewPassword("");
+      } catch {
+        setError("Ошибка соединения. Попробуйте ещё раз.");
+      }
+      setLoading(false);
+      return;
+    }
+
     if (!email || !password) { setError("Заполните все поля"); return; }
     if (mode === "register" && !name) { setError("Введите имя"); return; }
     if (mode === "register" && !agreed) { setError("Необходимо согласиться с политикой конфиденциальности и договором оферты"); return; }
@@ -102,6 +149,8 @@ export default function Auth() {
     }
   };
 
+  const isReset = mode === "reset_email" || mode === "reset_code";
+
   return (
     <div className="min-h-screen font-golos gradient-soft flex flex-col">
       <nav className="px-6 h-16 flex items-center">
@@ -117,25 +166,43 @@ export default function Auth() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-foreground mb-2">
-              {mode === "login" ? "Добро пожаловать" : "Создать аккаунт"}
+              {mode === "login" && "Добро пожаловать"}
+              {mode === "register" && "Создать аккаунт"}
+              {mode === "reset_email" && "Восстановление пароля"}
+              {mode === "reset_code" && "Новый пароль"}
             </h1>
             <p className="text-muted-foreground">
-              {mode === "login" ? "Войдите, чтобы продолжить путь" : "Начните своё путешествие к себе"}
+              {mode === "login" && "Войдите, чтобы продолжить путь"}
+              {mode === "register" && "Начните своё путешествие к себе"}
+              {mode === "reset_email" && "Введите email — пришлём код для сброса"}
+              {mode === "reset_code" && `Код отправлен на ${email}`}
             </p>
           </div>
 
           <div className="bg-white rounded-3xl border border-border shadow-sm p-8">
-            <div className="flex bg-secondary rounded-2xl p-1 mb-6">
-              {(["login", "register"] as const).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => { setMode(m); setError(""); }}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${mode === m ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  {m === "login" ? "Войти" : "Регистрация"}
-                </button>
-              ))}
-            </div>
+            {!isReset && (
+              <div className="flex bg-secondary rounded-2xl p-1 mb-6">
+                {(["login", "register"] as const).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => { setMode(m); setError(""); setSuccessMsg(""); }}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${mode === m ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {m === "login" ? "Войти" : "Регистрация"}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {isReset && (
+              <button
+                onClick={() => { setMode("login"); setError(""); setSuccessMsg(""); }}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
+              >
+                <Icon name="ArrowLeft" size={15} />
+                Вернуться ко входу
+              </button>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "register" && (
@@ -150,26 +217,67 @@ export default function Auth() {
                   />
                 </div>
               )}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all bg-secondary/30"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Пароль</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all bg-secondary/30"
-                />
-              </div>
+
+              {(mode === "login" || mode === "register" || mode === "reset_email") && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all bg-secondary/30"
+                  />
+                </div>
+              )}
+
+              {(mode === "login" || mode === "register") && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Пароль</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all bg-secondary/30"
+                  />
+                  {mode === "login" && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode("reset_email"); setError(""); setSuccessMsg(""); }}
+                      className="mt-1.5 text-xs text-primary hover:underline"
+                    >
+                      Забыли пароль?
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {mode === "reset_code" && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Код из письма</label>
+                    <input
+                      type="text"
+                      value={resetCode}
+                      onChange={(e) => setResetCode(e.target.value)}
+                      placeholder="123456"
+                      maxLength={6}
+                      className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all bg-secondary/30 tracking-widest text-center text-lg font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Новый пароль</label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all bg-secondary/30"
+                    />
+                  </div>
+                </>
+              )}
 
               {mode === "register" && (
                 <label className="flex items-start gap-3 cursor-pointer group">
@@ -188,6 +296,13 @@ export default function Auth() {
                 </label>
               )}
 
+              {successMsg && (
+                <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm flex items-center gap-2">
+                  <Icon name="CheckCircle" size={15} />
+                  {successMsg}
+                </div>
+              )}
+
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm flex items-center gap-2">
                   <Icon name="AlertCircle" size={15} />
@@ -203,31 +318,31 @@ export default function Auth() {
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <Icon name="Loader2" size={16} className="animate-spin" />
-                    {mode === "login" ? "Входим..." : "Создаём аккаунт..."}
+                    Загрузка...
                   </span>
                 ) : (
-                  mode === "login" ? "Войти" : "Зарегистрироваться"
+                  <>
+                    {mode === "login" && "Войти"}
+                    {mode === "register" && "Зарегистрироваться"}
+                    {mode === "reset_email" && "Отправить код"}
+                    {mode === "reset_code" && "Сохранить новый пароль"}
+                  </>
                 )}
               </button>
             </form>
-
-            <div className="mt-6 pt-6 border-t border-border">
-              <p className="text-center text-sm text-muted-foreground">
-                {mode === "login" ? "Нет аккаунта? " : "Уже есть аккаунт? "}
-                <button
-                  onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}
-                  className="text-primary font-semibold hover:underline"
-                >
-                  {mode === "login" ? "Зарегистрироваться" : "Войти"}
-                </button>
-              </p>
-            </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-            <Icon name="Shield" size={12} />
-            <span>Данные защищены и не передаются третьим лицам</span>
-          </div>
+          {!isReset && (
+            <p className="text-center text-muted-foreground text-xs mt-6">
+              {mode === "login" ? "Нет аккаунта? " : "Уже есть аккаунт? "}
+              <button
+                onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); setSuccessMsg(""); }}
+                className="text-primary hover:underline font-medium"
+              >
+                {mode === "login" ? "Зарегистрируйтесь" : "Войдите"}
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </div>
