@@ -153,7 +153,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen font-golos gradient-soft flex flex-col">
-      <nav className="px-6 h-16 flex items-center">
+      <nav className="px-6 h-16 flex items-center justify-center">
         <button onClick={() => navigate("/")} className="flex items-center gap-2 group">
           <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center">
             <Icon name="Compass" size={16} className="text-white" />
