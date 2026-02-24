@@ -193,6 +193,32 @@ export default function BarrierBotHistory({ sessions, onNewSession }: Props) {
       {tab === "compare" && <BarrierBotCompare sessions={sessions} />}
 
       {tab === "list" && <div className="space-y-3 px-4">
+        {sessions.length >= 2 && (
+          <div className="rounded-2xl overflow-hidden border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 px-4 py-4 flex gap-3">
+            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
+              <span className="text-lg">🧠</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm text-violet-900 mb-1">Похожий барьер возвращается снова?</p>
+              <p className="text-xs text-violet-700 leading-relaxed mb-3">
+                Когда до успеха остаётся чуть-чуть, но стресс нарастает, энергия уходит и сложно опираться на свои сильные стороны — это не слабость. Это сигнал, что барьер глубже, чем кажется.
+              </p>
+              <p className="text-xs text-violet-600 leading-relaxed mb-3">
+                Наши коучи с психологическим образованием помогают разобраться с повторяющимися паттернами и выйти на новый уровень без выгорания.
+              </p>
+              <a
+                href="https://t.me/+QgiLIa1gFRY4Y2Iy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
+              >
+                <Icon name="MessageCircle" size={13} />
+                Поговорить с коучем
+              </a>
+            </div>
+          </div>
+        )}
+
         {[...sessions].reverse().map((s, revIdx) => {
           const idx = sessions.length - 1 - revIdx;
           const profile = PROFILE_TEXTS[s.profile];
