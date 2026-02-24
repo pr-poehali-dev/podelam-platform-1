@@ -110,16 +110,15 @@ export default function Cabinet() {
               />
             )}
           </div>
-          <footer className="border-t border-border py-6 px-6 md:px-8 mt-auto">
-            <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
+          <footer className="border-t border-border/40 py-4 px-6 md:px-8 mt-16">
+            <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground/50">
               <div className="text-center md:text-left space-y-0.5">
-                <p>© 2025 ПоДелам. Найди своё дело.</p>
-                <p>ИП Уварова А. С. · ОГРНИП 322508100398078 · Права защищены</p>
+                <p>© 2025 ПоДелам · ИП Уварова А. С. · ОГРНИП 322508100398078</p>
               </div>
-              <div className="flex flex-wrap items-center gap-5">
+              <div className="flex flex-wrap items-center gap-4">
                 <InstallPWA />
-                <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
-                <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
+                <a href="/privacy" className="hover:text-muted-foreground transition-colors">Политика конфиденциальности</a>
+                <a href="/oferta" className="hover:text-muted-foreground transition-colors">Оферта</a>
               </div>
             </div>
           </footer>
