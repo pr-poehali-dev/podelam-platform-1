@@ -57,7 +57,10 @@ export default function AdminArticles() {
   const [editing, setEditing] = useState<EditorData | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingInline, setUploadingInline] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const inlineFileRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (!token) { navigate("/admin"); return; }
@@ -108,6 +111,26 @@ export default function AdminArticles() {
       setUploading(false);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleInlineImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editing) return;
+    setUploadingInline(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const b64 = (reader.result as string).split(",")[1];
+      const { url } = await adminUploadCover(token, b64, file.type);
+      const ta = bodyRef.current;
+      const cursor = ta?.selectionStart ?? editing.body.length;
+      const before = editing.body.slice(0, cursor);
+      const after = editing.body.slice(cursor);
+      const imgTag = `\n\n![](${url})\n\n`;
+      setEditing((prev) => prev ? { ...prev, body: before + imgTag + after } : null);
+      setUploadingInline(false);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   const handleSave = async () => {
@@ -236,16 +259,33 @@ export default function AdminArticles() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-muted-foreground mb-1">Текст статьи (Markdown)</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-muted-foreground">Текст статьи (Markdown)</label>
+              <button
+                type="button"
+                onClick={() => inlineFileRef.current?.click()}
+                disabled={uploadingInline}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-violet-50 text-violet-700 text-xs font-medium hover:bg-violet-100 transition-colors disabled:opacity-50"
+              >
+                {uploadingInline ? (
+                  <Icon name="Loader2" size={14} className="animate-spin" />
+                ) : (
+                  <Icon name="ImagePlus" size={14} />
+                )}
+                Вставить фото
+              </button>
+            </div>
             <textarea
+              ref={bodyRef}
               value={editing.body}
               onChange={(e) => set("body", e.target.value)}
               rows={20}
               className="w-full px-3 py-2.5 rounded-xl border border-border bg-white text-sm font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/30"
               placeholder={"## Подзаголовок\n\nТекст абзаца...\n\n**Жирный** и *курсив*\n\n[Текст ссылки](https://example.com)\n\n- Пункт списка\n\n1. Нумерованный список\n\n> Цитата\n\n---"}
             />
+            <input ref={inlineFileRef} type="file" accept="image/*" className="hidden" onChange={handleInlineImage} />
             <div className="text-[10px] text-muted-foreground mt-1">
-              ## заголовок · **жирный** · *курсив* · [ссылка](url) · - список · 1. нумерация · &gt; цитата · --- разделитель
+              ## заголовок · **жирный** · *курсив* · [ссылка](url) · ![](фото) · - список · 1. нумерация · &gt; цитата · --- разделитель
             </div>
           </div>
 

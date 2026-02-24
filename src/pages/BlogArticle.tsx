@@ -43,8 +43,8 @@ function renderBody(body: string) {
         const alt = line.match(/!\[([^\]]*)\]/)?.[1] || "";
         const src = line.match(/\]\(([^)]+)\)/)?.[1] || "";
         elements.push(
-          <figure key={bi} className="my-6">
-            <img src={src} alt={alt} className="w-full rounded-xl" loading="lazy" />
+          <figure key={bi} className="my-6 rounded-xl overflow-hidden">
+            <img src={src} alt={alt} className="w-full max-h-[500px] object-cover" loading="lazy" />
             {alt && <figcaption className="text-xs text-muted-foreground text-center mt-2">{alt}</figcaption>}
           </figure>
         );
@@ -104,32 +104,35 @@ function renderBody(body: string) {
 }
 
 function renderInline(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\[([^\]]+)\]\(([^)]+)\))/g);
-  const result: React.ReactNode[] = [];
+  const tokens: React.ReactNode[] = [];
+  const re = /\*\*([^*]+)\*\*|\*([^*]+)\*|\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
 
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-    if (!part) continue;
-
-    if (part.startsWith("**") && part.endsWith("**")) {
-      result.push(<strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>);
-    } else if (part.startsWith("*") && part.endsWith("*") && !part.startsWith("**")) {
-      result.push(<em key={i} className="italic">{part.slice(1, -1)}</em>);
-    } else if (part.startsWith("[") && part.includes("](")) {
-      const linkText = part.match(/\[([^\]]+)\]/)?.[1] || "";
-      const href = part.match(/\]\(([^)]+)\)/)?.[1] || "";
-      result.push(
-        <a key={i} href={href} target="_blank" rel="noopener noreferrer"
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      tokens.push(text.slice(lastIndex, match.index));
+    }
+    if (match[1]) {
+      tokens.push(<strong key={match.index} className="font-semibold text-foreground">{match[1]}</strong>);
+    } else if (match[2]) {
+      tokens.push(<em key={match.index} className="italic">{match[2]}</em>);
+    } else if (match[3] && match[4]) {
+      tokens.push(
+        <a key={match.index} href={match[4]} target="_blank" rel="noopener noreferrer"
            className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors">
-          {linkText}
+          {match[3]}
         </a>
       );
-    } else {
-      result.push(part);
     }
+    lastIndex = re.lastIndex;
   }
 
-  return result;
+  if (lastIndex < text.length) {
+    tokens.push(text.slice(lastIndex));
+  }
+
+  return tokens;
 }
 
 export default function BlogArticle() {
