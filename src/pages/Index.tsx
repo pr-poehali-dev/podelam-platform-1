@@ -305,10 +305,26 @@ export default function Index() {
       {/* TOOLS */}
       <section id="tools" className="py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
+          <div className="text-center mb-10">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Инструменты</p>
             <h2 className="text-3xl md:text-4xl font-black text-foreground">6 инструментов для поиска себя</h2>
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Каждый помогает найти своё дело или работу — от внутренних мотивов до конкретного плана действий</p>
+          </div>
+          <div className="grid sm:grid-cols-4 gap-3 mb-12 max-w-4xl mx-auto">
+            {[
+              { icon: "MessageCircle", step: "1", label: "Отвечаешь", text: "на точные вопросы о себе — честно и без правильных ответов" },
+              { icon: "Lightbulb", step: "2", label: "Осознаёшь", text: "свои ценности, барьеры и то, что действительно важно" },
+              { icon: "Target", step: "3", label: "Находишь", text: "направление и конкретные шаги с минимумом ошибок" },
+              { icon: "TrendingUp", step: "4", label: "Действуешь", text: "по плану и отслеживаешь реальные изменения" },
+            ].map((s) => (
+              <div key={s.step} className="flex flex-col items-center text-center p-4 rounded-2xl bg-white border border-border">
+                <div className="w-10 h-10 rounded-full gradient-brand flex items-center justify-center mb-3">
+                  <Icon name={s.icon} size={18} className="text-white" />
+                </div>
+                <p className="font-bold text-foreground text-sm mb-1">{s.label}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{s.text}</p>
+              </div>
+            ))}
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
