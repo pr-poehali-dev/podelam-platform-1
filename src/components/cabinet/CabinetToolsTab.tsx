@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
-import { checkAccess, hasSubscription, subscriptionExpires, ToolId, getBalance, payFromBalanceSub } from "@/lib/access";
+import { checkAccess, hasSubscription, subscriptionExpires, ToolId, getBalance, payFromBalanceSub, getToolCompletions } from "@/lib/access";
 import PaywallModal from "@/components/PaywallModal";
 import BalanceTopUpModal from "@/components/BalanceTopUpModal";
 
@@ -94,6 +94,7 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
   const [balance, setBalance] = useState(getBalance);
   const [showTopUp, setShowTopUp] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
+  const [lastActivity, setLastActivity] = useState<Record<string, string>>({});
 
   const refresh = () => {
     const map = {} as Record<ToolId, ReturnType<typeof checkAccess>>;
@@ -102,6 +103,14 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
     setHasSub(hasSubscription());
     setSubExp(subscriptionExpires());
     setBalance(getBalance());
+
+    const activityMap: Record<string, string> = {};
+    const completions = getToolCompletions();
+    for (const t of TOOLS) {
+      const last = completions.find(c => c.toolId === t.id);
+      if (last) activityMap[t.id] = last.date;
+    }
+    setLastActivity(activityMap);
   };
 
   useEffect(() => { refresh(); }, []);
@@ -219,9 +228,14 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
                 <span className={`text-xs font-bold ${isActive ? "text-green-600" : "text-primary"}`}>
                   {isActive ? (hasSub ? "Включено в подписку" : "Куплено") : tool.price}
                 </span>
-                {tool.onlySubscription && !hasSub && (
+                {lastActivity[tool.id] ? (
+                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <Icon name="Clock" size={10} />
+                    {lastActivity[tool.id]}
+                  </span>
+                ) : tool.onlySubscription && !hasSub ? (
                   <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">Только подписка</span>
-                )}
+                ) : null}
               </div>
             </div>
           );
