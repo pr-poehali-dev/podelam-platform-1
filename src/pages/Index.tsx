@@ -159,7 +159,7 @@ export default function Index() {
               </button>
             </div>
             <div className="flex items-center gap-6 mt-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5"><Icon name="Shield" size={14} className="text-primary" />Гарантия возврата</div>
+              <div className="flex items-center gap-1.5"><Icon name="Sparkles" size={14} className="text-primary" />Первый тест бесплатно</div>
               <div className="flex items-center gap-1.5"><Icon name="Clock" size={14} className="text-primary" />15–20 минут</div>
               <div className="flex items-center gap-1.5"><Icon name="Users" size={14} className="text-primary" />2 400+ прошли</div>
             </div>
