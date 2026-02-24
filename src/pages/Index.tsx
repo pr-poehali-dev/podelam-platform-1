@@ -394,7 +394,7 @@ export default function Index() {
             {[
               { icon: "BookOpen", title: "Научная методология", text: "Тесты основаны на валидированных методиках: теория типов Голланда, анализ мотивационных профилей и модели ценностей Шварца" },
               { icon: "BarChart3", title: "Адаптивный алгоритм", text: "Система учитывает историю ответов и адаптирует рекомендации на основе паттернов — чем больше данных, тем точнее результат" },
-              { icon: "RefreshCw", title: "Гарантия возврата", text: "Если результаты окажутся для вас нерелевантными, вернём деньги в течение 7 дней без лишних вопросов" },
+              { icon: "Lock", title: "Гарантия конфиденциальности", text: "Ваши ответы видите только вы. Мы не передаём данные третьим лицам и не анализируем содержание — всё хранится в вашем личном кабинете" },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-3xl p-7 border border-border card-hover text-center">
                 <div className="w-12 h-12 rounded-2xl gradient-brand flex items-center justify-center mx-auto mb-4">
