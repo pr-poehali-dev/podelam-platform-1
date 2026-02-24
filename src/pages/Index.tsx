@@ -17,30 +17,7 @@ const steps = [
   { num: "03", title: "Получаешь рекомендации", text: "Конкретные направления деятельности, форматы работы и план первых шагов." },
 ];
 
-const tariffs = [
-  {
-    name: "Тест на склонности",
-    price: "299",
-    desc: "Определи свои природные таланты и сферы, в которых тебе будет легче всего расти",
-    features: ["Психологический профиль", "3–5 подходящих направлений", "Формат дохода", "PDF с результатами"],
-    accent: false,
-  },
-  {
-    name: "Тест на призвание",
-    price: "299",
-    desc: "Глубокое погружение в твои мотивы, страхи и ресурсы для принятия решений",
-    features: ["Тип личности и мотивация", "Риски выгорания", "Стиль работы и отдыха", "PDF с результатами"],
-    accent: false,
-  },
-  {
-    name: "Полный тариф",
-    price: "990",
-    desc: "Оба теста + расширенные рекомендации с пошаговым планом развития",
-    features: ["Всё из обоих тестов", "Пошаговый план на 3 месяца", "Дневник самоанализа", "Приоритетная поддержка"],
-    accent: true,
-    badge: "Выгодно",
-  },
-];
+
 
 const audience = [
   { emoji: "💼", title: "Ищут доп. доход", text: "Хотите монетизировать навыки или найти подработку, которая не будет в тягость" },
@@ -50,7 +27,7 @@ const audience = [
 
 const faqs = [
   { q: "Как работают тесты?", a: "Тесты основаны на психологических методиках (Голланд, MBTI-адаптации, анализ ценностей). Вы отвечаете на вопросы, система строит профиль и подбирает направления по алгоритму совместимости." },
-  { q: "Сколько времени занимает прохождение?", a: "Один тест — 15–20 минут. Полный тариф с двумя тестами — около 30–40 минут. Можно прерваться и продолжить позже." },
+  { q: "Сколько времени занимает прохождение?", a: "Один тест — 15–20 минут. Можно прерваться и продолжить позже — прогресс сохраняется." },
   { q: "Результаты точные?", a: "Точность зависит от честности ответов. Чем искреннее вы отвечаете, тем точнее рекомендации. Платформа не даёт универсальных ответов — она помогает увидеть ваши склонности." },
   { q: "Можно ли пройти тест повторно?", a: "Да, через 3–6 месяцев повторное прохождение покажет динамику изменений. В личном кабинете доступна функция сравнения результатов." },
   { q: "Как происходит оплата?", a: "Картой через безопасный платёжный шлюз. После оплаты тест сразу становится доступен в личном кабинете." },
@@ -129,7 +106,7 @@ export default function Index() {
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <button onClick={() => scrollTo("how")} className="hover:text-foreground transition-colors">Как работает</button>
-            <button onClick={() => scrollTo("tariffs")} className="hover:text-foreground transition-colors">Тарифы</button>
+            <button onClick={() => scrollTo("tools")} className="hover:text-foreground transition-colors">Инструменты</button>
             <button onClick={() => scrollTo("faq")} className="hover:text-foreground transition-colors">FAQ</button>
           </div>
           {isLoggedIn ? (
@@ -325,53 +302,39 @@ export default function Index() {
         </div>
       </section>
 
-      {/* TARIFFS */}
-      <section id="tariffs" className="py-20">
+      {/* TOOLS */}
+      <section id="tools" className="py-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
-            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Тарифы</p>
-            <h2 className="text-3xl md:text-4xl font-black text-foreground">Выбери свой формат</h2>
+            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Инструменты</p>
+            <h2 className="text-3xl md:text-4xl font-black text-foreground">6 инструментов для поиска себя</h2>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Каждый помогает разобраться в себе с разных сторон — от склонностей до конкретного плана действий</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {tariffs.map((t) => (
-              <div
-                key={t.name}
-                className={`rounded-3xl p-7 border card-hover relative overflow-hidden ${
-                  t.accent
-                    ? "gradient-brand text-white border-transparent shadow-xl"
-                    : "bg-white border-border"
-                }`}
-              >
-                {t.badge && (
-                  <div className="absolute top-5 right-5 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30">
-                    {t.badge}
-                  </div>
-                )}
-                <h3 className={`font-bold text-lg mb-1 ${t.accent ? "text-white" : "text-foreground"}`}>{t.name}</h3>
-                <p className={`text-sm mb-5 leading-relaxed ${t.accent ? "text-white/80" : "text-muted-foreground"}`}>{t.desc}</p>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className={`text-4xl font-black ${t.accent ? "text-white" : "text-foreground"}`}>{t.price}</span>
-                  <span className={`text-lg font-medium ${t.accent ? "text-white/80" : "text-muted-foreground"}`}>₽</span>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { icon: "Brain", color: "bg-indigo-50", iconColor: "text-indigo-600", border: "border-indigo-100", name: "Психологический анализ", desc: "Глубокий разбор твоей личности: тип мышления, мотивация, риски выгорания. Помогает понять, в каких условиях тебе комфортно работать" },
+              { icon: "ShieldAlert", color: "bg-rose-50", iconColor: "text-rose-600", border: "border-rose-100", name: "Барьеры и тревога", desc: "Выявляет страхи, синдром самозванца и прокрастинацию. Показывает, что именно мешает двигаться вперёд и как с этим работать" },
+              { icon: "Banknote", color: "bg-green-50", iconColor: "text-green-600", border: "border-green-100", name: "Подбор дохода", desc: "Анализирует навыки и предпочтения, подбирает подходящие варианты заработка — от фриланса до своего дела" },
+              { icon: "Map", color: "bg-emerald-50", iconColor: "text-emerald-600", border: "border-emerald-100", name: "Шаги развития", desc: "Составляет персональный план на 3 месяца с конкретными шагами — от первых действий до результата" },
+              { icon: "BarChart3", color: "bg-blue-50", iconColor: "text-blue-600", border: "border-blue-100", name: "Прогресс развития", desc: "Отслеживает динамику твоего состояния: энергия, мотивация, удовлетворённость. Видна реальная картина изменений" },
+              { icon: "BookOpen", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Дневник самоанализа", desc: "Пространство для рефлексии и фиксации мыслей. ИИ помогает находить паттерны и делать выводы" },
+            ].map((tool) => (
+              <div key={tool.name} className={`rounded-3xl p-6 border ${tool.border} ${tool.color} card-hover`}>
+                <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-4 shadow-sm`}>
+                  <Icon name={tool.icon} size={22} className={tool.iconColor} />
                 </div>
-                <ul className="space-y-2.5 mb-7">
-                  {t.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2.5">
-                      <Icon name="Check" size={16} className={`mt-0.5 shrink-0 ${t.accent ? "text-white" : "text-primary"}`} />
-                      <span className={`text-sm ${t.accent ? "text-white/90" : "text-foreground"}`}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className={`w-full font-bold py-3.5 rounded-2xl transition-all text-[15px] ${
-                    t.accent
-                      ? "bg-white text-primary hover:bg-white/90"
-                      : "gradient-brand text-white hover:opacity-90"
-                  }`}
-                >
-                  Выбрать тариф
-                </button>
+                <h3 className="font-bold text-foreground text-[17px] mb-2">{tool.name}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{tool.desc}</p>
               </div>
             ))}
+          </div>
+          <div className="text-center mt-10">
+            <button
+              onClick={() => navigate("/auth")}
+              className="gradient-brand text-white font-bold px-8 py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-[15px]"
+            >
+              Попробовать бесплатно
+            </button>
           </div>
         </div>
       </section>
