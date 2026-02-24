@@ -149,7 +149,7 @@ export default function Index() {
                 onClick={() => scrollTo("demo")}
                 className="gradient-brand text-white font-bold px-7 py-4 rounded-2xl hover:opacity-90 transition-all hover:shadow-lg text-[15px]"
               >
-                Пройти тест — 299 ₽
+                Пройти тест бесплатно
               </button>
               <button
                 onClick={() => navigate("/auth")}
