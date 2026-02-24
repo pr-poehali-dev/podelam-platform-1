@@ -152,10 +152,10 @@ export default function Index() {
                 Пройти тест бесплатно
               </button>
               <button
-                onClick={() => navigate("/auth")}
+                onClick={() => scrollTo("tools")}
                 className="bg-white border border-border text-foreground font-semibold px-7 py-4 rounded-2xl hover:bg-secondary transition-colors text-[15px]"
               >
-                Узнать своё предназначение
+                Узнать свои ценности
               </button>
             </div>
             <div className="flex items-center gap-6 mt-8 text-sm text-muted-foreground">
