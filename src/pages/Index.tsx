@@ -307,7 +307,7 @@ export default function Index() {
                 <p className="text-muted-foreground text-sm mb-8">Полный тест даст точный профиль из 40+ вопросов и конкретные рекомендации</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button
-                    onClick={() => scrollTo("tariffs")}
+                    onClick={() => navigate("/auth")}
                     className="gradient-brand text-white font-bold px-6 py-3.5 rounded-2xl hover:opacity-90 transition-opacity"
                   >
                     Получить полный результат

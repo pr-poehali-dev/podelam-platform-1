@@ -11,6 +11,7 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
   const AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
 
@@ -19,6 +20,7 @@ export default function Auth() {
     setError("");
     if (!email || !password) { setError("Заполните все поля"); return; }
     if (mode === "register" && !name) { setError("Введите имя"); return; }
+    if (mode === "register" && !agreed) { setError("Необходимо согласиться с политикой конфиденциальности и договором оферты"); return; }
     setLoading(true);
 
     try {
@@ -168,6 +170,23 @@ export default function Auth() {
                   className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all bg-secondary/30"
                 />
               </div>
+
+              {mode === "register" && (
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-border accent-primary shrink-0 cursor-pointer"
+                  />
+                  <span className="text-xs text-muted-foreground leading-relaxed">
+                    Я согласен(а) с{" "}
+                    <a href="/privacy" target="_blank" className="text-primary hover:underline">политикой конфиденциальности</a>
+                    {" "}и{" "}
+                    <a href="/offer" target="_blank" className="text-primary hover:underline">договором оферты</a>
+                  </span>
+                </label>
+              )}
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm flex items-center gap-2">
