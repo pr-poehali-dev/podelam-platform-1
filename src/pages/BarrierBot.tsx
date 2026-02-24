@@ -113,6 +113,12 @@ export default function BarrierBot() {
     setMessages([]);
     setBotState(INITIAL_STATE);
     setTab("chat");
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      const id = Date.now() + Math.random();
+      setMessages([{ id, from: "bot", text: WELCOME_TEXT, widget: { type: "choices", options: ["Начать →"] } }]);
+    }, 500);
   };
 
   const getNextBotMessage = (newState: BotState, _answer: string | number | string[]): { text: string; widget?: Widget } => {
