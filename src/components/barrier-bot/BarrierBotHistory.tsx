@@ -13,6 +13,7 @@ export type BarrierSession = {
   breakStep: number;
   profile: string;
   steps: Step[];
+  _server_id?: number;
 };
 
 type Props = {
@@ -195,7 +196,7 @@ export default function BarrierBotHistory({ sessions, onNewSession }: Props) {
       {tab === "list" && <div className="space-y-3 px-4">
         <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
           <Icon name="Info" size={14} className="text-blue-500 shrink-0" />
-          <p className="text-xs text-blue-700">Все ваши сессии сохраняются — можно отслеживать динамику барьеров со временем</p>
+          <p className="text-xs text-blue-700">Сессии синхронизируются между устройствами — результаты доступны везде</p>
         </div>
         {sessions.length >= 2 && (
           <div className="rounded-2xl overflow-hidden border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 px-4 py-4 flex gap-3">

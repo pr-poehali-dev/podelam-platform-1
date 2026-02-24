@@ -28,6 +28,8 @@ const WELCOME_TEXT = `Привет! Это инструмент **«Барьер
 
 Готов начать?`;
 
+const BARRIER_API = "https://functions.poehali.dev/817cc650-9d57-4575-8a6d-072b98b1b815";
+
 export default function BarrierBot() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -43,13 +45,41 @@ export default function BarrierBot() {
     return u ? JSON.parse(u).email : "";
   };
 
-  const loadSessions = (email: string) => {
-    const raw = localStorage.getItem(`barrier_results_${email}`) ?? "[]";
-    const parsed = JSON.parse(raw);
-    setSessions(parsed);
-    // Восстанавливаем постоянный флаг если есть старые результаты
-    if (parsed.length > 0) {
-      localStorage.setItem(`pdd_ever_done_${email}_barrier-bot`, "1");
+  const getUserData = () => {
+    const u = localStorage.getItem("pdd_user");
+    return u ? JSON.parse(u) : null;
+  };
+
+  const loadSessions = async (email: string, userId?: number) => {
+    const localRaw = localStorage.getItem(`barrier_results_${email}`) ?? "[]";
+    const localSessions = JSON.parse(localRaw);
+    
+    if (localSessions.length > 0) {
+      setSessions(localSessions);
+    }
+
+    if (!userId) return;
+
+    try {
+      const resp = await fetch(BARRIER_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sync", userId, sessions: localSessions }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.sessions) {
+          setSessions(data.sessions);
+          localStorage.setItem(`barrier_results_${email}`, JSON.stringify(data.sessions));
+          if (data.sessions.length > 0) {
+            localStorage.setItem(`pdd_ever_done_${email}_barrier-bot`, "1");
+          }
+        }
+      }
+    } catch {
+      if (localSessions.length > 0) {
+        localStorage.setItem(`pdd_ever_done_${email}_barrier-bot`, "1");
+      }
     }
   };
 
@@ -77,7 +107,7 @@ export default function BarrierBot() {
       setHasAccess(true);
     }
 
-    loadSessions(userData.email);
+    loadSessions(userData.email, userData.id);
 
     const savedMessages = localStorage.getItem(`barrier_chat_${userData.email}`);
     const savedState = localStorage.getItem(`barrier_state_${userData.email}`);
@@ -236,8 +266,7 @@ export default function BarrierBot() {
 
       case "result": {
         const email = getUserEmail();
-        const savedResults = localStorage.getItem(`barrier_results_${email}`) ?? "[]";
-        const allResults = JSON.parse(savedResults);
+        const userData = getUserData();
         const record: BarrierSession = {
           date: new Date().toLocaleDateString("ru-RU"),
           context: newState.selectedContext,
@@ -248,29 +277,35 @@ export default function BarrierBot() {
           profile: newState.psychProfile,
           steps: newState.steps,
         };
-        allResults.push(record);
-        localStorage.setItem(`barrier_results_${email}`, JSON.stringify(allResults));
-        setSessions(allResults);
-        saveToolCompletion("barrier-bot", `Анализ барьеров завершён — сфера «${newState.selectedContext}», профиль ${PROFILE_TEXTS[newState.psychProfile]?.title ?? "определён"}`);
 
-        try {
-          const u = localStorage.getItem("pdd_user");
-          if (u) {
-            const userData = JSON.parse(u);
-            if (userData.id) {
-              fetch("https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  action: "save_test_result",
-                  userId: userData.id,
-                  testType: "barrier-bot",
-                  resultData: record,
-                }),
-              }).catch(() => { /* ignore */ });
-            }
-          }
-        } catch { /* ignore */ }
+        if (userData?.id) {
+          fetch(BARRIER_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "save", userId: userData.id, sessionData: record }),
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              if (data.id) {
+                const withId = { ...record, _server_id: data.id };
+                const updated = [...sessions, withId];
+                setSessions(updated);
+                localStorage.setItem(`barrier_results_${email}`, JSON.stringify(updated));
+              }
+            })
+            .catch(() => {
+              const updated = [...sessions, record];
+              setSessions(updated);
+              localStorage.setItem(`barrier_results_${email}`, JSON.stringify(updated));
+            });
+        } else {
+          const updated = [...sessions, record];
+          setSessions(updated);
+          localStorage.setItem(`barrier_results_${email}`, JSON.stringify(updated));
+        }
+
+        localStorage.setItem(`pdd_ever_done_${email}_barrier-bot`, "1");
+        saveToolCompletion("barrier-bot", `Анализ барьеров завершён — сфера «${newState.selectedContext}», профиль ${PROFILE_TEXTS[newState.psychProfile]?.title ?? "определён"}`);
 
         return {
           text: `## Сессия завершена\n\nТы прошёл полный цикл анализа. Вот что ты узнал:\n\n• **Сфера:** ${newState.selectedContext}\n• **Слабость:** ${newState.mainWeakness}\n• **Сила:** ${newState.mainStrength.join(", ")}\n• **Дополнительная опора:** ${newState.additionalStrength.join(", ")}\n• **Профиль:** ${PROFILE_TEXTS[newState.psychProfile]?.title}\n\n---\n\nСессия сохранена. Посмотри историю — там можно скачать PDF или начать новый анализ.`,
@@ -301,28 +336,28 @@ export default function BarrierBot() {
   const [saved, setSaved] = useState(false);
 
   const handleSave = async () => {
-    const u = localStorage.getItem("pdd_user");
-    if (!u) return;
-    const userData = JSON.parse(u);
-    const lastSession = sessions[sessions.length - 1];
-    if (!lastSession) return;
+    const userData = getUserData();
+    if (!userData) return;
+    const email = userData.email;
 
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
 
     if (userData.id) {
       try {
-        await fetch("https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c", {
+        const resp = await fetch(BARRIER_API, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "save_test_result",
-            userId: userData.id,
-            testType: "barrier-bot",
-            resultData: lastSession,
-          }),
+          body: JSON.stringify({ action: "sync", userId: userData.id, sessions }),
         });
-      } catch { /* localStorage уже сохранено */ }
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.sessions) {
+            setSessions(data.sessions);
+            localStorage.setItem(`barrier_results_${email}`, JSON.stringify(data.sessions));
+          }
+        }
+      } catch { /* localStorage fallback already done */ }
     }
   };
 
