@@ -6,6 +6,7 @@ import CabinetHomeTab from "@/components/cabinet/CabinetHomeTab";
 import CabinetTestsTab from "@/components/cabinet/CabinetTestsTab";
 import CabinetToolsTab from "@/components/cabinet/CabinetToolsTab";
 import { getLatestCareerResult, CareerResult } from "@/lib/access";
+import InstallPWA from "@/components/InstallPWA";
 
 type Tab = "home" | "tests" | "tools";
 
@@ -116,7 +117,8 @@ export default function Cabinet() {
                 <p>© 2025 ПоДелам. Найди своё дело.</p>
                 <p>ИП Уварова А. С. · ОГРНИП 322508100398078 · Права защищены</p>
               </div>
-              <div className="flex gap-5">
+              <div className="flex flex-wrap items-center gap-5">
+                <InstallPWA />
                 <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
                 <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
               </div>

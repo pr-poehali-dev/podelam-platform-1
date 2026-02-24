@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import InstallPWA from "@/components/InstallPWA";
 
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/e85cccde-a68c-43c5-8e98-e53c3460428b.jpg";
 
@@ -480,7 +481,8 @@ export default function Index() {
             <p>© 2025 ПоДелам. Найди своё дело.</p>
             <p>ИП Уварова А. С. · ОГРНИП 322508100398078 · Права защищены</p>
           </div>
-          <div className="flex gap-5 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
+            <InstallPWA />
             <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
             <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
           </div>
