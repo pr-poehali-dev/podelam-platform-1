@@ -202,7 +202,7 @@ export default function Index() {
           </div>
           <div className="mt-10 bg-accent/40 border border-accent rounded-3xl p-6 text-center max-w-2xl mx-auto">
             <p className="text-foreground font-medium">
-              По данным исследований, <span className="font-bold text-primary">62% людей</span> работают не в той сфере, которая соответствует их природным склонностям.
+              По данным исследований, <span className="font-bold text-primary">62% людей</span> работают не в той сфере, которая соответствует их природным ценностям
             </p>
           </div>
         </div>
