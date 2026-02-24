@@ -479,7 +479,7 @@ export default function Index() {
           <p className="text-muted-foreground text-sm">© 2025 ПоДелам. Найди своё дело.</p>
           <div className="flex gap-5 text-sm text-muted-foreground">
             <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
-            <a href="#" className="hover:text-foreground transition-colors">Оферта</a>
+            <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
           </div>
         </div>
       </footer>
