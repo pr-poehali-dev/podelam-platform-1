@@ -75,6 +75,8 @@ def handler(event: dict, context) -> dict:
 
     if method == 'GET' and action == 'admin_list':
         return handle_admin_list()
+    if method == 'GET' and action == 'admin_detail':
+        return handle_admin_detail(qs)
     if method == 'POST' and action == 'upload_cover':
         return handle_upload_cover(body)
     if method == 'POST' and action == 'save':
@@ -195,6 +197,35 @@ def handle_admin_list():
         articles.append({cols[i]: row[i] for i in range(len(cols))})
     conn.close()
     return ok({'articles': articles})
+
+def handle_admin_detail(qs):
+    article_id = qs.get('id', '')
+    if not article_id:
+        return err('id required')
+    conn = get_conn()
+    cur = conn.cursor()
+    S = SCHEMA
+    cur.execute(f"""
+        SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.body, a.video_url,
+               a.reading_time, a.views_count, a.created_at, a.updated_at,
+               a.meta_title, a.meta_description, a.meta_keywords,
+               a.category_id, a.is_published,
+               c.name as category_name, c.slug as category_slug
+        FROM "{S}".articles a
+        LEFT JOIN "{S}".categories c ON c.id = a.category_id
+        WHERE a.id = %s
+    """, [int(article_id)])
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return err('Not found', 404)
+    cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'body', 'video_url',
+            'reading_time', 'views_count', 'created_at', 'updated_at',
+            'meta_title', 'meta_description', 'meta_keywords',
+            'category_id', 'is_published', 'category_name', 'category_slug']
+    article = {cols[i]: row[i] for i in range(len(cols))}
+    conn.close()
+    return ok(article)
 
 def handle_upload_cover(body):
     b64 = body.get('image', '')

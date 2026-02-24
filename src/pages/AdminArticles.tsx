@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import {
   adminListArticles,
+  adminFetchArticle,
   adminSaveArticle,
   adminTogglePublish,
   adminUploadCover,
@@ -70,21 +71,23 @@ export default function AdminArticles() {
 
   const handleNew = () => setEditing({ ...EMPTY });
 
-  const handleEdit = (a: ArticleRow) => {
+  const handleEdit = async (a: ArticleRow) => {
+    const full = await adminFetchArticle(token, a.id);
+    if (!full) return;
     setEditing({
-      id: a.id,
-      title: a.title,
-      summary: a.summary,
-      body: "",
-      slug: a.slug,
-      category_id: null,
-      cover_url: a.cover_url || "",
-      video_url: "",
-      meta_title: "",
-      meta_description: "",
-      meta_keywords: "",
-      reading_time: 3,
-      is_published: a.is_published,
+      id: full.id,
+      title: full.title,
+      summary: full.summary,
+      body: full.body || "",
+      slug: full.slug,
+      category_id: full.category_id,
+      cover_url: full.cover_url || "",
+      video_url: full.video_url || "",
+      meta_title: full.meta_title || "",
+      meta_description: full.meta_description || "",
+      meta_keywords: full.meta_keywords || "",
+      reading_time: full.reading_time,
+      is_published: full.is_published,
     });
   };
 
@@ -237,10 +240,13 @@ export default function AdminArticles() {
             <textarea
               value={editing.body}
               onChange={(e) => set("body", e.target.value)}
-              rows={14}
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-white text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-primary/30"
-              placeholder={"## Подзаголовок\n\nТекст абзаца...\n\n**Жирный текст**\n\n- Пункт списка\n\n> Цитата"}
+              rows={20}
+              className="w-full px-3 py-2.5 rounded-xl border border-border bg-white text-sm font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder={"## Подзаголовок\n\nТекст абзаца...\n\n**Жирный** и *курсив*\n\n[Текст ссылки](https://example.com)\n\n- Пункт списка\n\n1. Нумерованный список\n\n> Цитата\n\n---"}
             />
+            <div className="text-[10px] text-muted-foreground mt-1">
+              ## заголовок · **жирный** · *курсив* · [ссылка](url) · - список · 1. нумерация · &gt; цитата · --- разделитель
+            </div>
           </div>
 
           <div>

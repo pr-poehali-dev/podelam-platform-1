@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { fetchArticle, ArticleFull } from "@/lib/articlesApi";
@@ -7,55 +7,129 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
 }
 
+function isListLine(line: string) {
+  return line.startsWith("- ") || line.startsWith("* ");
+}
+function isOrderedListLine(line: string) {
+  return /^\d+\.\s/.test(line);
+}
+
 function renderBody(body: string) {
-  const paragraphs = body.split("\n").filter(Boolean);
-  return paragraphs.map((p, i) => {
-    if (p.startsWith("## ")) {
-      return <h2 key={i} className="text-xl font-bold text-foreground mt-8 mb-3">{p.slice(3)}</h2>;
+  const blocks = body.split(/\n\n+/);
+  const elements: React.ReactNode[] = [];
+
+  blocks.forEach((block, bi) => {
+    const trimmed = block.trim();
+    if (!trimmed) return;
+
+    const lines = trimmed.split("\n");
+
+    if (lines.length === 1) {
+      const line = lines[0];
+
+      if (line.trim() === "---" || line.trim() === "***") {
+        elements.push(<hr key={bi} className="my-6 border-border/50" />);
+        return;
+      }
+      if (line.startsWith("## ")) {
+        elements.push(<h2 key={bi} className="text-xl font-bold text-foreground mt-8 mb-3">{renderInline(line.slice(3))}</h2>);
+        return;
+      }
+      if (line.startsWith("### ")) {
+        elements.push(<h3 key={bi} className="text-lg font-semibold text-foreground mt-6 mb-2">{renderInline(line.slice(4))}</h3>);
+        return;
+      }
+      if (line.startsWith("![") && line.includes("](")) {
+        const alt = line.match(/!\[([^\]]*)\]/)?.[1] || "";
+        const src = line.match(/\]\(([^)]+)\)/)?.[1] || "";
+        elements.push(
+          <figure key={bi} className="my-6">
+            <img src={src} alt={alt} className="w-full rounded-xl" loading="lazy" />
+            {alt && <figcaption className="text-xs text-muted-foreground text-center mt-2">{alt}</figcaption>}
+          </figure>
+        );
+        return;
+      }
+      if (line.startsWith("> ")) {
+        elements.push(
+          <blockquote key={bi} className="border-l-4 border-primary/30 pl-4 py-2 my-4 text-[15px] italic text-muted-foreground bg-violet-50/50 rounded-r-lg">
+            {renderInline(line.slice(2))}
+          </blockquote>
+        );
+        return;
+      }
     }
-    if (p.startsWith("### ")) {
-      return <h3 key={i} className="text-lg font-semibold text-foreground mt-6 mb-2">{p.slice(4)}</h3>;
-    }
-    if (p.startsWith("- ")) {
-      return (
-        <li key={i} className="ml-4 text-[15px] leading-relaxed text-foreground/85 mb-1 list-disc">
-          {renderInline(p.slice(2))}
-        </li>
+
+    if (lines.every((l) => isListLine(l))) {
+      elements.push(
+        <ul key={bi} className="ml-5 my-3 space-y-1.5 list-disc">
+          {lines.map((l, li) => (
+            <li key={li} className="text-[15px] leading-relaxed text-foreground/85">{renderInline(l.slice(2))}</li>
+          ))}
+        </ul>
       );
+      return;
     }
-    if (p.startsWith("![") && p.includes("](")) {
-      const alt = p.match(/!\[([^\]]*)\]/)?.[1] || "";
-      const src = p.match(/\(([^)]+)\)/)?.[1] || "";
-      return (
-        <figure key={i} className="my-6">
-          <img src={src} alt={alt} className="w-full rounded-xl" loading="lazy" />
-          {alt && <figcaption className="text-xs text-muted-foreground text-center mt-2">{alt}</figcaption>}
-        </figure>
+
+    if (lines.every((l) => isOrderedListLine(l))) {
+      elements.push(
+        <ol key={bi} className="ml-5 my-3 space-y-1.5 list-decimal">
+          {lines.map((l, li) => (
+            <li key={li} className="text-[15px] leading-relaxed text-foreground/85">{renderInline(l.replace(/^\d+\.\s/, ""))}</li>
+          ))}
+        </ol>
       );
+      return;
     }
-    if (p.startsWith("> ")) {
-      return (
-        <blockquote key={i} className="border-l-4 border-primary/30 pl-4 py-2 my-4 text-[15px] italic text-muted-foreground bg-violet-50/50 rounded-r-lg">
-          {renderInline(p.slice(2))}
+
+    if (lines.every((l) => l.startsWith("> "))) {
+      elements.push(
+        <blockquote key={bi} className="border-l-4 border-primary/30 pl-4 py-2 my-4 text-[15px] italic text-muted-foreground bg-violet-50/50 rounded-r-lg">
+          {lines.map((l, li) => <span key={li}>{renderInline(l.slice(2))}{li < lines.length - 1 && <br />}</span>)}
         </blockquote>
       );
+      return;
     }
-    return (
-      <p key={i} className="text-[15px] leading-[1.8] text-foreground/85 mb-4">
-        {renderInline(p)}
+
+    elements.push(
+      <p key={bi} className="text-[15px] leading-[1.75] text-foreground/85 mb-4">
+        {lines.map((l, li) => (
+          <span key={li}>{renderInline(l)}{li < lines.length - 1 && <br />}</span>
+        ))}
       </p>
     );
   });
+
+  return elements;
 }
 
-function renderInline(text: string) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
+function renderInline(text: string): React.ReactNode[] {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\[([^\]]+)\]\(([^)]+)\))/g);
+  const result: React.ReactNode[] = [];
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (!part) continue;
+
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
+      result.push(<strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>);
+    } else if (part.startsWith("*") && part.endsWith("*") && !part.startsWith("**")) {
+      result.push(<em key={i} className="italic">{part.slice(1, -1)}</em>);
+    } else if (part.startsWith("[") && part.includes("](")) {
+      const linkText = part.match(/\[([^\]]+)\]/)?.[1] || "";
+      const href = part.match(/\]\(([^)]+)\)/)?.[1] || "";
+      result.push(
+        <a key={i} href={href} target="_blank" rel="noopener noreferrer"
+           className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors">
+          {linkText}
+        </a>
+      );
+    } else {
+      result.push(part);
     }
-    return part;
-  });
+  }
+
+  return result;
 }
 
 export default function BlogArticle() {

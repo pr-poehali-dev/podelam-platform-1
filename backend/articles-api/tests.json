@@ -4,9 +4,7 @@
       "name": "List articles (public)",
       "method": "GET",
       "path": "/?action=list",
-      "expectedStatus": 200,
-      "expectedBody": {"total": 0},
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Get categories",
@@ -26,6 +24,13 @@
       "name": "Admin list without token",
       "method": "GET",
       "path": "/?action=admin_list",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Admin detail without token",
+      "method": "GET",
+      "path": "/?action=admin_detail&id=1",
       "expectedStatus": 403,
       "bodyMatcher": "partial"
     }

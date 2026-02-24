@@ -47,6 +47,14 @@ export async function fetchCategories() {
   return res.json() as Promise<{ categories: Category[] }>;
 }
 
+export async function adminFetchArticle(token: string, id: number) {
+  const res = await fetch(`${API}?action=admin_detail&id=${id}`, {
+    headers: { "X-Admin-Token": token },
+  });
+  if (!res.ok) return null;
+  return res.json() as Promise<ArticleFull & { category_id: number | null; is_published: boolean }>;
+}
+
 export async function adminListArticles(token: string) {
   const res = await fetch(`${API}?action=admin_list`, {
     headers: { "X-Admin-Token": token },
