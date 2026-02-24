@@ -16,6 +16,9 @@ import PsychBot from "./pages/PsychBot";
 import PlanBot from "./pages/PlanBot";
 import BarrierBot from "./pages/BarrierBot";
 import Admin from "./pages/Admin";
+import AdminArticles from "./pages/AdminArticles";
+import Blog from "./pages/Blog";
+import BlogArticle from "./pages/BlogArticle";
 import CareerTest from "./pages/CareerTest";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Oferta from "./pages/Oferta";
@@ -42,6 +45,9 @@ const App = () => (
           <Route path="/plan-bot" element={<PlanBot />} />
           <Route path="/barrier-bot" element={<BarrierBot />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/articles" element={<AdminArticles />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route path="/career-test" element={<CareerTest />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/oferta" element={<Oferta />} />

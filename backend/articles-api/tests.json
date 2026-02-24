@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "List articles (public)",
+      "method": "GET",
+      "path": "/?action=list",
+      "expectedStatus": 200,
+      "expectedBody": {"total": 0},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get categories",
+      "method": "GET",
+      "path": "/?action=categories",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Detail missing slug",
+      "method": "GET",
+      "path": "/?action=detail",
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Admin list without token",
+      "method": "GET",
+      "path": "/?action=admin_list",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

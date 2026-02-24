@@ -192,10 +192,16 @@ export default function Admin() {
             </div>
             <span className="font-bold text-foreground">Админ-панель</span>
           </div>
-          <button onClick={logout} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <Icon name="LogOut" size={15} />
-            Выйти
-          </button>
+          <div className="flex items-center gap-3">
+            <a href="/admin/articles" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 text-sm font-semibold hover:bg-violet-100 transition-colors">
+              <Icon name="BookOpen" size={14} />
+              Статьи
+            </a>
+            <button onClick={logout} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Icon name="LogOut" size={15} />
+              Выйти
+            </button>
+          </div>
         </div>
       </header>
 

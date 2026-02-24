@@ -108,6 +108,7 @@ export default function Index() {
             <button onClick={() => scrollTo("how")} className="hover:text-foreground transition-colors">Как работает</button>
             <button onClick={() => scrollTo("tools")} className="hover:text-foreground transition-colors">Инструменты</button>
             <button onClick={() => scrollTo("faq")} className="hover:text-foreground transition-colors">FAQ</button>
+            <button onClick={() => navigate("/blog")} className="hover:text-foreground transition-colors">Статьи</button>
           </div>
           {isLoggedIn ? (
             <button

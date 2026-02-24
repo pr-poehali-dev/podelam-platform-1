@@ -8,7 +8,7 @@ import CabinetToolsTab from "@/components/cabinet/CabinetToolsTab";
 import { getLatestCareerResult, CareerResult, wasEverDone } from "@/lib/access";
 import InstallPWA from "@/components/InstallPWA";
 
-type Tab = "home" | "tests" | "tools";
+type Tab = "home" | "tests" | "tools" | "blog";
 
 export default function Cabinet() {
   const navigate = useNavigate();
@@ -19,6 +19,11 @@ export default function Cabinet() {
   const [careerResult, setCareerResult] = useState<CareerResult | null>(null);
   const initialTab = (searchParams.get("tab") as Tab) || "home";
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
+  const handleTabChange = (tab: Tab) => {
+    if (tab === "blog") { navigate("/blog"); return; }
+    setActiveTab(tab);
+  };
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
@@ -67,7 +72,7 @@ export default function Cabinet() {
         <CabinetSidebar
           user={user}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           onLogoClick={() => navigate("/")}
           onLogout={logout}
         />
@@ -75,7 +80,7 @@ export default function Cabinet() {
         <main className="flex-1 overflow-auto">
           <CabinetMobileNav
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onLogoClick={() => navigate("/")}
             onLogout={logout}
           />
@@ -89,7 +94,7 @@ export default function Cabinet() {
                 careerResult={careerResult}
                 profileComplete={profileComplete}
                 onNavigate={navigate}
-                onTabChange={setActiveTab}
+                onTabChange={handleTabChange}
               />
             )}
 
@@ -106,7 +111,7 @@ export default function Cabinet() {
               <CabinetToolsTab
                 hasPsychTest={!!psychTest}
                 onNavigate={navigate}
-                onGoToTests={() => setActiveTab("tests")}
+                onGoToTests={() => handleTabChange("tests")}
               />
             )}
           </div>

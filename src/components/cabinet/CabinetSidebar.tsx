@@ -14,7 +14,7 @@ function useBalance() {
   return { balance, refresh };
 }
 
-type Tab = "home" | "tests" | "tools";
+type Tab = "home" | "tests" | "tools" | "blog";
 
 type Props = {
   user: User;
@@ -28,6 +28,7 @@ const NAV_ITEMS = [
   { id: "home" as Tab, icon: "LayoutDashboard", label: "Главная" },
   { id: "tests" as Tab, icon: "ClipboardList", label: "Тесты" },
   { id: "tools" as Tab, icon: "Wrench", label: "Инструменты" },
+  { id: "blog" as Tab, icon: "BookOpen", label: "Статьи" },
 ];
 
 // Мобильная навигация — используется внутри <main> в Cabinet.tsx
