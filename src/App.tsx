@@ -19,7 +19,7 @@ import Admin from "./pages/Admin";
 import CareerTest from "./pages/CareerTest";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Oferta from "./pages/Oferta";
-import NotFound from "./pages/NotFound";
+import NotFound from "./pages/NotFoundPage";
 
 const queryClient = new QueryClient();
 
