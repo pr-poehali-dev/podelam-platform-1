@@ -49,9 +49,11 @@ def send_email(to_email: str, code: str):
 
     msg.attach(MIMEText(html, 'html'))
 
+    print(f"SMTP: connecting to {smtp_host}:{smtp_port} as {smtp_user}")
     with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
         server.login(smtp_user, smtp_password)
         server.sendmail(smtp_user, to_email, msg.as_string())
+    print(f"SMTP: email sent to {to_email}")
 
 def handler(event: dict, context) -> dict:
     """Регистрация, вход и восстановление пароля пользователей"""
@@ -191,7 +193,11 @@ def handler(event: dict, context) -> dict:
         conn.commit()
         conn.close()
 
-        send_email(email, code)
+        try:
+            send_email(email, code)
+        except Exception as e:
+            print(f"SMTP ERROR: {e}")
+            return {'statusCode': 500, 'headers': cors, 'body': json.dumps({'error': f'Ошибка отправки письма: {str(e)}'})}
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
 
     elif action == 'reset_confirm':
