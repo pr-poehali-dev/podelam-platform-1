@@ -142,7 +142,7 @@ export default function Index() {
               и не приведёт к выгоранию
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8 max-w-md">
-              Платформа анализирует твои психологические склонности и предлагает конкретные направления для роста и дохода.
+              Платформа раскрывает твою внутреннюю мотивацию и предлагает конкретные направления для роста и дохода.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <button
