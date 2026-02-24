@@ -6,6 +6,7 @@ import PaywallModal from "@/components/PaywallModal";
 import IncomeBotHistory, { IncomeSession } from "@/components/income-bot/IncomeBotHistory";
 import IncomeBotSourceChoice from "@/components/income-bot/IncomeBotSourceChoice";
 import IncomeBotChat from "@/components/income-bot/IncomeBotChat";
+import ToolHint from "@/components/ToolHint";
 import { QUESTIONS, RESULT_LABELS } from "@/components/income-bot/types";
 import type { Message, ResultKey, Plan } from "@/components/income-bot/types";
 import { calcScores, pickResult, getUserEmail, getIncomeSessions, saveIncomeSession } from "@/components/income-bot/engine";
@@ -213,6 +214,18 @@ export default function IncomeBot() {
       {tab === "history" ? (
         <IncomeBotHistory sessions={sessions} onNewSession={handleNewSession} />
       ) : (
+        <>
+        {!isDone && messages.length <= 2 && (
+          <ToolHint
+            title="Как получить точный результат"
+            items={[
+              "Отвечайте исходя из того, что вам реально нравится и подходит, а не из того, что «правильно» или модно.",
+              "Учитывайте своё текущее время, энергию и ресурсы — бот подберёт доход под ваши реальные возможности.",
+              "Будьте честны в оценке навыков — завышенные ответы дадут неподходящие рекомендации.",
+              "Выделите 5–10 минут без отвлечений, чтобы не торопиться с ответами.",
+            ]}
+          />
+        )}
         <IncomeBotChat
           messages={messages}
           analyzing={analyzing}
@@ -226,6 +239,7 @@ export default function IncomeBot() {
           onNewSession={handleNewSession}
           onShowHistory={() => setTab("history")}
         />
+        </>
       )}
     </div>
   );

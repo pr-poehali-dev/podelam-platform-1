@@ -4,6 +4,7 @@ import { checkAccess, saveToolCompletion } from "@/lib/access";
 import Icon from "@/components/ui/icon";
 import BarrierBotPaywall from "@/components/barrier-bot/BarrierBotPaywall";
 import BarrierBotChat from "@/components/barrier-bot/BarrierBotChat";
+import ToolHint from "@/components/ToolHint";
 import BarrierBotHistory, { BarrierSession } from "@/components/barrier-bot/BarrierBotHistory";
 import {
   BotState,
@@ -367,6 +368,18 @@ export default function BarrierBot() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
+          {!isDone && messages.length <= 1 && (
+            <ToolHint
+              title="Как получить точный результат"
+              items={[
+                "Вспомните конкретную ситуацию, когда вы хотели что-то сделать (проект, решение, шаг) — но в итоге отступили или сорвались.",
+                "Восстановите путь поэтапно: от идеи и желания — через первые действия — до момента, когда стало тяжело. Что вы чувствовали на каждом шаге?",
+                "Погрузитесь в ту ситуацию — как будто она происходит сейчас. Чем честнее ответы, тем точнее анализ.",
+                "Убедитесь, что вас никто не отвлекает. Выделите 10–15 минут тишины. Не торопитесь с ответами.",
+                "Отвечайте от первого лица, про себя. Не про то, «как должно быть», а про то, как было на самом деле.",
+              ]}
+            />
+          )}
           {isDone && (
             <div className="px-4 pt-3 flex flex-col gap-2">
               <button

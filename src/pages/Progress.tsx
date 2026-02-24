@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { checkAccess, getToolCompletions, getLatestCareerResult } from "@/lib/access";
 import PaywallModal from "@/components/PaywallModal";
 import ProgressChat from "@/components/progress/ProgressChat";
+import ToolHint from "@/components/ToolHint";
 import ProgressPortrait from "@/components/progress/ProgressPortrait";
 import {
   Templates,
@@ -206,6 +207,18 @@ export default function Progress() {
             style={{ width: `${(metricIndex / tpl.metrics.length) * 100}%` }}
           />
         </div>
+      )}
+
+      {phase === "metrics" && metricIndex === 0 && (
+        <ToolHint
+          title="Как правильно оценить себя"
+          items={[
+            "Оценивайте себя именно сегодня, в этот момент — не «в целом по жизни» и не «на прошлой неделе».",
+            "Ставьте оценку от 1 до 10 честно. 5 — это нормально, не нужно стремиться к 10 по всем показателям.",
+            "Каждый ваш заход сравнивается с предыдущим — так видна реальная динамика состояния.",
+            "Заходите сюда регулярно (раз в неделю) — чем больше точек, тем точнее картина прогресса.",
+          ]}
+        />
       )}
 
       <ProgressChat

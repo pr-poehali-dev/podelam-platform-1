@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import PsychBotPaywall from "@/components/psych-bot/PsychBotPaywall";
 import PsychBotChat from "@/components/psych-bot/PsychBotChat";
+import ToolHint from "@/components/ToolHint";
 import {
   BotState,
   Message,
@@ -394,7 +395,18 @@ export default function PsychBot() {
         )}
       </div>
 
-      {/* Chat */}
+      {botState.step === 0 && (
+        <ToolHint
+          title="Как получить точный результат"
+          items={[
+            "Отвечайте интуитивно — первый ответ обычно самый честный. Не анализируйте вопросы слишком долго.",
+            "Выбирайте то, что вам ближе в реальной жизни, а не то, каким вы хотите быть.",
+            "Здесь нет правильных или неправильных ответов — каждый вариант раскрывает ваш тип.",
+            "Выделите 15–20 минут без отвлечений. Спокойная обстановка = более честные ответы.",
+            "Если оба варианта подходят — выберите тот, который описывает вас чаще.",
+          ]}
+        />
+      )}
       <PsychBotChat
         messages={messages}
         loading={loading}

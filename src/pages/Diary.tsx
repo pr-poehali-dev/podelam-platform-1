@@ -1,6 +1,7 @@
 import React from "react";
 import PaywallModal from "@/components/PaywallModal";
 import DiaryChat from "@/components/diary/DiaryChat";
+import ToolHint from "@/components/ToolHint";
 import DiaryHistory from "@/components/diary/DiaryHistory";
 import DiaryHeader from "@/components/diary/DiaryHeader";
 import { useDiarySession } from "@/components/diary/useDiarySession";
@@ -35,6 +36,19 @@ export default function Diary() {
       {s.tab === "history" ? (
         <DiaryHistory entries={s.entries} />
       ) : (
+        <>
+        {s.messages.length <= 2 && (
+          <ToolHint
+            title="Как вести дневник эффективно"
+            items={[
+              "Выберите сферу жизни, которая сейчас больше всего волнует — работа, отношения, здоровье или развитие.",
+              "Записывайте не «как должно быть», а как было на самом деле. Честность — ключ к осознанию.",
+              "Фиксируйте эмоции и телесные ощущения — они часто подсказывают то, что логика упускает.",
+              "Не торопитесь. Лучше 10 минут вдумчивого анализа, чем 30 секунд формальных ответов.",
+              "Ведите дневник регулярно — даже раз в неделю даёт мощный эффект через месяц.",
+            ]}
+          />
+        )}
         <DiaryChat
           messages={s.messages}
           input={s.input}
@@ -56,6 +70,7 @@ export default function Diary() {
           onAddMore={s.handleAddMore}
           addMoreLabel={s.addMoreLabel}
         />
+        </>
       )}
     </div>
   );

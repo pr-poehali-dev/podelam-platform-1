@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { checkAccess, saveToolCompletion, getLatestCareerResult } from "@/lib/access";
 import PaywallModal from "@/components/PaywallModal";
+import ToolHint from "@/components/ToolHint";
 import Icon from "@/components/ui/icon";
 import {
   INITIAL_PLAN_STATE,
@@ -347,6 +348,18 @@ ${insight}`);
       {tab === "history" ? (
         <PlanBotHistory entries={savedPlans} onNewPlan={handleReset} />
       ) : (
+        <>
+        {messages.length <= 1 && (
+          <ToolHint
+            title="Как получить точный план"
+            items={[
+              "Оцените свои энергию, мотивацию и уверенность честно — план строится под ваше реальное состояние, а не идеальное.",
+              "Укажите реальное количество свободного времени в неделю — завышение приведёт к нереалистичному плану.",
+              "Если вы уже проходили другие тесты (профессии, доход) — бот использует эти данные для персонализации.",
+              "Выделите 10 минут спокойного времени. Обдумывайте каждый ответ — это ваш план на 3 месяца.",
+            ]}
+          />
+        )}
         <PlanBotMessages
           messages={messages}
           loading={loading}
@@ -364,6 +377,7 @@ ${insight}`);
           onCurrentIncomeSubmit={handleCurrentIncomeSubmit}
           onReset={handleReset}
         />
+        </>
       )}
     </div>
   );
