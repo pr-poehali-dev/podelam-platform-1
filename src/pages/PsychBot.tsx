@@ -92,7 +92,7 @@ export default function PsychBot() {
     await forceSync();
   };
 
-  const savePsychResult = (
+  const savePsychResult = async (
     topSeg: string,
     primMotiv: string,
     selectedProf: string,
@@ -136,12 +136,12 @@ export default function PsychBot() {
       professions,
     };
 
-    localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(psychResult));
     saveToolCompletion("psych-bot", `Психологический анализ завершён — профиль «${profileName}»`);
 
-    saveSession(psychResult);
+    await saveSession(psychResult);
+    localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(psychResult));
 
-    const userEmail = JSON.parse(localStorage.getItem("pdd_user") || "{}").email || "";
+    const userEmail = userData.email;
     const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(
       localStorage.getItem(`pdd_tests_${userEmail}`) || "[]"
     );

@@ -263,11 +263,11 @@ ${insight}`);
     setBotState((s) => ({ ...s, step: "building", inputs }));
     setLoading(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const plan = buildPlan(inputs);
       setCurrentPlan(plan);
 
-      savePlanToServer({ date: new Date().toISOString(), plan, testProfile });
+      await savePlanToServer({ date: new Date().toISOString(), plan, testProfile });
 
       const dirName = DIRECTION_NAMES[inputs.direction];
       saveToolCompletion("plan-bot", `План: ${dirName}, ${plan.strategyName}`);

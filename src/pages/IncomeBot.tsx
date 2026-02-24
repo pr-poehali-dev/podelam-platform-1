@@ -100,7 +100,7 @@ export default function IncomeBot() {
             planSteps: planObj?.steps ?? [],
             answers: newAnswers,
           };
-          saveSession(session);
+          await saveSession(session);
         } catch {
           setResult("Не удалось загрузить результат. Попробуй обновить страницу.");
         }

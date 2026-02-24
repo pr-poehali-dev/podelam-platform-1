@@ -5,15 +5,23 @@ import { PsychResult } from "@/components/cabinet/cabinetTypes";
 type Props = {
   completions: ToolCompletion[];
   careerResult: CareerResult | null;
+  psychResult?: PsychResult | null;
+  barrierSessions?: { context: string; profile: string }[];
 };
 
-export default function ProgressPortrait({ completions, careerResult }: Props) {
+export default function ProgressPortrait({ completions, careerResult, psychResult: psychResultProp, barrierSessions: barrierProp }: Props) {
   const u = localStorage.getItem("pdd_user");
   const email = u ? JSON.parse(u).email : "";
-  const psychRaw = localStorage.getItem(`psych_result_${email}`);
-  const psychResult: PsychResult | null = psychRaw ? JSON.parse(psychRaw) : null;
-  const barrierRaw = localStorage.getItem(`barrier_results_${email}`);
-  const barrierSessions = barrierRaw ? JSON.parse(barrierRaw) : [];
+
+  const psychResult: PsychResult | null = psychResultProp ?? (() => {
+    const raw = localStorage.getItem(`psych_result_${email}`);
+    return raw ? JSON.parse(raw) : null;
+  })();
+
+  const barrierSessions = barrierProp ?? (() => {
+    const raw = localStorage.getItem(`barrier_results_${email}`);
+    return raw ? JSON.parse(raw) : [];
+  })();
 
   const hasAny = completions.length > 0 || careerResult || psychResult;
   if (!hasAny) return null;

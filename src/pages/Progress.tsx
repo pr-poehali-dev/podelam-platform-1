@@ -36,6 +36,8 @@ export default function Progress() {
   const idRef = useRef(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { sessions: syncedEntries, setSessions: setSyncedEntries, saveSession: saveProgressEntry, syncing, saveLocal } = useToolSync<ProgressEntry>("progress", "progress_entries");
+  const { sessions: psychSessions } = useToolSync<Record<string, unknown>>("psych-bot", "psych_result_history");
+  const { sessions: barrierSessions } = useToolSync<{ context: string; profile: string }>("barrier-bot", "barrier_results");
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
@@ -244,7 +246,12 @@ export default function Progress() {
         bottomRef={bottomRef as React.RefObject<HTMLDivElement>}
       />
 
-      <ProgressPortrait completions={completions} careerResult={careerResult} />
+      <ProgressPortrait
+        completions={completions}
+        careerResult={careerResult}
+        psychResult={psychSessions.length > 0 ? psychSessions[psychSessions.length - 1] as never : undefined}
+        barrierSessions={barrierSessions.length > 0 ? barrierSessions : undefined}
+      />
     </div>
   );
 }

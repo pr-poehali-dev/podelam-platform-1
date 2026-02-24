@@ -7,6 +7,7 @@ import CabinetTestsTab from "@/components/cabinet/CabinetTestsTab";
 import CabinetToolsTab from "@/components/cabinet/CabinetToolsTab";
 import { getLatestCareerResult, CareerResult, wasEverDone } from "@/lib/access";
 import InstallPWA from "@/components/InstallPWA";
+import useToolSync from "@/hooks/useToolSync";
 
 type Tab = "home" | "tests" | "tools" | "blog";
 
@@ -19,6 +20,29 @@ export default function Cabinet() {
   const [careerResult, setCareerResult] = useState<CareerResult | null>(null);
   const initialTab = (searchParams.get("tab") as Tab) || "home";
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  const { sessions: psychSessions } = useToolSync<PsychResult>("psych-bot", "psych_result_history");
+  const { sessions: careerSessions } = useToolSync<CareerResult>("career-test", "career_sessions");
+
+  useEffect(() => {
+    if (psychSessions.length > 0) {
+      const latest = psychSessions[psychSessions.length - 1];
+      setPsychResult(latest);
+      const email = user?.email;
+      if (email) {
+        localStorage.setItem(`psych_result_${email}`, JSON.stringify(latest));
+      }
+    }
+  }, [psychSessions, user?.email]);
+
+  useEffect(() => {
+    if (careerSessions.length > 0) {
+      const email = user?.email;
+      if (email) {
+        localStorage.setItem(`career_result_${email}`, JSON.stringify(careerSessions.slice(-5).reverse()));
+      }
+      setCareerResult(careerSessions[careerSessions.length - 1]);
+    }
+  }, [careerSessions, user?.email]);
 
   const handleTabChange = (tab: Tab) => {
     if (tab === "blog") { navigate("/blog"); return; }

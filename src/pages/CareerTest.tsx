@@ -28,7 +28,7 @@ export default function CareerTest() {
   const q = CAREER_QUESTIONS[current];
   const progress = Math.round(((current) / CAREER_QUESTIONS.length) * 100);
 
-  const choose = (type: CareerType) => {
+  const choose = async (type: CareerType) => {
     const newAnswers = [...answers, type];
     setAnswers(newAnswers);
 
@@ -50,7 +50,7 @@ export default function CareerTest() {
         })),
       };
       saveCareerResult(careerData);
-      saveSession(careerData);
+      await saveSession(careerData);
       setDone(true);
       return;
     }
