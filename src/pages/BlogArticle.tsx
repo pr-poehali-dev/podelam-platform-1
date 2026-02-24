@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { fetchArticle, ArticleFull } from "@/lib/articlesApi";
 
@@ -135,12 +135,54 @@ function renderInline(text: string): React.ReactNode[] {
   return tokens;
 }
 
+function ShareButton({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    let refCode = "";
+    try {
+      const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
+      if (u.email) {
+        const stored = localStorage.getItem(`pdd_ref_code_${u.email}`);
+        if (stored) refCode = stored;
+      }
+    } catch { /* no user */ }
+
+    const base = `${window.location.origin}/blog/${slug}`;
+    const url = refCode ? `${base}?ref=${refCode}` : base;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      prompt("Скопируйте ссылку:", url);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleShare}
+      className="flex items-center gap-2 px-5 py-3 rounded-xl border border-border/60 text-sm font-medium text-foreground hover:bg-violet-50 transition-all"
+    >
+      <Icon name={copied ? "Check" : "Share2"} size={16} />
+      {copied ? "Скопировано!" : "Поделиться"}
+    </button>
+  );
+}
+
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [article, setArticle] = useState<ArticleFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) localStorage.setItem("pdd_pending_ref", ref);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!slug) return;
@@ -279,7 +321,7 @@ export default function BlogArticle() {
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-border/40 flex justify-center">
+          <div className="mt-8 pt-6 border-t border-border/40 flex items-center justify-between">
             <button
               onClick={() => navigate("/blog")}
               className="flex items-center gap-2 px-6 py-3 rounded-xl gradient-brand text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all"
@@ -287,6 +329,7 @@ export default function BlogArticle() {
               <Icon name="ArrowLeft" size={16} />
               Все статьи
             </button>
+            <ShareButton slug={slug || ""} />
           </div>
         </article>
       </main>

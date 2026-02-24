@@ -1,0 +1,1 @@
+{"tests": [{"name": "OPTIONS preflight", "method": "OPTIONS", "path": "/", "expectedStatus": 200}, {"name": "Info without email returns 400", "method": "GET", "path": "/?action=info", "expectedStatus": 400}, {"name": "Unknown email returns 404", "method": "GET", "path": "/?action=info&email=unknown_test_xyz@test.com", "expectedStatus": 404}]}

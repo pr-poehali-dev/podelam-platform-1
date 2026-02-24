@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { activatePaidOnce } from "@/lib/access";
 
@@ -7,6 +7,7 @@ type Mode = "login" | "register" | "reset_email" | "reset_code";
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +18,14 @@ export default function Auth() {
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) {
+      localStorage.setItem("pdd_pending_ref", ref);
+      setMode("register");
+    }
+  }, [searchParams]);
 
   const AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
 
@@ -74,7 +83,7 @@ export default function Auth() {
       const res = await fetch(AUTH_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: mode, name, email: email.trim().toLowerCase(), password }),
+        body: JSON.stringify({ action: mode, name, email: email.trim().toLowerCase(), password, ref: localStorage.getItem("pdd_pending_ref") || "" }),
       });
       const data = await res.json();
 
@@ -86,6 +95,8 @@ export default function Auth() {
 
       const user = data.user;
       localStorage.setItem("pdd_user", JSON.stringify({ id: user.id, name: user.name, email: user.email }));
+      if (data.ref_code) localStorage.setItem(`pdd_ref_code_${user.email}`, data.ref_code);
+      localStorage.removeItem("pdd_pending_ref");
 
       const keysToRemove: string[] = [];
       const staleKeys = ["plan_chat", "plan_state", "plan_result", "progress_entries", "progress_chat", "diary_chat", "diary_entries", "pdd_tests"];

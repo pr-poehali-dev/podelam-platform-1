@@ -22,6 +22,10 @@ def hash_password(password: str) -> str:
 def generate_code() -> str:
     return ''.join(random.choices(string.digits, k=6))
 
+def generate_ref_code() -> str:
+    chars = string.ascii_lowercase + string.digits
+    return ''.join(random.choices(chars, k=8))
+
 def send_email(to_email: str, code: str):
     smtp_host = os.environ.get('SMTP_HOST', '')
     smtp_port = int(os.environ.get('SMTP_PORT', '465'))
@@ -81,6 +85,7 @@ def handler(event: dict, context) -> dict:
         name = body.get('name', '').strip()
         email = body.get('email', '').strip().lower()
         password = body.get('password', '')
+        ref = body.get('ref', '').strip().lower()
 
         if not name or not email or not password:
             conn.close()
@@ -91,10 +96,24 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 409, 'headers': cors, 'body': json.dumps({'error': 'Email уже зарегистрирован'})}
 
+        referred_by = None
+        if ref:
+            cur.execute(f'SELECT id FROM "{S}".users WHERE ref_code = %s', (ref,))
+            ref_row = cur.fetchone()
+            if ref_row:
+                referred_by = ref_row[0]
+
+        ref_code = generate_ref_code()
+        for _ in range(5):
+            cur.execute(f'SELECT 1 FROM "{S}".users WHERE ref_code = %s', (ref_code,))
+            if not cur.fetchone():
+                break
+            ref_code = generate_ref_code()
+
         pw_hash = hash_password(password)
         cur.execute(
-            f'INSERT INTO "{S}".users (name, email, password_hash) VALUES (%s, %s, %s) RETURNING id, name, email, created_at',
-            (name, email, pw_hash)
+            f'INSERT INTO "{S}".users (name, email, password_hash, ref_code, referred_by) VALUES (%s, %s, %s, %s, %s) RETURNING id, name, email, created_at',
+            (name, email, pw_hash, ref_code, referred_by)
         )
         row = cur.fetchone()
         conn.commit()
@@ -108,6 +127,7 @@ def handler(event: dict, context) -> dict:
                 'balance': 0,
                 'subscription_expires': None,
                 'paid_tools': [],
+                'ref_code': ref_code,
             })
         }
 
@@ -116,7 +136,7 @@ def handler(event: dict, context) -> dict:
         password = body.get('password', '')
         pw_hash = hash_password(password)
 
-        cur.execute(f'SELECT id, name, email, balance, subscription_expires, paid_tools FROM "{S}".users WHERE email = %s AND password_hash = %s', (email, pw_hash))
+        cur.execute(f'SELECT id, name, email, balance, subscription_expires, paid_tools, ref_code FROM "{S}".users WHERE email = %s AND password_hash = %s', (email, pw_hash))
         row = cur.fetchone()
         if not row:
             conn.close()
@@ -126,6 +146,11 @@ def handler(event: dict, context) -> dict:
         balance = row[3] or 0
         sub_expires = str(row[4]) if row[4] else None
         paid_tools = [t.strip() for t in (row[5] or '').split(',') if t.strip()]
+        user_ref_code = row[6]
+
+        if not user_ref_code:
+            user_ref_code = generate_ref_code()
+            cur.execute(f'UPDATE "{S}".users SET ref_code = %s WHERE id = %s', (user_ref_code, user_id))
 
         cur.execute(f'UPDATE "{S}".users SET last_login = %s WHERE id = %s', (datetime.now(), user_id))
         conn.commit()
@@ -153,6 +178,7 @@ def handler(event: dict, context) -> dict:
                 'balance': balance,
                 'subscription_expires': sub_expires,
                 'paid_tools': paid_tools,
+                'ref_code': user_ref_code,
             })
         }
 

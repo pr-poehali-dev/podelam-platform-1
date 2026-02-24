@@ -66,6 +66,22 @@ def handler(event: dict, context) -> dict:
             new_sub = base + timedelta(days=30)
             cur.execute(f'UPDATE "{S}".users SET balance = %s, subscription_expires = %s WHERE id = %s', (new_balance, new_sub, user_id))
 
+    if user_id and action in ('pay_tool', 'pay_sub') and status == 'paid':
+        cur.execute(f'SELECT referred_by FROM "{S}".users WHERE id = %s', (user_id,))
+        ref_row = cur.fetchone()
+        referrer_id = ref_row[0] if ref_row and ref_row[0] else None
+        if referrer_id:
+            bonus = int(amount * 0.2)
+            if bonus > 0:
+                cur.execute(
+                    f'UPDATE "{S}".users SET ref_balance = ref_balance + %s WHERE id = %s',
+                    (bonus, referrer_id)
+                )
+                cur.execute(
+                    f'INSERT INTO "{S}".referral_transactions (referrer_id, referred_id, payment_id, amount) VALUES (%s, %s, %s, %s)',
+                    (referrer_id, user_id, payment_id, bonus)
+                )
+
     conn.commit()
     conn.close()
 

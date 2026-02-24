@@ -103,6 +103,11 @@ export default function Blog() {
   const activeCategory = searchParams.get("category") || "";
 
   useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) localStorage.setItem("pdd_pending_ref", ref);
+  }, [searchParams]);
+
+  useEffect(() => {
     fetchCategories().then((d) => setCategories(d.categories));
   }, []);
 

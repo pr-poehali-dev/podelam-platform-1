@@ -14,7 +14,7 @@ function useBalance() {
   return { balance, refresh };
 }
 
-type Tab = "home" | "tests" | "tools" | "blog";
+type Tab = "home" | "tests" | "tools" | "referral" | "blog";
 
 type Props = {
   user: User;
@@ -28,6 +28,7 @@ const NAV_ITEMS = [
   { id: "home" as Tab, icon: "LayoutDashboard", label: "Главная" },
   { id: "tests" as Tab, icon: "ClipboardList", label: "Тесты" },
   { id: "tools" as Tab, icon: "Wrench", label: "Инструменты" },
+  { id: "referral" as Tab, icon: "Gift", label: "Рефералы" },
   { id: "blog" as Tab, icon: "BookOpen", label: "Статьи" },
 ];
 

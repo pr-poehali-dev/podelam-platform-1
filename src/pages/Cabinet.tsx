@@ -5,11 +5,12 @@ import CabinetSidebar, { CabinetMobileNav } from "@/components/cabinet/CabinetSi
 import CabinetHomeTab from "@/components/cabinet/CabinetHomeTab";
 import CabinetTestsTab from "@/components/cabinet/CabinetTestsTab";
 import CabinetToolsTab from "@/components/cabinet/CabinetToolsTab";
+import CabinetReferralTab from "@/components/cabinet/CabinetReferralTab";
 import { getLatestCareerResult, CareerResult, wasEverDone } from "@/lib/access";
 import InstallPWA from "@/components/InstallPWA";
 import useToolSync from "@/hooks/useToolSync";
 
-type Tab = "home" | "tests" | "tools" | "blog";
+type Tab = "home" | "tests" | "tools" | "referral" | "blog";
 
 export default function Cabinet() {
   const navigate = useNavigate();
@@ -137,6 +138,10 @@ export default function Cabinet() {
                 onNavigate={navigate}
                 onGoToTests={() => handleTabChange("tests")}
               />
+            )}
+
+            {activeTab === "referral" && user && (
+              <CabinetReferralTab user={user} />
             )}
           </div>
           <footer className="border-t border-border/40 py-4 px-6 md:px-8 mt-16 pb-20 md:pb-4">
