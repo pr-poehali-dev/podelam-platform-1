@@ -193,6 +193,10 @@ export default function BarrierBotHistory({ sessions, onNewSession }: Props) {
       {tab === "compare" && <BarrierBotCompare sessions={sessions} />}
 
       {tab === "list" && <div className="space-y-3 px-4">
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
+          <Icon name="Info" size={14} className="text-blue-500 shrink-0" />
+          <p className="text-xs text-blue-700">Все ваши сессии сохраняются — можно отслеживать динамику барьеров со временем</p>
+        </div>
         {sessions.length >= 2 && (
           <div className="rounded-2xl overflow-hidden border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 px-4 py-4 flex gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
