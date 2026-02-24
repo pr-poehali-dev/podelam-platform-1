@@ -111,6 +111,18 @@ export default function Cabinet() {
             )}
           </div>
         </main>
+        <footer className="border-t border-border py-6 px-6 md:px-8">
+          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
+            <div className="text-center md:text-left space-y-0.5">
+              <p>© 2025 ПоДелам. Найди своё дело.</p>
+              <p>ИП Уварова А. С. · ОГРНИП 322508100398078 · Права защищены</p>
+            </div>
+            <div className="flex gap-5">
+              <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
+              <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
