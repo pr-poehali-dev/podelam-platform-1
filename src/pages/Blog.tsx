@@ -67,7 +67,7 @@ function CategoryChips({ categories, active, onChange }: { categories: Category[
     <div className="grid grid-cols-3 gap-2">
       <button
         onClick={() => onChange("")}
-        className={`px-4 py-2 rounded-full text-sm font-medium transition-all text-center ${
+        className={`px-3 py-2 rounded-full text-xs font-medium transition-all text-center ${
           !active
             ? "gradient-brand text-white shadow-sm"
             : "bg-white border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
@@ -79,14 +79,13 @@ function CategoryChips({ categories, active, onChange }: { categories: Category[
         <button
           key={cat.slug}
           onClick={() => onChange(cat.slug)}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-all text-center ${
+          className={`px-3 py-2 rounded-full text-xs font-medium transition-all text-center ${
             active === cat.slug
               ? "gradient-brand text-white shadow-sm"
               : "bg-white border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
           }`}
         >
           {cat.name}
-          {cat.count > 0 && <span className="ml-1.5 opacity-60">{cat.count}</span>}
         </button>
       ))}
     </div>
