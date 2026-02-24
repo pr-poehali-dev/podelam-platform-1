@@ -308,7 +308,7 @@ export default function Index() {
           <div className="text-center mb-14">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Инструменты</p>
             <h2 className="text-3xl md:text-4xl font-black text-foreground">6 инструментов для поиска себя</h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Каждый помогает разобраться в себе с разных сторон — от склонностей до конкретного плана действий</p>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Каждый помогает найти своё дело или работу — от внутренних мотивов до конкретного плана действий</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
