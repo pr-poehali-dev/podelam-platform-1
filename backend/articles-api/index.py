@@ -7,7 +7,7 @@ import boto3
 import psycopg2
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin2024')
+ADMIN_PASSWORD_ENV = os.environ.get('ADMIN_PASSWORD', 'admin2024')
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -18,6 +18,9 @@ CORS = {
 def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
 
+def hash_pw(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
 def ok(data, status=200):
     return {'statusCode': status, 'headers': CORS, 'body': json.dumps(data, default=str)}
 
@@ -27,7 +30,14 @@ def err(msg, status=400):
 def is_admin(event):
     headers = event.get('headers') or {}
     token = headers.get('X-Admin-Token') or headers.get('x-admin-token', '')
-    return token == ADMIN_PASSWORD
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(f'SELECT password_hash FROM "{SCHEMA}".admin_config WHERE id = 1')
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return hash_pw(token) == row[0]
+    return token == ADMIN_PASSWORD_ENV
 
 def slugify(text):
     text = text.lower().strip()

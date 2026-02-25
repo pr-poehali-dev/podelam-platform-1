@@ -1,12 +1,26 @@
 import json
 import os
+import hashlib
 import psycopg2
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin2024')
+ADMIN_PASSWORD_ENV = os.environ.get('ADMIN_PASSWORD', 'admin2024')
 
 def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
+
+def hash_pw(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_admin(token):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(f'SELECT password_hash FROM "{SCHEMA}".admin_config WHERE id = 1')
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return hash_pw(token) == row[0]
+    return token == ADMIN_PASSWORD_ENV
 
 def handler(event: dict, context) -> dict:
     """Статистика для админки: клиенты, платежи, общая сумма"""
@@ -21,7 +35,7 @@ def handler(event: dict, context) -> dict:
 
     headers = event.get('headers') or {}
     token = headers.get('X-Admin-Token') or headers.get('x-admin-token', '')
-    if token != ADMIN_PASSWORD:
+    if not verify_admin(token):
         return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Доступ запрещён'})}
 
     if event.get('httpMethod') == 'DELETE':

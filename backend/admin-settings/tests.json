@@ -1,0 +1,1 @@
+{"tests": [{"name": "OPTIONS preflight", "method": "OPTIONS", "path": "/", "expectedStatus": 200}, {"name": "Get config unauthorized", "method": "POST", "path": "/", "body": {"action": "get_config"}, "expectedStatus": 403}, {"name": "Reset without email", "method": "POST", "path": "/", "body": {"action": "reset_request"}, "expectedStatus": 400}]}
