@@ -1,5 +1,9 @@
 import json
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.utils import formataddr, formatdate, make_msgid
 import psycopg2
 import psycopg2.extras
 
@@ -7,6 +11,51 @@ SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
 
 def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
+
+def send_partner_email(to_email: str, accepted_at_str: str):
+    smtp_host = os.environ.get('SMTP_HOST', '')
+    smtp_port = int(os.environ.get('SMTP_PORT', '465'))
+    smtp_user = os.environ.get('SMTP_USER', '')
+    smtp_password = os.environ.get('SMTP_PASSWORD', '')
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'Вы приняли правила партнёрской программы'
+    msg['From'] = formataddr(('ПоДелам', smtp_user))
+    msg['To'] = to_email
+    msg['Date'] = formatdate(localtime=True)
+    msg['Message-ID'] = make_msgid(domain='mail.ru')
+    msg['X-Mailer'] = 'PoDelam Mailer'
+
+    html = f"""
+    <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 32px;">
+      <h2 style="color: #7c3aed; margin-bottom: 8px;">ПоДелам</h2>
+      <p style="color: #374151; font-size: 16px; margin-bottom: 24px;">
+        Вы успешно приняли правила партнёрской программы проекта «ПоДелам».
+      </p>
+      <div style="background: #f5f3ff; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <p style="margin: 0 0 8px; color: #374151; font-size: 15px;"><strong>Дата принятия:</strong> {accepted_at_str}</p>
+        <p style="margin: 0; color: #374151; font-size: 15px;"><strong>Ваша комиссия:</strong> 20% с каждой оплаты приглашённого</p>
+      </div>
+      <p style="color: #374151; font-size: 15px; margin-bottom: 16px;">
+        Теперь вам доступна персональная реферальная ссылка в личном кабинете.
+        Делитесь ею с друзьями — и получайте бонусы с каждой их покупки.
+      </p>
+      <a href="https://podelam.su/cabinet?tab=referral"
+         style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 700; font-size: 15px;">
+        Перейти в личный кабинет
+      </a>
+      <p style="color: #6b7280; font-size: 13px; margin-top: 24px;">
+        Полный текст правил доступен в разделе «Рефералы» личного кабинета.
+        Если вы не совершали это действие — напишите нам в <a href="https://t.me/AnnaUvaro" style="color: #7c3aed;">поддержку</a>.
+      </p>
+    </div>
+    """
+    msg.attach(MIMEText(html, 'html'))
+
+    with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
+        server.login(smtp_user, smtp_password)
+        server.sendmail(smtp_user, to_email, msg.as_string())
+    print(f"SMTP: partner rules email sent to {to_email}")
 
 def handler(event: dict, context) -> dict:
     """Реферальная программа: получить данные, историю начислений, списать бонусы"""
@@ -99,6 +148,15 @@ def handler(event: dict, context) -> dict:
         accepted_at = cur.fetchone()[0]
         conn.commit()
         conn.close()
+
+        try:
+            from datetime import datetime
+            dt = accepted_at if isinstance(accepted_at, datetime) else datetime.fromisoformat(str(accepted_at))
+            date_str = dt.strftime('%d.%m.%Y в %H:%M')
+            send_partner_email(user_email, date_str)
+        except Exception as e:
+            print(f"Email send error: {e}")
+
         return {
             'statusCode': 200,
             'headers': cors,
