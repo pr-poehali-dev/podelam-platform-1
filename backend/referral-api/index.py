@@ -35,7 +35,7 @@ def handler(event: dict, context) -> dict:
     S = SCHEMA
 
     cur.execute(
-        f'SELECT id, ref_code, ref_balance FROM "{S}".users WHERE email = %s',
+        f'SELECT id, ref_code, ref_balance, partner_rules_accepted FROM "{S}".users WHERE email = %s',
         (user_email,)
     )
     user = cur.fetchone()
@@ -43,7 +43,7 @@ def handler(event: dict, context) -> dict:
         conn.close()
         return {'statusCode': 404, 'headers': cors, 'body': json.dumps({'error': 'user not found'})}
 
-    user_id, ref_code, ref_balance = user
+    user_id, ref_code, ref_balance, rules_accepted = user
 
     if action == 'info':
         cur.execute(
@@ -86,7 +86,21 @@ def handler(event: dict, context) -> dict:
                 'referrals_count': referrals_count,
                 'total_earned': total_earned,
                 'history': history,
+                'rules_accepted': bool(rules_accepted),
             })
+        }
+
+    elif action == 'accept_rules':
+        cur.execute(
+            f'UPDATE "{S}".users SET partner_rules_accepted = TRUE WHERE id = %s',
+            (user_id,)
+        )
+        conn.commit()
+        conn.close()
+        return {
+            'statusCode': 200,
+            'headers': cors,
+            'body': json.dumps({'ok': True, 'rules_accepted': True})
         }
 
     elif action == 'use_bonus':
