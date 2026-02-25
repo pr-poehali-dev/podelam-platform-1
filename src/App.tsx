@@ -23,6 +23,7 @@ import CareerTest from "./pages/CareerTest";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Oferta from "./pages/Oferta";
 import Pricing from "./pages/Pricing";
+import Partner from "./pages/Partner";
 import NotFound from "./pages/NotFoundPage";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/oferta" element={<Oferta />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/partner" element={<Partner />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

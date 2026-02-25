@@ -300,6 +300,7 @@ export default function Pricing() {
           <div className="flex flex-wrap items-center gap-4">
             <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
             <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
+            <a href="/partner" className="hover:text-foreground transition-colors">Партнёрская программа</a>
           </div>
         </div>
       </footer>

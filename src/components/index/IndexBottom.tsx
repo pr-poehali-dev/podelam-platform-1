@@ -224,6 +224,7 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
               <a href="/pricing" className="hover:text-foreground transition-colors">Тарифы</a>
               <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
               <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
+              <a href="/partner" className="hover:text-foreground transition-colors">Партнёрская программа</a>
               <a href="https://t.me/AnnaUvaro" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
                 <Icon name="Send" size={14} />
                 Контакты

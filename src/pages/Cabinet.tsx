@@ -154,6 +154,7 @@ export default function Cabinet() {
                 <a href="/pricing" className="hover:text-muted-foreground transition-colors">Тарифы</a>
                 <a href="/privacy" className="hover:text-muted-foreground transition-colors">Политика конфиденциальности</a>
                 <a href="/oferta" className="hover:text-muted-foreground transition-colors">Оферта</a>
+                <a href="/partner" className="hover:text-muted-foreground transition-colors">Партнёрская программа</a>
               </div>
             </div>
           </footer>

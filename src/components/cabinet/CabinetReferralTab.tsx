@@ -186,6 +186,7 @@ export default function CabinetReferralTab({ user }: { user: User }) {
                 { icon: "UserPlus", text: "Человек переходит, регистрируется по вашей ссылке" },
                 { icon: "CreditCard", text: "Когда он оплачивает любой инструмент или подписку" },
                 { icon: "Gift", text: "Вам начисляется 20% от суммы оплаты на бонусный баланс" },
+                { icon: "Banknote", text: "Вывод от 50 000 ₽/мес при заключении партнёрского договора. До этого — бонусы идут на оплату продуктов проекта" },
               ].map((step, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-8 h-8 shrink-0 rounded-lg bg-violet-50 flex items-center justify-center">
