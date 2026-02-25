@@ -207,26 +207,48 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
 
       {/* FOOTER */}
       <footer className="border-t border-border py-8 md:py-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
-              <Icon name="Compass" size={14} className="text-white" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
+                <Icon name="Compass" size={14} className="text-white" />
+              </div>
+              <span className="font-bold text-foreground">ПоДелам</span>
             </div>
-            <span className="font-bold text-foreground">ПоДелам</span>
+            <div className="text-center text-sm text-muted-foreground space-y-0.5">
+              <p>© 2025 ПоДелам. Найди своё дело.</p>
+              <p>ИП Уварова А. С. · ОГРНИП 322508100398078 · Права защищены</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
+              <InstallPWA />
+              <a href="/pricing" className="hover:text-foreground transition-colors">Тарифы</a>
+              <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
+              <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
+              <a href="https://t.me/AnnaUvaro" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+                <Icon name="Send" size={14} />
+                Контакты
+              </a>
+            </div>
           </div>
-          <div className="text-center text-sm text-muted-foreground space-y-0.5">
-            <p>© 2025 ПоДелам. Найди своё дело.</p>
-            <p>ИП Уварова А. С. · ОГРНИП 322508100398078 · Права защищены</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
-            <InstallPWA />
-            <a href="/pricing" className="hover:text-foreground transition-colors">Тарифы</a>
-            <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
-            <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
-            <a href="https://t.me/AnnaUvaro" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-              <Icon name="Send" size={14} />
-              Контакты
-            </a>
+          <div className="mt-6 pt-5 border-t border-border/50 max-w-4xl mx-auto text-[11px] leading-relaxed text-muted-foreground/70 text-center space-y-2">
+            <p>
+              Материалы, тесты, методики и цифровые инструменты, размещённые на сайте проекта «ПоДелам», носят информационный, образовательный
+              и развивающий характер. Проект не осуществляет медицинскую деятельность, не оказывает медицинские услуги, не проводит диагностику
+              заболеваний и не назначает лечение. Представленные материалы не являются медицинской или клинической психотерапией
+              и не заменяют консультацию врача, психотерапевта или иного медицинского специалиста.
+            </p>
+            <p>
+              Консультации и материалы проекта относятся к сфере психологического консультирования и личностного развития
+              и не являются медицинской психотерапией. Результаты тестов и автоматизированных инструментов носят рекомендательный характер.
+              Окончательные решения пользователь принимает самостоятельно. Проект не гарантирует достижение конкретных личных,
+              профессиональных или финансовых результатов.
+            </p>
+            <p>
+              Ответы и рекомендации формируются автоматизированной системой и не являются индивидуальной профессиональной консультацией.
+              Сайт предназначен для лиц старше 18 лет либо для несовершеннолетних с согласия законных представителей.
+              Используя сайт, вы подтверждаете согласие с Пользовательским соглашением, Политикой обработки персональных данных
+              и условиями Публичной оферты.
+            </p>
           </div>
         </div>
       </footer>
