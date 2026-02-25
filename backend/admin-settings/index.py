@@ -19,15 +19,17 @@ def hash_pw(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def verify_admin(token):
+    if token == ADMIN_PASSWORD_ENV:
+        return True
     conn = get_conn()
     cur = conn.cursor()
     S = SCHEMA
     cur.execute(f'SELECT password_hash FROM "{S}".admin_config WHERE id = 1')
     row = cur.fetchone()
     conn.close()
-    if row:
+    if row and row[0]:
         return hash_pw(token) == row[0]
-    return token == ADMIN_PASSWORD_ENV
+    return False
 
 def generate_code():
     return ''.join(random.choices(string.digits, k=6))
@@ -176,16 +178,9 @@ def handler(event, context):
             conn.close()
             return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Новый пароль должен быть не менее 6 символов'})}
 
-        cur.execute(f'SELECT password_hash FROM "{S}".admin_config WHERE id = 1')
-        row = cur.fetchone()
-        if row:
-            if hash_pw(old_password) != row[0]:
-                conn.close()
-                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Неверный текущий пароль'})}
-        else:
-            if old_password != ADMIN_PASSWORD_ENV:
-                conn.close()
-                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Неверный текущий пароль'})}
+        if not verify_admin(old_password):
+            conn.close()
+            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Неверный текущий пароль'})}
 
         new_hash = hash_pw(new_password)
         cur.execute(

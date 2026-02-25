@@ -13,14 +13,16 @@ def hash_pw(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def verify_admin(token):
+    if token == ADMIN_PASSWORD_ENV:
+        return True
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(f'SELECT password_hash FROM "{SCHEMA}".admin_config WHERE id = 1')
     row = cur.fetchone()
     conn.close()
-    if row:
+    if row and row[0]:
         return hash_pw(token) == row[0]
-    return token == ADMIN_PASSWORD_ENV
+    return False
 
 def handler(event: dict, context) -> dict:
     """Статистика для админки: клиенты, платежи, общая сумма"""

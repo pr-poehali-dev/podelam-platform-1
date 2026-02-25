@@ -30,14 +30,16 @@ def err(msg, status=400):
 def is_admin(event):
     headers = event.get('headers') or {}
     token = headers.get('X-Admin-Token') or headers.get('x-admin-token', '')
+    if token == ADMIN_PASSWORD_ENV:
+        return True
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(f'SELECT password_hash FROM "{SCHEMA}".admin_config WHERE id = 1')
     row = cur.fetchone()
     conn.close()
-    if row:
+    if row and row[0]:
         return hash_pw(token) == row[0]
-    return token == ADMIN_PASSWORD_ENV
+    return False
 
 def slugify(text):
     text = text.lower().strip()
