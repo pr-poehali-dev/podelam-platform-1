@@ -35,7 +35,7 @@ def handler(event: dict, context) -> dict:
     S = SCHEMA
 
     cur.execute(
-        f'SELECT id, ref_code, ref_balance, partner_rules_accepted FROM "{S}".users WHERE email = %s',
+        f'SELECT id, ref_code, ref_balance, partner_rules_accepted, partner_rules_accepted_at FROM "{S}".users WHERE email = %s',
         (user_email,)
     )
     user = cur.fetchone()
@@ -43,7 +43,7 @@ def handler(event: dict, context) -> dict:
         conn.close()
         return {'statusCode': 404, 'headers': cors, 'body': json.dumps({'error': 'user not found'})}
 
-    user_id, ref_code, ref_balance, rules_accepted = user
+    user_id, ref_code, ref_balance, rules_accepted, rules_accepted_at = user
 
     if action == 'info':
         cur.execute(
@@ -87,20 +87,22 @@ def handler(event: dict, context) -> dict:
                 'total_earned': total_earned,
                 'history': history,
                 'rules_accepted': bool(rules_accepted),
+                'rules_accepted_at': str(rules_accepted_at) if rules_accepted_at else None,
             })
         }
 
     elif action == 'accept_rules':
         cur.execute(
-            f'UPDATE "{S}".users SET partner_rules_accepted = TRUE WHERE id = %s',
+            f'UPDATE "{S}".users SET partner_rules_accepted = TRUE, partner_rules_accepted_at = NOW() WHERE id = %s RETURNING partner_rules_accepted_at',
             (user_id,)
         )
+        accepted_at = cur.fetchone()[0]
         conn.commit()
         conn.close()
         return {
             'statusCode': 200,
             'headers': cors,
-            'body': json.dumps({'ok': True, 'rules_accepted': True})
+            'body': json.dumps({'ok': True, 'rules_accepted': True, 'rules_accepted_at': str(accepted_at)})
         }
 
     elif action == 'use_bonus':

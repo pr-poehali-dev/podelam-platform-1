@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS partner_rules_accepted_at TIMESTAMPTZ DEFAULT NULL;

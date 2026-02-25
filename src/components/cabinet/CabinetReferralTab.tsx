@@ -11,6 +11,7 @@ type RefInfo = {
   total_earned: number;
   history: { amount: number; date: string; referral_name: string; tariff: string }[];
   rules_accepted: boolean;
+  rules_accepted_at: string | null;
 };
 
 export default function CabinetReferralTab({ user }: { user: User }) {
@@ -69,7 +70,7 @@ export default function CabinetReferralTab({ user }: { user: User }) {
     });
     const data = await res.json();
     if (data.ok) {
-      setInfo((prev) => prev ? { ...prev, rules_accepted: true } : prev);
+      setInfo((prev) => prev ? { ...prev, rules_accepted: true, rules_accepted_at: data.rules_accepted_at } : prev);
       setShowRules(false);
     }
     setAccepting(false);
@@ -86,7 +87,15 @@ export default function CabinetReferralTab({ user }: { user: User }) {
   const rulesAccepted = info?.rules_accepted ?? false;
 
   if (showRules) {
-    return <PartnerRules onAccept={acceptRules} accepting={accepting} onBack={() => setShowRules(false)} />;
+    return (
+      <PartnerRules
+        onAccept={acceptRules}
+        accepting={accepting}
+        onBack={() => setShowRules(false)}
+        alreadyAccepted={rulesAccepted}
+        acceptedAt={info?.rules_accepted_at ?? null}
+      />
+    );
   }
 
   return (
@@ -220,14 +229,28 @@ export default function CabinetReferralTab({ user }: { user: User }) {
   );
 }
 
+function formatAcceptedDate(dateStr: string | null): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
 function PartnerRules({
   onAccept,
   accepting,
   onBack,
+  alreadyAccepted,
+  acceptedAt,
 }: {
   onAccept: () => void;
   accepting: boolean;
   onBack: () => void;
+  alreadyAccepted: boolean;
+  acceptedAt: string | null;
 }) {
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
 
@@ -316,20 +339,37 @@ function PartnerRules({
         <p>8.2. Участие в партнёрской программе означает согласие пользователя с настоящими Правилами.</p>
       </div>
 
-      {!scrolledToBottom && (
-        <p className="text-xs text-center text-muted-foreground animate-pulse">
-          Прокрутите до конца, чтобы принять правила
-        </p>
+      {alreadyAccepted ? (
+        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+          <div className="w-9 h-9 shrink-0 rounded-full bg-green-100 flex items-center justify-center">
+            <Icon name="CheckCircle" size={18} className="text-green-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-green-800">Правила приняты</p>
+            {acceptedAt && (
+              <p className="text-xs text-green-600 mt-0.5">
+                Вы приняли правила {formatAcceptedDate(acceptedAt)}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          {!scrolledToBottom && (
+            <p className="text-xs text-center text-muted-foreground animate-pulse">
+              Прокрутите до конца, чтобы принять правила
+            </p>
+          )}
+          <button
+            onClick={onAccept}
+            disabled={!scrolledToBottom || accepting}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl gradient-brand text-white font-semibold text-sm shadow-sm hover:shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Icon name="CheckCircle" size={16} />
+            {accepting ? "Сохраняем..." : "Я ознакомился и принимаю правила"}
+          </button>
+        </>
       )}
-
-      <button
-        onClick={onAccept}
-        disabled={!scrolledToBottom || accepting}
-        className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl gradient-brand text-white font-semibold text-sm shadow-sm hover:shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        <Icon name="CheckCircle" size={16} />
-        {accepting ? "Сохраняем..." : "Я ознакомился и принимаю правила"}
-      </button>
     </div>
   );
 }
