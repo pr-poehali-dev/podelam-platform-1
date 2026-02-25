@@ -22,6 +22,8 @@ interface Client {
   balance: number;
   subscription_expires: string | null;
   paid_tools: string;
+  total_topup: number;
+  total_spent: number;
 }
 
 interface Payment {
@@ -260,6 +262,8 @@ export default function Admin() {
                     <th className="px-6 py-3 font-medium">Email</th>
                     <th className="px-6 py-3 font-medium">Зарегистрирован</th>
                     <th className="px-6 py-3 font-medium">Последний вход</th>
+                    <th className="px-6 py-3 font-medium text-right">Пополнения</th>
+                    <th className="px-6 py-3 font-medium text-right">Расходы</th>
                     <th className="px-6 py-3 font-medium text-right">Баланс</th>
                     <th className="px-6 py-3 font-medium">Подписка</th>
                     <th className="px-6 py-3 font-medium">Инструменты</th>
@@ -270,7 +274,7 @@ export default function Admin() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredClients.length === 0 ? (
-                    <tr><td colSpan={11} className="px-6 py-12 text-center text-muted-foreground">Клиентов нет</td></tr>
+                    <tr><td colSpan={12} className="px-6 py-12 text-center text-muted-foreground">Клиентов нет</td></tr>
                   ) : filteredClients.map(c => (
                     <tr key={c.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-6 py-4 text-muted-foreground">#{c.id}</td>
@@ -278,6 +282,12 @@ export default function Admin() {
                       <td className="px-6 py-4 text-muted-foreground">{c.email}</td>
                       <td className="px-6 py-4 text-muted-foreground">{formatDate(c.created_at)}</td>
                       <td className="px-6 py-4 text-muted-foreground">{formatDate(c.last_login)}</td>
+                      <td className="px-6 py-4 text-right font-medium text-green-600">
+                        {Number(c.total_topup) > 0 ? "+" + formatMoney(Number(c.total_topup)) : "—"}
+                      </td>
+                      <td className="px-6 py-4 text-right font-medium text-red-500">
+                        {Number(c.total_spent) > 0 ? "−" + formatMoney(Number(c.total_spent)) : "—"}
+                      </td>
                       <td className="px-6 py-4 text-right font-medium">
                         {Number(c.balance) > 0 ? formatMoney(Number(c.balance)) : "—"}
                       </td>

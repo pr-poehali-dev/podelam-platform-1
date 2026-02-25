@@ -63,14 +63,16 @@ def handler(event: dict, context) -> dict:
         SELECT u.id, u.name, u.email, u.created_at, u.last_login,
                COALESCE(SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END), 0) as total_paid,
                COUNT(CASE WHEN p.status = 'paid' THEN 1 END) as payments_count,
-               u.balance, u.subscription_expires, u.paid_tools
+               u.balance, u.subscription_expires, u.paid_tools,
+               COALESCE(SUM(CASE WHEN p.status = 'paid' AND p.tariff IN ('Пополнение баланса', 'Старт') THEN p.amount ELSE 0 END), 0) as total_topup,
+               COALESCE(SUM(CASE WHEN p.status = 'paid' AND p.tariff NOT IN ('Пополнение баланса', 'Старт') THEN p.amount ELSE 0 END), 0) as total_spent
         FROM "{S}".users u
         LEFT JOIN "{S}".payments p ON p.user_email = u.email
         GROUP BY u.id, u.name, u.email, u.created_at, u.last_login, u.balance, u.subscription_expires, u.paid_tools
         ORDER BY u.created_at DESC
         LIMIT 100
     """)
-    cols = ['id', 'name', 'email', 'created_at', 'last_login', 'total_paid', 'payments_count', 'balance', 'subscription_expires', 'paid_tools']
+    cols = ['id', 'name', 'email', 'created_at', 'last_login', 'total_paid', 'payments_count', 'balance', 'subscription_expires', 'paid_tools', 'total_topup', 'total_spent']
     clients = []
     for row in cur.fetchall():
         clients.append({cols[i]: (str(row[i]) if row[i] is not None else None) for i in range(len(cols))})
