@@ -10,5 +10,10 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: YandexBot
+Allow: /
+
 User-agent: *
 Allow: /
+
+Sitemap: https://podelam-platform-1.poehali.dev/sitemap.xml
