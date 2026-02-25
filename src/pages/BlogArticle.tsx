@@ -143,10 +143,13 @@ function ShareButton({ slug }: { slug: string }) {
     try {
       const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
       if (u.email) {
-        const stored = localStorage.getItem(`pdd_ref_code_${u.email}`);
-        if (stored) refCode = stored;
+        const rulesAccepted = localStorage.getItem(`pdd_rules_accepted_${u.email}`) === "1";
+        if (rulesAccepted) {
+          const stored = localStorage.getItem(`pdd_ref_code_${u.email}`);
+          if (stored) refCode = stored;
+        }
       }
-    } catch { /* no user */ }
+    } catch { /* ignore */ }
 
     const base = `https://podelam.su/blog/${slug}`;
     const url = refCode ? `${base}?ref=${refCode}` : base;
@@ -192,7 +195,6 @@ export default function BlogArticle() {
         setNotFound(true);
       } else {
         setArticle(data);
-        if (data.meta_title) document.title = data.meta_title;
       }
       setLoading(false);
     });
@@ -200,16 +202,62 @@ export default function BlogArticle() {
 
   useEffect(() => {
     if (!article) return;
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (article.meta_description) {
-      if (!metaDesc) {
-        metaDesc = document.createElement("meta");
-        metaDesc.setAttribute("name", "description");
-        document.head.appendChild(metaDesc);
+
+    const pageTitle = article.meta_title || article.title;
+    const pageDesc = article.meta_description || article.summary;
+    const pageUrl = `https://podelam.su/blog/${article.slug}`;
+    document.title = pageTitle;
+
+    const setMeta = (attr: string, key: string, content: string) => {
+      let el = document.querySelector(`meta[${attr}="${key}"]`);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
       }
-      metaDesc.setAttribute("content", article.meta_description);
-    }
-    return () => { document.title = "ПоДелам"; };
+      el.setAttribute("content", content);
+    };
+
+    const setLink = (rel: string, href: string) => {
+      let el = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
+      if (!el) {
+        el = document.createElement("link");
+        el.setAttribute("rel", rel);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("href", href);
+    };
+
+    setMeta("name", "description", pageDesc);
+    if (article.meta_keywords) setMeta("name", "keywords", article.meta_keywords);
+    setLink("canonical", pageUrl);
+
+    setMeta("property", "og:type", "article");
+    setMeta("property", "og:title", pageTitle);
+    setMeta("property", "og:description", pageDesc);
+    setMeta("property", "og:url", pageUrl);
+    if (article.cover_url) setMeta("property", "og:image", article.cover_url);
+    setMeta("property", "og:site_name", "ПоДелам");
+
+    setMeta("name", "twitter:card", "summary_large_image");
+    setMeta("name", "twitter:title", pageTitle);
+    setMeta("name", "twitter:description", pageDesc);
+    if (article.cover_url) setMeta("name", "twitter:image", article.cover_url);
+
+    setMeta("property", "article:published_time", article.created_at);
+    if (article.updated_at) setMeta("property", "article:modified_time", article.updated_at);
+
+    return () => {
+      document.title = "ПоДелам";
+      ["og:type","og:title","og:description","og:url","og:image","og:site_name",
+       "article:published_time","article:modified_time"].forEach((p) => {
+        document.querySelector(`meta[property="${p}"]`)?.remove();
+      });
+      ["twitter:card","twitter:title","twitter:description","twitter:image","keywords"].forEach((n) => {
+        document.querySelector(`meta[name="${n}"]`)?.remove();
+      });
+      document.querySelector('link[rel="canonical"]')?.remove();
+    };
   }, [article]);
 
   if (loading) {

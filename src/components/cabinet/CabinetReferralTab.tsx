@@ -28,6 +28,7 @@ export default function CabinetReferralTab({ user }: { user: User }) {
       .then((data) => {
         setInfo(data);
         if (data.ref_code) localStorage.setItem(`pdd_ref_code_${user.email}`, data.ref_code);
+        localStorage.setItem(`pdd_rules_accepted_${user.email}`, data.rules_accepted ? "1" : "0");
       })
       .finally(() => setLoading(false));
   }, [user.email]);
@@ -71,6 +72,7 @@ export default function CabinetReferralTab({ user }: { user: User }) {
     const data = await res.json();
     if (data.ok) {
       setInfo((prev) => prev ? { ...prev, rules_accepted: true, rules_accepted_at: data.rules_accepted_at } : prev);
+      localStorage.setItem(`pdd_rules_accepted_${user.email}`, "1");
       setShowRules(false);
     }
     setAccepting(false);
