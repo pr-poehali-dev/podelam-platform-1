@@ -16,4 +16,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://podelam-platform-1.poehali.dev/sitemap.xml
+Sitemap: https://podelam.su/sitemap.xml
