@@ -81,8 +81,10 @@ type Props = {
   onRatingsSubmit: (ratings: Record<string, number>) => void;
   onReset: () => void;
   onSave?: () => void;
+  onExit?: () => void;
   bottomRef: React.RefObject<HTMLDivElement>;
   step: BotStep;
+  paidOnce?: boolean;
 };
 
 export default function PsychBotChat({
@@ -92,15 +94,19 @@ export default function PsychBotChat({
   onRatingsSubmit,
   onReset,
   onSave,
+  onExit,
   bottomRef,
   step,
+  paidOnce,
 }: Props) {
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
     onSave?.();
     setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    if (!paidOnce) {
+      setTimeout(() => setSaved(false), 3000);
+    }
   };
   const isFinished = step === "report";
 
@@ -183,13 +189,23 @@ export default function PsychBotChat({
               <Icon name={saved ? "CheckCircle" : "Save"} size={15} />
               {saved ? "Результат сохранён!" : "Сохранить результат"}
             </button>
-            <button
-              onClick={onReset}
-              className="w-full flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm"
-            >
-              <Icon name="RotateCcw" size={15} />
-              Пройти тест заново
-            </button>
+            {saved && paidOnce ? (
+              <button
+                onClick={onExit}
+                className="w-full flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+              >
+                <Icon name="ArrowLeft" size={15} />
+                Вернуться в кабинет
+              </button>
+            ) : !saved ? (
+              <button
+                onClick={onReset}
+                className="w-full flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+              >
+                <Icon name="RotateCcw" size={15} />
+                Пройти тест заново
+              </button>
+            ) : null}
           </div>
         )}
 

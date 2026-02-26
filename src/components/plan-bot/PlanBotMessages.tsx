@@ -22,6 +22,8 @@ type Props = {
   onIncomeTargetSubmit: (v: number) => void;
   onCurrentIncomeSubmit: (v: number) => void;
   onReset: () => void;
+  onExit?: () => void;
+  paidOnce?: boolean;
 };
 
 export default function PlanBotMessages({
@@ -40,6 +42,8 @@ export default function PlanBotMessages({
   onIncomeTargetSubmit,
   onCurrentIncomeSubmit,
   onReset,
+  onExit,
+  paidOnce,
 }: Props) {
   const lastBotId = Math.max(
     ...messages.filter((m) => m.from === "bot").map((m) => m.id),
@@ -83,6 +87,8 @@ export default function PlanBotMessages({
                   onIncomeTargetSubmit={onIncomeTargetSubmit}
                   onCurrentIncomeSubmit={onCurrentIncomeSubmit}
                   onReset={onReset}
+                  onExit={onExit}
+                  paidOnce={paidOnce}
                 />
               </div>
             )}

@@ -21,6 +21,7 @@ import {
 export default function Progress() {
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
+  const [accessType, setAccessType] = useState<"free" | "paid_once" | "subscribed" | "locked">("locked");
 
   const [tpl, setTpl] = useState<Templates | null>(null);
   const [phase, setPhase] = useState<Phase>("intro");
@@ -44,6 +45,7 @@ export default function Progress() {
     if (!u) { navigate("/auth"); return; }
     window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'progress' });
     const access = checkAccess("progress");
+    setAccessType(access);
     if (access === "locked") setShowPaywall(true);
   }, [navigate]);
 
@@ -245,6 +247,8 @@ export default function Progress() {
         onThoughtChange={setThought}
         onSubmitThought={submitThought}
         onStartNew={startNew}
+        onExit={() => navigate("/cabinet?tab=tools")}
+        paidOnce={accessType === "paid_once"}
         bottomRef={bottomRef as React.RefObject<HTMLDivElement>}
       />
 

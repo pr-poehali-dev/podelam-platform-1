@@ -14,6 +14,8 @@ type Props = {
   onGoToPlan: () => void;
   onNewSession: () => void;
   onShowHistory: () => void;
+  onExit?: () => void;
+  paidOnce?: boolean;
 };
 
 export default function IncomeBotChat({
@@ -28,6 +30,8 @@ export default function IncomeBotChat({
   onGoToPlan,
   onNewSession,
   onShowHistory,
+  onExit,
+  paidOnce,
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -47,13 +51,23 @@ export default function IncomeBotChat({
             Построить шаги развития
           </button>
           <div className="flex gap-2">
-            <button
-              onClick={onNewSession}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-green-200 bg-green-50 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
-            >
-              <Icon name="RotateCcw" size={15} />
-              Новый подбор
-            </button>
+            {paidOnce ? (
+              <button
+                onClick={onExit}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+              >
+                <Icon name="ArrowLeft" size={15} />
+                Вернуться в кабинет
+              </button>
+            ) : (
+              <button
+                onClick={onNewSession}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-green-200 bg-green-50 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
+              >
+                <Icon name="RotateCcw" size={15} />
+                Новый подбор
+              </button>
+            )}
             {sessionsCount > 0 && (
               <button
                 onClick={onShowHistory}

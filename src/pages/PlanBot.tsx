@@ -36,6 +36,7 @@ export default function PlanBot() {
   const [sliderValues, setSliderValues] = useState<SliderValues>({ energy: 5, motivation: 5, confidence: 5 });
   const [currentPlan, setCurrentPlan] = useState<FinalPlan | null>(null);
   const [hasAccess, setHasAccess] = useState(false);
+  const [accessType, setAccessType] = useState<"free" | "paid_once" | "subscribed" | "locked">("locked");
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSourceChoice, setShowSourceChoice] = useState(false);
   const [testProfile, setTestProfile] = useState<TestProfile>({});
@@ -62,6 +63,7 @@ export default function PlanBot() {
     window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'plan-bot' });
 
     const access = checkAccess("plan-bot");
+    setAccessType(access);
     if (access === "locked") { setShowPaywall(true); return; }
     setHasAccess(true);
 
@@ -374,6 +376,8 @@ ${insight}`);
           onIncomeTargetSubmit={handleIncomeTargetSubmit}
           onCurrentIncomeSubmit={handleCurrentIncomeSubmit}
           onReset={handleReset}
+          onExit={() => navigate("/cabinet?tab=tools")}
+          paidOnce={accessType === "paid_once"}
         />
         </>
       )}

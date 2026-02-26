@@ -16,6 +16,8 @@ type Props = {
   onThoughtChange: (val: string) => void;
   onSubmitThought: () => void;
   onStartNew: () => void;
+  onExit?: () => void;
+  paidOnce?: boolean;
   bottomRef: React.RefObject<HTMLDivElement>;
 };
 
@@ -34,6 +36,8 @@ export default function ProgressChat({
   onThoughtChange,
   onSubmitThought,
   onStartNew,
+  onExit,
+  paidOnce,
   bottomRef,
 }: Props) {
   return (
@@ -153,13 +157,22 @@ export default function ProgressChat({
       )}
 
       {phase === "done" && (
-        <div className="flex justify-center pt-4">
-          <button
-            onClick={onStartNew}
-            className="bg-blue-100 text-blue-700 font-semibold px-5 py-2.5 rounded-2xl hover:bg-blue-200 transition-colors text-sm"
-          >
-            Новая запись
-          </button>
+        <div className="flex justify-center pt-4 gap-2">
+          {paidOnce ? (
+            <button
+              onClick={onExit}
+              className="bg-gray-100 text-gray-700 font-semibold px-5 py-2.5 rounded-2xl hover:bg-gray-200 transition-colors text-sm"
+            >
+              Вернуться в кабинет
+            </button>
+          ) : (
+            <button
+              onClick={onStartNew}
+              className="bg-blue-100 text-blue-700 font-semibold px-5 py-2.5 rounded-2xl hover:bg-blue-200 transition-colors text-sm"
+            >
+              Новая запись
+            </button>
+          )}
         </div>
       )}
 

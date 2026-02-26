@@ -25,6 +25,7 @@ export default function IncomeBot() {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [msgId, setMsgId] = useState(0);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [accessType, setAccessType] = useState<"free" | "paid_once" | "subscribed" | "locked">("locked");
   const [showSourceChoice, setShowSourceChoice] = useState(false);
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState<"chat" | "history">("chat");
@@ -44,6 +45,7 @@ export default function IncomeBot() {
     window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'income-bot' });
 
     const access = checkAccess("income-bot");
+    setAccessType(access);
     if (access === "locked") { setShowPaywall(true); return; }
 
     const u2 = JSON.parse(u);
@@ -239,6 +241,8 @@ export default function IncomeBot() {
           onGoToPlan={handleGoToPlan}
           onNewSession={handleNewSession}
           onShowHistory={() => setTab("history")}
+          onExit={() => navigate("/cabinet?tab=tools")}
+          paidOnce={accessType === "paid_once"}
         />
         </>
       )}

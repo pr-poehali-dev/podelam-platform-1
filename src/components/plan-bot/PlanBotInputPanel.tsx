@@ -18,6 +18,8 @@ type Props = {
   onIncomeTargetSubmit: (v: number) => void;
   onCurrentIncomeSubmit: (v: number) => void;
   onReset: () => void;
+  onExit?: () => void;
+  paidOnce?: boolean;
 };
 
 export default function PlanBotInputPanel({
@@ -33,6 +35,8 @@ export default function PlanBotInputPanel({
   onIncomeTargetSubmit,
   onCurrentIncomeSubmit,
   onReset,
+  onExit,
+  paidOnce,
 }: Props) {
   return (
     <>
@@ -194,13 +198,23 @@ export default function PlanBotInputPanel({
               Сохранить PDF
             </button>
           </div>
-          <button
-            onClick={onReset}
-            className="flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-700 font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
-          >
-            <Icon name="RotateCcw" size={15} />
-            Построить новый план
-          </button>
+          {paidOnce ? (
+            <button
+              onClick={onExit}
+              className="flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-700 font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+            >
+              <Icon name="ArrowLeft" size={15} />
+              Вернуться в кабинет
+            </button>
+          ) : (
+            <button
+              onClick={onReset}
+              className="flex items-center gap-2 justify-center bg-white border border-gray-200 text-gray-700 font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+            >
+              <Icon name="RotateCcw" size={15} />
+              Построить новый план
+            </button>
+          )}
         </div>
       )}
     </>

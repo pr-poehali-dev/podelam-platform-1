@@ -36,6 +36,7 @@ export default function BarrierBot() {
   const [botState, setBotState] = useState<BotState>(INITIAL_STATE);
   const [loading, setLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
+  const [accessType, setAccessType] = useState<"free" | "paid_once" | "subscribed" | "locked">("locked");
   const [tab, setTab] = useState<"chat" | "history">("chat");
   const bottomRef = useRef<HTMLDivElement>(null);
   const { sessions, saveSession, forceSync, syncing } = useToolSync<BarrierSession>("barrier-bot", "barrier_results");
@@ -65,6 +66,7 @@ export default function BarrierBot() {
     window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'barrier-bot' });
 
     const access = checkAccess("barrier-bot");
+    setAccessType(access);
     const hasAcc = access !== "locked";
     if (hasAcc) {
       setHasAccess(true);
@@ -345,13 +347,23 @@ export default function BarrierBot() {
                 {saved ? "Результат сохранён!" : "Сохранить результат"}
               </button>
               <div className="flex gap-2">
-                <button
-                  onClick={handleNewSession}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-semibold hover:bg-rose-100 transition-colors"
-                >
-                  <Icon name="RotateCcw" size={15} />
-                  Новая сессия
-                </button>
+                {saved && accessType === "paid_once" ? (
+                  <button
+                    onClick={() => navigate("/cabinet?tab=tools")}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    <Icon name="ArrowLeft" size={15} />
+                    Вернуться в кабинет
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNewSession}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-semibold hover:bg-rose-100 transition-colors"
+                  >
+                    <Icon name="RotateCcw" size={15} />
+                    Новая сессия
+                  </button>
+                )}
                 {sessions.length > 0 && (
                   <button
                     onClick={() => setTab("history")}

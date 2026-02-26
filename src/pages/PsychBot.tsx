@@ -35,6 +35,7 @@ export default function PsychBot() {
   const [botState, setBotState] = useState<BotState>(INITIAL_STATE);
   const [loading, setLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
+  const [accessType, setAccessType] = useState<"free" | "paid_once" | "subscribed" | "locked">("locked");
   const bottomRef = useRef<HTMLDivElement>(null);
   const { saveSession, forceSync, syncing } = useToolSync<Record<string, unknown>>("psych-bot", "psych_result_history");
 
@@ -58,6 +59,7 @@ export default function PsychBot() {
     window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'psych-bot' });
 
     const access = checkAccess("psych-bot");
+    setAccessType(access);
     if (access !== "locked") {
       setHasAccess(true);
     }
@@ -388,7 +390,9 @@ export default function PsychBot() {
         onRatingsSubmit={handleRatingsSubmit}
         onReset={handleReset}
         onSave={handleSaveToServer}
+        onExit={() => navigate("/cabinet?tab=tools")}
         step={botState.step}
+        paidOnce={accessType === "paid_once"}
       />
     </div>
   );
