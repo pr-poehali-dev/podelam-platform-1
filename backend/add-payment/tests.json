@@ -7,6 +7,14 @@
       "body": {"user_email": "test@example.com", "user_name": "Тест", "amount": 299, "tariff": "Старт", "status": "paid"},
       "expectedStatus": 200,
       "bodyMatcher": "none"
+    },
+    {
+      "name": "Consume tool",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "consume_tool", "user_email": "test@example.com", "tool_id": "psych-bot"},
+      "expectedStatus": 200,
+      "bodyMatcher": "none"
     }
   ]
 }

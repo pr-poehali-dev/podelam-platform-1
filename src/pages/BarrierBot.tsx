@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { checkAccess, saveToolCompletion } from "@/lib/access";
+import { checkAccess, saveToolCompletion, consumePaidOnce } from "@/lib/access";
 import useToolSync from "@/hooks/useToolSync";
 import Icon from "@/components/ui/icon";
 import BarrierBotPaywall from "@/components/barrier-bot/BarrierBotPaywall";
@@ -239,6 +239,7 @@ export default function BarrierBot() {
 
         saveSession(record);
         saveToolCompletion("barrier-bot", `Анализ барьеров завершён — сфера «${newState.selectedContext}», профиль ${PROFILE_TEXTS[newState.psychProfile]?.title ?? "определён"}`);
+        consumePaidOnce("barrier-bot");
 
         return {
           text: `## Сессия завершена\n\nТы прошёл полный цикл анализа. Вот что ты узнал:\n\n• **Сфера:** ${newState.selectedContext}\n• **Слабость:** ${newState.mainWeakness}\n• **Сила:** ${newState.mainStrength.join(", ")}\n• **Дополнительная опора:** ${newState.additionalStrength.join(", ")}\n• **Профиль:** ${PROFILE_TEXTS[newState.psychProfile]?.title}\n\n---\n\nСессия сохранена. Посмотри историю — там можно скачать PDF или начать новый анализ.`,

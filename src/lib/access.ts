@@ -201,6 +201,18 @@ export function activatePaidOnce(toolId: ToolId): void {
   localStorage.setItem(onceKey(email, toolId), "1");
 }
 
+/** Использовать разовый доступ — вызывать после сохранения результата */
+export function consumePaidOnce(toolId: ToolId): void {
+  const email = getEmail();
+  localStorage.removeItem(onceKey(email, toolId));
+  const { name } = getUserData();
+  fetch(ADD_PAYMENT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_email: email, user_name: name, action: "consume_tool", tool_id: toolId }),
+  }).catch(() => {});
+}
+
 /** Активировать подписку на 30 дней (симуляция оплаты) */
 export function activateSubscription(): void {
   const email = getEmail();

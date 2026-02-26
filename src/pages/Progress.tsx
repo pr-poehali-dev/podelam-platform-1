@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
-import { checkAccess, getToolCompletions, getLatestCareerResult } from "@/lib/access";
+import { checkAccess, getToolCompletions, getLatestCareerResult, consumePaidOnce } from "@/lib/access";
 import useToolSync from "@/hooks/useToolSync";
 import PaywallModal from "@/components/PaywallModal";
 import ProgressChat from "@/components/progress/ProgressChat";
@@ -131,6 +131,7 @@ export default function Progress() {
     };
 
     await saveProgressEntry(entry);
+    consumePaidOnce("progress");
 
     const resultText = buildResult(entry, prev, tpl, syncedEntries.length + 1);
     msgs = addBotRaw(msgs, resultText);

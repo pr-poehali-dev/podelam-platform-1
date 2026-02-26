@@ -27,6 +27,23 @@ def handler(event: dict, context) -> dict:
     status = body.get('status', 'paid')
     action = body.get('action', 'payment')
 
+    if action == 'consume_tool':
+        tool_id = body.get('tool_id', '')
+        if user_email and tool_id:
+            conn = get_conn()
+            cur = conn.cursor()
+            S = SCHEMA
+            cur.execute(f'SELECT id, paid_tools FROM "{S}".users WHERE email = %s', (user_email,))
+            row = cur.fetchone()
+            if row:
+                uid, paid = row[0], row[1] or ''
+                paid_set = set(t.strip() for t in paid.split(',') if t.strip())
+                paid_set.discard(tool_id)
+                cur.execute(f'UPDATE "{S}".users SET paid_tools = %s WHERE id = %s', (','.join(sorted(paid_set)), uid))
+                conn.commit()
+            conn.close()
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'status': 'consumed'})}
+
     if not user_email or not amount:
         return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Укажите email и сумму'})}
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { checkAccess, saveToolCompletion } from "@/lib/access";
+import { checkAccess, saveToolCompletion, consumePaidOnce } from "@/lib/access";
 import useToolSync from "@/hooks/useToolSync";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
@@ -140,6 +140,7 @@ export default function PsychBot() {
     saveToolCompletion("psych-bot", `Психологический анализ завершён — профиль «${profileName}»`);
 
     await saveSession(psychResult);
+    consumePaidOnce("psych-bot");
     localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(psychResult));
 
     const userEmail = userData.email;

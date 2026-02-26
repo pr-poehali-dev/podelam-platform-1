@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
-import { checkAccess, saveToolCompletion, getLatestCareerResult } from "@/lib/access";
+import { checkAccess, saveToolCompletion, getLatestCareerResult, consumePaidOnce } from "@/lib/access";
 import PaywallModal from "@/components/PaywallModal";
 import IncomeBotHistory, { IncomeSession } from "@/components/income-bot/IncomeBotHistory";
 import IncomeBotSourceChoice from "@/components/income-bot/IncomeBotSourceChoice";
@@ -107,6 +107,7 @@ export default function IncomeBot() {
         }
         setAnalyzing(false);
         saveToolCompletion("income-bot", `Подбор дохода: ${RESULT_LABELS[key]}`);
+        consumePaidOnce("income-bot");
       }, 2200);
     }
   };

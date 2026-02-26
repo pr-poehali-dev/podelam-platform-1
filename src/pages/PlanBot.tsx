@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { checkAccess, saveToolCompletion, getLatestCareerResult } from "@/lib/access";
+import { checkAccess, saveToolCompletion, getLatestCareerResult, consumePaidOnce } from "@/lib/access";
 import PaywallModal from "@/components/PaywallModal";
 import ToolHint from "@/components/ToolHint";
 import Icon from "@/components/ui/icon";
@@ -272,6 +272,7 @@ ${insight}`);
 
       const dirName = DIRECTION_NAMES[inputs.direction];
       saveToolCompletion("plan-bot", `План: ${dirName}, ${plan.strategyName}`);
+      consumePaidOnce("plan-bot");
 
       const markdown = formatPlanAsMarkdown(plan, testProfile);
       setLoading(false);
