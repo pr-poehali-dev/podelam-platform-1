@@ -114,6 +114,17 @@ def handle_create(event, body):
         },
         'capture': True,
         'description': f'Пополнение баланса ПоДелам — {amount}₽',
+        'receipt': {
+            'customer': {'email': user_email},
+            'items': [{
+                'description': f'Пополнение баланса на {amount}₽',
+                'quantity': '1.00',
+                'amount': {'value': amount_value, 'currency': 'RUB'},
+                'vat_code': 1,
+                'payment_subject': 'service',
+                'payment_mode': 'full_payment',
+            }],
+        },
         'metadata': {
             'payment_id': payment_id,
             'user_email': user_email,
