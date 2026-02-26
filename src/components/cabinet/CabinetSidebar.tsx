@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 import { User } from "./cabinetTypes";
-import { getBalance } from "@/lib/access";
+import { getBalance, syncFromServer } from "@/lib/access";
 import BalanceTopUpModal from "@/components/BalanceTopUpModal";
 
 function useBalance() {
@@ -9,6 +9,7 @@ function useBalance() {
   const refresh = useCallback(() => setBalance(getBalance()), []);
   useEffect(() => {
     window.addEventListener("pdd_balance_change", refresh);
+    syncFromServer().catch(() => {});
     return () => window.removeEventListener("pdd_balance_change", refresh);
   }, [refresh]);
   return { balance, refresh };

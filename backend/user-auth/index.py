@@ -182,6 +182,35 @@ def handler(event: dict, context) -> dict:
             })
         }
 
+    elif action == 'get_profile':
+        email = body.get('email', '').strip().lower()
+        if not email:
+            conn.close()
+            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'email required'})}
+
+        cur.execute(
+            f'SELECT id, balance, subscription_expires, paid_tools FROM "{S}".users WHERE email = %s',
+            (email,)
+        )
+        row = cur.fetchone()
+        if not row:
+            conn.close()
+            return {'statusCode': 404, 'headers': cors, 'body': json.dumps({'error': 'User not found'})}
+
+        balance = row[1] or 0
+        sub_expires = str(row[2]) if row[2] else None
+        paid_tools = [t.strip() for t in (row[3] or '').split(',') if t.strip()]
+        conn.close()
+        return {
+            'statusCode': 200,
+            'headers': cors,
+            'body': json.dumps({
+                'balance': balance,
+                'subscription_expires': sub_expires,
+                'paid_tools': paid_tools,
+            })
+        }
+
     elif action == 'save_test_result':
         user_id = body.get('userId')
         test_type = body.get('testType', '')

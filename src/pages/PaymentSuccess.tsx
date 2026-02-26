@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { syncFromServer } from "@/lib/access";
 
 const YOOKASSA_URL = "https://functions.poehali.dev/1b07c03c-bee7-4b25-aeee-836e7331e044";
 
@@ -34,17 +35,7 @@ export default function PaymentSuccess() {
         if (data.status === "paid") {
           setStatus("paid");
           setAmount(data.amount || 0);
-
-          try {
-            const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
-            if (u.email) {
-              const key = `pdd_balance_${u.email}`;
-              const current = parseFloat(localStorage.getItem(key) || "0");
-              localStorage.setItem(key, String(current + (data.amount || 0)));
-              window.dispatchEvent(new CustomEvent("pdd_balance_change"));
-            }
-          } catch (e) { console.log("sync", e); }
-
+          syncFromServer().catch(() => {});
           return;
         }
 

@@ -3,6 +3,7 @@
 // Баланс: хранится в pdd_balance_{email}
 
 const ADD_PAYMENT_URL = "https://functions.poehali.dev/55a42126-88c7-4b99-b0b5-831a53a24325";
+const USER_AUTH_URL = "https://functions.poehali.dev/487cc378-edbf-4dee-8e28-4c1fe70b6a3c";
 
 function getUserData() {
   try { const u = JSON.parse(localStorage.getItem("pdd_user") || "{}"); return { email: u.email || "", name: u.name || "" }; } catch { return { email: "", name: "" }; }
@@ -58,6 +59,38 @@ export function getBalance(): number {
 
 function notifyBalanceChange() {
   window.dispatchEvent(new CustomEvent("pdd_balance_change"));
+}
+
+/** Синхронизировать баланс, подписку и купленные инструменты с сервером */
+export async function syncFromServer(): Promise<number> {
+  const email = getEmail();
+  if (!email || email === "guest") return getBalance();
+
+  const res = await fetch(USER_AUTH_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "get_profile", email }),
+  });
+  if (!res.ok) return getBalance();
+
+  const data = await res.json();
+
+  if (typeof data.balance === "number") {
+    localStorage.setItem(balanceKey(email), String(data.balance));
+  }
+
+  if (data.subscription_expires) {
+    localStorage.setItem(subKey(email), new Date(data.subscription_expires).toISOString());
+  }
+
+  if (Array.isArray(data.paid_tools)) {
+    for (const t of data.paid_tools) {
+      localStorage.setItem(`pdd_once_${email}_${t}`, "1");
+    }
+  }
+
+  notifyBalanceChange();
+  return data.balance ?? getBalance();
 }
 
 /** Пополнить баланс */
