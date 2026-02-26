@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 const TOOL_API = "https://functions.poehali.dev/817cc650-9d57-4575-8a6d-072b98b1b815";
 
@@ -12,6 +12,10 @@ function getUserData() {
 export default function useToolSync<T>(toolType: ToolType, localStorageKey: string) {
   const [sessions, setSessions] = useState<T[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const sessionsRef = useRef<T[]>([]);
+  const initializedRef = useRef(false);
+
+  sessionsRef.current = sessions;
 
   const loadLocal = useCallback((): T[] => {
     const email = getUserData()?.email;
@@ -25,48 +29,6 @@ export default function useToolSync<T>(toolType: ToolType, localStorageKey: stri
     if (!email) return;
     localStorage.setItem(`${localStorageKey}_${email}`, JSON.stringify(data));
   }, [localStorageKey]);
-
-  const initialSync = useCallback(async () => {
-    const userData = getUserData();
-    if (!userData?.id) {
-      const local = loadLocal();
-      setSessions(local);
-      return;
-    }
-
-    const local = loadLocal();
-    if (local.length > 0) {
-      setSessions(local);
-    }
-
-    setSyncing(true);
-    try {
-      const resp = await fetch(TOOL_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "sync",
-          userId: userData.id,
-          toolType,
-          sessions: local,
-        }),
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data.sessions) {
-          setSessions(data.sessions);
-          saveLocal(data.sessions);
-          if (data.sessions.length > 0) {
-            localStorage.setItem(`pdd_ever_done_${userData.email}_${toolType}`, "1");
-          }
-        }
-      }
-    } catch {
-      // offline — use local
-    } finally {
-      setSyncing(false);
-    }
-  }, [toolType, loadLocal, saveLocal]);
 
   const saveSession = useCallback(async (record: T): Promise<T> => {
     const userData = getUserData();
@@ -128,7 +90,7 @@ export default function useToolSync<T>(toolType: ToolType, localStorageKey: stri
           action: "sync",
           userId: userData.id,
           toolType,
-          sessions,
+          sessions: sessionsRef.current,
         }),
       });
       if (resp.ok) {
@@ -143,11 +105,56 @@ export default function useToolSync<T>(toolType: ToolType, localStorageKey: stri
     } finally {
       setSyncing(false);
     }
-  }, [toolType, sessions, saveLocal]);
+  }, [toolType, saveLocal]);
 
   useEffect(() => {
-    initialSync();
-  }, [initialSync]);
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    const run = async () => {
+      const userData = getUserData();
+      if (!userData?.id) {
+        const local = loadLocal();
+        setSessions(local);
+        return;
+      }
+
+      const local = loadLocal();
+      if (local.length > 0) {
+        setSessions(local);
+      }
+
+      setSyncing(true);
+      try {
+        const resp = await fetch(TOOL_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "sync",
+            userId: userData.id,
+            toolType,
+            sessions: local,
+          }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.sessions) {
+            setSessions(data.sessions);
+            saveLocal(data.sessions);
+            if (data.sessions.length > 0) {
+              localStorage.setItem(`pdd_ever_done_${userData.email}_${toolType}`, "1");
+            }
+          }
+        }
+      } catch {
+        // offline — use local
+      } finally {
+        setSyncing(false);
+      }
+    };
+
+    run();
+  }, [toolType, loadLocal, saveLocal]);
 
   return { sessions, setSessions, saveSession, forceSync, syncing, saveLocal };
 }
