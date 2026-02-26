@@ -53,7 +53,7 @@ export default function Results() {
             .then((data) => {
               const sessions = data.sessions || [];
               if (sessions.length > 0) {
-                const latest = sessions[0];
+                const latest = sessions[sessions.length - 1];
                 const sd = latest.session_data || latest;
                 if (sd.topSeg) {
                   setPsychResult(sd);
@@ -74,7 +74,7 @@ export default function Results() {
         .then((data) => {
           const sessions = data.sessions || [];
           if (sessions.length > 0) {
-            const latest = sessions[0];
+            const latest = sessions[sessions.length - 1];
             const sd = latest.session_data || latest;
             if (sd.topSeg && sd.profileName) {
               const topSegScore = sd.topSegScore ?? 0;

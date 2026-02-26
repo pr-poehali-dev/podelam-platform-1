@@ -61,7 +61,7 @@ export default function PsychBot() {
       const serverSessions = data.sessions || [];
       if (serverSessions.length === 0) return false;
 
-      const latest = serverSessions[0];
+      const latest = serverSessions[serverSessions.length - 1];
       const sd = latest.session_data || latest;
       if (!sd.topSeg || !sd.profileName) return false;
 
