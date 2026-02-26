@@ -205,7 +205,7 @@ const IMG5 = "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059
 function Banner6() {
   return (
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
-      <img src={IMG1} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+      <img src={IMG1} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(26,10,62,0.3) 0%, rgba(26,10,62,0.6) 50%, rgba(26,10,62,0.95) 80%)" }} />
       <div style={{ position: "absolute", bottom: 18, left: 16, right: 16 }}>
         <div style={{ display: "inline-block", background: "rgba(108,63,199,0.6)", borderRadius: 5, padding: "3px 8px", marginBottom: 10 }}>
@@ -228,7 +228,7 @@ function Banner6() {
 function Banner7() {
   return (
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
-      <img src={IMG2} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+      <img src={IMG2} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.92) 85%)" }} />
       <div style={{ position: "absolute", top: 16, left: 16, right: 16 }}>
         <div style={{ background: "rgba(255,200,50,0.9)", borderRadius: 5, padding: "3px 8px", display: "inline-block" }}>
@@ -254,7 +254,7 @@ function Banner7() {
 function Banner8() {
   return (
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
-      <img src={IMG3} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+      <img src={IMG3} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(59,29,142,0.85) 0%, rgba(59,29,142,0.4) 35%, rgba(59,29,142,0.4) 60%, rgba(26,10,62,0.95) 85%)" }} />
       <div style={{ position: "absolute", top: 16, left: 16, right: 16 }}>
         <h1 style={{ color: "#fff", fontSize: 19, fontWeight: 800, lineHeight: 1.2, margin: 0, marginBottom: 6 }}>
@@ -283,7 +283,7 @@ function Banner8() {
 function Banner9() {
   return (
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
-      <img src={IMG4} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+      <img src={IMG4} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.4) 40%, rgba(255,255,255,0.95) 70%)" }} />
       <div style={{ position: "absolute", bottom: 18, left: 16, right: 16 }}>
         <div style={{ display: "inline-block", background: "#6c3fc7", borderRadius: 5, padding: "3px 8px", marginBottom: 10 }}>
@@ -306,7 +306,7 @@ function Banner9() {
 function Banner10() {
   return (
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
-      <img src={IMG5} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+      <img src={IMG5} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.93) 80%)" }} />
       <div style={{ position: "absolute", top: 16, left: 16 }}>
         <div style={{ background: "rgba(255,255,255,0.2)", borderRadius: 5, padding: "3px 8px", display: "inline-block" }}>
