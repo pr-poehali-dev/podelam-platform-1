@@ -132,7 +132,7 @@ export default function AdminDashboard({ token, stats, clients, payments, dataLo
                     </td>
                     <td className="px-6 py-4 text-right">{c.payments_count}</td>
                     <td className="px-6 py-4 text-right font-semibold text-primary">
-                      {Number(c.total_paid) > 0 ? formatMoney(Number(c.total_paid)) : "—"}
+                      {Number(c.total_topup) > 0 ? formatMoney(Number(c.total_topup)) : "—"}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
