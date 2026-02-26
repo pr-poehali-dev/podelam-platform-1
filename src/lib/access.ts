@@ -128,6 +128,7 @@ export async function payFromBalanceOnce(toolId: ToolId): Promise<boolean> {
   const ok = chargeBalance(TOOL_PRICE);
   if (ok) {
     activatePaidOnce(toolId);
+    window.ym?.(107022183, 'reachGoal', 'tool_purchase', { tool_id: toolId, amount: TOOL_PRICE });
     sendPayment(TOOL_PRICE, TOOL_NAMES[toolId] || toolId, "pay_tool", toolId);
   }
   return ok;
@@ -139,6 +140,7 @@ export async function payFromBalanceSub(): Promise<boolean> {
   const ok = chargeBalance(SUB_PRICE);
   if (ok) {
     activateSubscription();
+    window.ym?.(107022183, 'reachGoal', 'subscription_purchase', { amount: SUB_PRICE });
     sendPayment(SUB_PRICE, "Подписка 30 дней", "pay_sub");
   }
   return ok;

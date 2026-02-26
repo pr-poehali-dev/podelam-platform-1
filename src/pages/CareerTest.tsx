@@ -51,6 +51,7 @@ export default function CareerTest() {
       };
       saveCareerResult(careerData);
       await saveSession(careerData);
+      window.ym?.(107022183, 'reachGoal', 'career_test_completed');
       setDone(true);
       return;
     }

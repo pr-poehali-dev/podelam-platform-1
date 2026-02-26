@@ -35,6 +35,7 @@ export default function PaymentSuccess() {
         if (data.status === "paid") {
           setStatus("paid");
           setAmount(data.amount || 0);
+          window.ym?.(107022183, 'reachGoal', 'payment_success', { amount: data.amount, order_price: data.amount, currency: 'RUB' });
           syncFromServer().catch(() => {});
           return;
         }

@@ -75,6 +75,7 @@ export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
       const data = await res.json();
 
       if (data.confirmation_url) {
+        window.ym?.(107022183, 'reachGoal', 'payment_initiated', { amount: finalAmount });
         window.location.href = data.confirmation_url;
       } else {
         setError(data.error || "Не удалось создать платёж. Попробуйте позже.");

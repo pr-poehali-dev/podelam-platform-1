@@ -153,6 +153,10 @@ export default function Auth() {
 
       localStorage.setItem(`pdd_tests_${user.email}`, JSON.stringify(testsArr));
 
+      if (mode === "register") {
+        window.ym?.(107022183, 'reachGoal', 'registration');
+      }
+      window.ym?.(107022183, 'reachGoal', 'login');
       navigate("/cabinet");
     } catch {
       setError("Ошибка соединения. Попробуйте ещё раз.");
