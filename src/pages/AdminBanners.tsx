@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import { BANNERS, BannerWrapper } from "./admin/BannerTemplates";
 
 const ADMIN_TOKEN_KEY = "admin_token";
 
@@ -47,16 +48,16 @@ export default function AdminBanners() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground mb-2">Рекламные баннеры</h1>
           <p className="text-muted-foreground text-sm">
-            Правый клик по баннеру → «Сохранить изображение как...»
+            1080x1080 px — идеальный формат для VK, Telegram, Instagram. Нажмите «Скачать PNG» или правый клик → «Сохранить как...»
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-border p-8">
-          <div className="text-center text-muted-foreground py-16 space-y-3">
-            <Icon name="ImagePlus" size={48} className="mx-auto opacity-40" />
-            <p className="text-lg font-medium">Пока пусто</p>
-            <p className="text-sm">Баннеры появятся здесь по мере создания</p>
-          </div>
+        <div className="space-y-12">
+          {BANNERS.map((b) => (
+            <BannerWrapper key={b.id} id={b.id} title={b.title}>
+              <b.component />
+            </BannerWrapper>
+          ))}
         </div>
       </div>
     </div>
