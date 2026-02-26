@@ -3,6 +3,7 @@ import os
 import uuid
 import psycopg2
 import urllib.request
+import urllib.error
 import base64
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
@@ -32,8 +33,13 @@ def yookassa_request(method, url, data=None):
 
     body = json.dumps(data).encode() if data else None
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
-    with urllib.request.urlopen(req) as resp:
-        return json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode() if e.fp else ''
+        print(f'[YOOKASSA ERROR] {e.code}: {error_body}')
+        return {'error': True, 'code': e.code, 'detail': error_body}
 
 def respond(status, body):
     return {'statusCode': status, 'headers': CORS, 'body': json.dumps(body, ensure_ascii=False)}
@@ -95,9 +101,11 @@ def handle_create(event, body):
     success_url = f"{return_url}/payment/success?payment_id={payment_id}"
     fail_url = f"{return_url}/payment/fail?payment_id={payment_id}"
 
+    amount_value = f'{int(amount)}.00' if float(amount) == int(amount) else f'{float(amount):.2f}'
+
     yookassa_data = {
         'amount': {
-            'value': f'{amount}.00',
+            'value': amount_value,
             'currency': 'RUB',
         },
         'confirmation': {
@@ -114,6 +122,11 @@ def handle_create(event, body):
     }
 
     yookassa_resp = yookassa_request('POST', YOOKASSA_API, yookassa_data)
+
+    if yookassa_resp.get('error'):
+        conn.close()
+        return respond(500, {'error': 'Не удалось создать платёж', 'detail': yookassa_resp.get('detail', '')})
+
     yookassa_id = yookassa_resp.get('id', '')
     confirmation_url = yookassa_resp.get('confirmation', {}).get('confirmation_url', '')
 
