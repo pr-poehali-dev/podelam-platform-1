@@ -41,8 +41,61 @@ export default function Results() {
       setResult(found);
       if (found.type === "Тест на призвание") {
         const saved = localStorage.getItem(`psych_result_${userData.email}`);
-        if (saved) setPsychResult(JSON.parse(saved));
+        if (saved) {
+          setPsychResult(JSON.parse(saved));
+        } else if (userData.id) {
+          fetch("https://functions.poehali.dev/817cc650-9d57-4575-8a6d-072b98b1b815", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "load", userId: userData.id, toolType: "psych-bot" }),
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              const sessions = data.sessions || [];
+              if (sessions.length > 0) {
+                const latest = sessions[sessions.length - 1];
+                const sd = latest.session_data || latest;
+                if (sd.topSeg) {
+                  setPsychResult(sd);
+                  localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(sd));
+                }
+              }
+            })
+            .catch(() => {});
+        }
       }
+    } else if (userData.id) {
+      fetch("https://functions.poehali.dev/817cc650-9d57-4575-8a6d-072b98b1b815", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "load", userId: userData.id, toolType: "psych-bot" }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          const sessions = data.sessions || [];
+          if (sessions.length > 0) {
+            const latest = sessions[sessions.length - 1];
+            const sd = latest.session_data || latest;
+            if (sd.topSeg && sd.profileName) {
+              const topSegScore = sd.topSegScore ?? 0;
+              const restoredResult: TestResult = {
+                id: id || Date.now().toString(),
+                type: "Тест на призвание",
+                date: new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }),
+                score: topSegScore,
+              };
+              setResult(restoredResult);
+              setPsychResult(sd);
+              localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(sd));
+              const allTests: TestResult[] = JSON.parse(localStorage.getItem(`pdd_tests_${userData.email}`) || "[]");
+              if (!allTests.find((t) => t.type === "Тест на призвание")) {
+                allTests.push(restoredResult);
+                localStorage.setItem(`pdd_tests_${userData.email}`, JSON.stringify(allTests));
+              }
+            }
+          }
+        })
+        .catch(() => {});
     }
   }, [id, navigate]);
 

@@ -31,6 +31,19 @@ export default function Cabinet() {
       const email = user?.email;
       if (email) {
         localStorage.setItem(`psych_result_${email}`, JSON.stringify(latest));
+        localStorage.setItem(`pdd_ever_done_${email}_psych-bot`, "1");
+        const existingTests: TestResult[] = JSON.parse(localStorage.getItem(`pdd_tests_${email}`) || "[]");
+        const idx = existingTests.findIndex((t) => t.type === "Тест на призвание");
+        const entry: TestResult = {
+          id: idx >= 0 ? existingTests[idx].id : Date.now().toString(),
+          type: "Тест на призвание",
+          date: new Date().toLocaleDateString("ru-RU"),
+          score: latest.topSegScore ?? 0,
+        };
+        if (idx >= 0) existingTests[idx] = entry;
+        else existingTests.push(entry);
+        localStorage.setItem(`pdd_tests_${email}`, JSON.stringify(existingTests));
+        setTests(existingTests);
       }
     }
   }, [psychSessions, user?.email]);

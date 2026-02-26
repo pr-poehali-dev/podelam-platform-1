@@ -39,9 +39,68 @@ export default function PsychBot() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { saveSession, forceSync, syncing } = useToolSync<Record<string, unknown>>("psych-bot", "psych_result_history");
 
-  const addMsg = (from: "bot" | "user", text: string, widget?: Widget) => {
+  const addMsgDirect = (from: "bot" | "user", text: string, widget?: Widget) => {
     const id = Date.now() + Math.random();
-    setMessages((m) => [...m, { id, from, text, widget }]);
+    return { id, from, text, widget } as Message;
+  };
+
+  const addMsg = (from: "bot" | "user", text: string, widget?: Widget) => {
+    setMessages((m) => [...m, addMsgDirect(from, text, widget)]);
+  };
+
+  const restoreFromServer = async (userData: { id: number; email: string }): Promise<boolean> => {
+    if (!userData?.id) return false;
+    try {
+      const resp = await fetch("https://functions.poehali.dev/817cc650-9d57-4575-8a6d-072b98b1b815", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "load", userId: userData.id, toolType: "psych-bot" }),
+      });
+      if (!resp.ok) return false;
+      const data = await resp.json();
+      const serverSessions = data.sessions || [];
+      if (serverSessions.length === 0) return false;
+
+      const latest = serverSessions[serverSessions.length - 1];
+      const sd = latest.session_data || latest;
+      if (!sd.topSeg || !sd.profileName) return false;
+
+      localStorage.setItem(`psych_result_${userData.email}`, JSON.stringify(sd));
+      localStorage.setItem(`psych_result_history_${userData.email}`, JSON.stringify(serverSessions.map((s: Record<string, unknown>) => s.session_data || s)));
+
+      const topSegScore = sd.topSegScore ?? 0;
+      const tests: { id: string; type: string; date: string; score: number }[] = JSON.parse(
+        localStorage.getItem(`pdd_tests_${userData.email}`) || "[]"
+      );
+      const existingIdx = tests.findIndex((t) => t.type === "Тест на призвание");
+      const newEntry = {
+        id: existingIdx >= 0 ? tests[existingIdx].id : Date.now().toString(),
+        type: "Тест на призвание",
+        date: new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }),
+        score: topSegScore,
+      };
+      if (existingIdx >= 0) tests[existingIdx] = newEntry;
+      else tests.push(newEntry);
+      localStorage.setItem(`pdd_tests_${userData.email}`, JSON.stringify(tests));
+      localStorage.setItem(`pdd_ever_done_${userData.email}_psych-bot`, "1");
+
+      const report = buildReport(sd.topSeg, sd.primMotiv, sd.selectedProf, {}, {});
+      const restoredMessages: Message[] = [
+        addMsgDirect("bot", `Загружен ваш последний результат с сервера.\n\n**Профиль: ${sd.profileName}**\n**Направление: ${SEGMENT_NAMES[sd.topSeg]}**\n**Выбранная профессия: ${sd.selectedProf}**`),
+        addMsgDirect("bot", report),
+      ];
+      setMessages(restoredMessages);
+      setBotState({
+        ...INITIAL_STATE,
+        step: "report",
+        topSegment: sd.topSeg,
+        primaryMotivation: sd.primMotiv,
+        selectedProfession: sd.selectedProf,
+      });
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const botReply = (text: string, widget?: Widget, delay = 500) => {
@@ -71,9 +130,13 @@ export default function PsychBot() {
       setMessages(JSON.parse(savedMessages));
       setBotState(JSON.parse(savedState));
     } else {
-      setTimeout(() => {
-        addMsg("bot", WELCOME_TEXT, { type: "button_list", options: ["Да, начнём!"] });
-      }, 400);
+      restoreFromServer(userData).then((restored) => {
+        if (!restored) {
+          setTimeout(() => {
+            addMsg("bot", WELCOME_TEXT, { type: "button_list", options: ["Да, начнём!"] });
+          }, 400);
+        }
+      });
     }
   }, [navigate]);
 
