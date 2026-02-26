@@ -8,6 +8,7 @@ import { useDiarySession } from "@/components/diary/useDiarySession";
 
 export default function Diary() {
   const s = useDiarySession();
+  React.useEffect(() => { window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'diary' }); }, []);
 
   if (s.showPaywall) {
     return (

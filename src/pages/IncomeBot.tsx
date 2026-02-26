@@ -41,6 +41,7 @@ export default function IncomeBot() {
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) { navigate("/auth"); return; }
+    window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'income-bot' });
 
     const access = checkAccess("income-bot");
     if (access === "locked") { setShowPaywall(true); return; }

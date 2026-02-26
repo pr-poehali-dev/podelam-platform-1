@@ -55,6 +55,7 @@ export default function PsychBot() {
     const u = localStorage.getItem("pdd_user");
     if (!u) { navigate("/auth"); return; }
     const userData = JSON.parse(u);
+    window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'psych-bot' });
 
     const access = checkAccess("psych-bot");
     if (access !== "locked") {

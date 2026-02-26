@@ -59,6 +59,7 @@ export default function PlanBot() {
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) { navigate("/auth"); return; }
+    window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'plan-bot' });
 
     const access = checkAccess("plan-bot");
     if (access === "locked") { setShowPaywall(true); return; }

@@ -62,6 +62,7 @@ export default function BarrierBot() {
     const u = localStorage.getItem("pdd_user");
     if (!u) { navigate("/auth"); return; }
     const userData = JSON.parse(u);
+    window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'barrier-bot' });
 
     const access = checkAccess("barrier-bot");
     const hasAcc = access !== "locked";

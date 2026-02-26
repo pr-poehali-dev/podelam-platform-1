@@ -23,6 +23,7 @@ export default function CareerTest() {
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) navigate("/auth");
+    window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'career-test' });
   }, [navigate]);
 
   const q = CAREER_QUESTIONS[current];
