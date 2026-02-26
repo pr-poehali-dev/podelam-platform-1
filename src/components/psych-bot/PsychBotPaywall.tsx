@@ -13,13 +13,11 @@ export default function PsychBotPaywall({ onPay }: Props) {
   const [showTopUp, setShowTopUp] = useState(false);
   const canPay = balance >= TOOL_PRICE;
 
-  const handleBalancePay = () => {
+  const handleBalancePay = async () => {
     setLoading(true);
-    setTimeout(() => {
-      const ok = payFromBalanceOnce("psych-bot");
-      setLoading(false);
-      if (ok) onPay();
-    }, 700);
+    const ok = await payFromBalanceOnce("psych-bot");
+    setLoading(false);
+    if (ok) onPay();
   };
 
   return (

@@ -122,8 +122,9 @@ const TOOL_NAMES: Record<string, string> = {
   "diary": "Дневник самоанализа",
 };
 
-/** Списать с баланса и активировать разовый доступ к инструменту */
-export function payFromBalanceOnce(toolId: ToolId): boolean {
+/** Списать с баланса и активировать разовый доступ к инструменту (с проверкой серверного баланса) */
+export async function payFromBalanceOnce(toolId: ToolId): Promise<boolean> {
+  await syncFromServer().catch(() => {});
   const ok = chargeBalance(TOOL_PRICE);
   if (ok) {
     activatePaidOnce(toolId);
@@ -132,8 +133,9 @@ export function payFromBalanceOnce(toolId: ToolId): boolean {
   return ok;
 }
 
-/** Списать с баланса и активировать подписку на 30 дней */
-export function payFromBalanceSub(): boolean {
+/** Списать с баланса и активировать подписку на 30 дней (с проверкой серверного баланса) */
+export async function payFromBalanceSub(): Promise<boolean> {
+  await syncFromServer().catch(() => {});
   const ok = chargeBalance(SUB_PRICE);
   if (ok) {
     activateSubscription();

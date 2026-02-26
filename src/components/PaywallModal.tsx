@@ -25,8 +25,7 @@ export default function PaywallModal({ toolId, toolName, onClose, onSuccess }: P
 
   const payFromBalance = async (plan: "once" | "sub") => {
     setLoading(plan);
-    await new Promise((r) => setTimeout(r, 700));
-    const ok = plan === "sub" ? payFromBalanceSub() : payFromBalanceOnce(toolId);
+    const ok = plan === "sub" ? await payFromBalanceSub() : await payFromBalanceOnce(toolId);
     setLoading(null);
     if (ok) onSuccess();
   };

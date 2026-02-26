@@ -130,14 +130,12 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
     if (toolLink) onNavigate(toolLink);
   };
 
-  const buySubscription = () => {
+  const buySubscription = async () => {
     if (balance >= 990) {
       setSubLoading(true);
-      setTimeout(() => {
-        const ok = payFromBalanceSub();
-        setSubLoading(false);
-        if (ok) refresh();
-      }, 700);
+      const ok = await payFromBalanceSub();
+      setSubLoading(false);
+      if (ok) refresh();
     } else {
       setShowTopUp(true);
     }
