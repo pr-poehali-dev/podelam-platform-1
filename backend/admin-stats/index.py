@@ -66,13 +66,13 @@ def handler(event: dict, context) -> dict:
     cur.execute(f"SELECT COUNT(*) FROM \"{S}\".payments WHERE status = 'paid'")
     total_payments = cur.fetchone()[0]
 
-    cur.execute(f"SELECT COALESCE(SUM(amount), 0) FROM \"{S}\".payments WHERE status = 'paid'")
+    cur.execute(f"SELECT COALESCE(SUM(amount), 0) FROM \"{S}\".payments WHERE status = 'paid' AND tariff IN ('Пополнение баланса', 'Старт')")
     total_revenue = cur.fetchone()[0]
 
     cur.execute(f"SELECT COUNT(*) FROM \"{S}\".payments WHERE status = 'paid' AND created_at >= NOW() - INTERVAL '30 days'")
     payments_month = cur.fetchone()[0]
 
-    cur.execute(f"SELECT COALESCE(SUM(amount), 0) FROM \"{S}\".payments WHERE status = 'paid' AND created_at >= NOW() - INTERVAL '30 days'")
+    cur.execute(f"SELECT COALESCE(SUM(amount), 0) FROM \"{S}\".payments WHERE status = 'paid' AND tariff IN ('Пополнение баланса', 'Старт') AND created_at >= NOW() - INTERVAL '30 days'")
     revenue_month = cur.fetchone()[0]
 
     cur.execute(f"""
