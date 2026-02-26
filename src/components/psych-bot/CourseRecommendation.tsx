@@ -79,8 +79,19 @@ export default function CourseRecommendation({ course }: Props) {
     savePromoState(course.id, { revealed: true, expiredAt: deadline, dismissed: false });
   }, [course]);
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(course.promoCode);
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(course.promoCode);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = course.promoCode;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [course.promoCode]);
