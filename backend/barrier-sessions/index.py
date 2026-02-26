@@ -51,99 +51,101 @@ def handler(event: dict, context) -> dict:
 
     limit = TOOL_LIMITS.get(tool_type, 6)
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
 
-    if action == 'load':
-        cur.execute(
-            f'SELECT id, session_data, created_at FROM "{S}".tool_sessions WHERE user_id = %s AND tool_type = %s ORDER BY created_at ASC',
-            (user_id, tool_type)
-        )
-        rows = cur.fetchall()
-        sessions = []
-        for r in rows:
-            sd = r[1] if isinstance(r[1], dict) else json.loads(r[1])
-            sd['_server_id'] = r[0]
-            sessions.append(sd)
-        conn.close()
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sessions': sessions}, ensure_ascii=False)}
-
-    elif action == 'save':
-        session_data = body.get('sessionData')
-        if not session_data:
-            conn.close()
-            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'sessionData required'})}
-
-        cur.execute(
-            f'INSERT INTO "{S}".tool_sessions (user_id, tool_type, session_data) VALUES (%s, %s, %s) RETURNING id',
-            (user_id, tool_type, json.dumps(session_data, ensure_ascii=False))
-        )
-        new_id = cur.fetchone()[0]
-
-        if limit > 0:
+        if action == 'load':
             cur.execute(
-                f'SELECT id FROM "{S}".tool_sessions WHERE user_id = %s AND tool_type = %s ORDER BY created_at DESC OFFSET %s',
-                (user_id, tool_type, limit)
+                f'SELECT id, session_data, created_at FROM "{S}".tool_sessions WHERE user_id = %s AND tool_type = %s ORDER BY created_at ASC',
+                (user_id, tool_type)
             )
-            old_ids = [r[0] for r in cur.fetchall()]
-            if old_ids:
-                cur.execute(
-                    f'DELETE FROM "{S}".tool_sessions WHERE id IN ({",".join(str(i) for i in old_ids)})'
-                )
+            rows = cur.fetchall()
+            sessions = []
+            for r in rows:
+                sd = r[1] if isinstance(r[1], dict) else json.loads(r[1])
+                sd['_server_id'] = r[0]
+                sessions.append(sd)
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sessions': sessions}, ensure_ascii=False)}
 
-        conn.commit()
-        conn.close()
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True, 'id': new_id})}
+        elif action == 'save':
+            session_data = body.get('sessionData')
+            if not session_data:
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'sessionData required'})}
 
-    elif action == 'sync':
-        local_sessions = body.get('sessions', [])
-
-        cur.execute(
-            f'SELECT id, session_data, created_at FROM "{S}".tool_sessions WHERE user_id = %s AND tool_type = %s ORDER BY created_at ASC',
-            (user_id, tool_type)
-        )
-        server_rows = cur.fetchall()
-        server_ids = set()
-        server_fingerprints = set()
-        server_sessions = []
-        for r in server_rows:
-            sd = r[1] if isinstance(r[1], dict) else json.loads(r[1])
-            sd['_server_id'] = r[0]
-            server_sessions.append(sd)
-            server_ids.add(r[0])
-            server_fingerprints.add(make_fingerprint(sd))
-
-        new_count = 0
-        for s in local_sessions:
-            if s.get('_server_id') and s['_server_id'] in server_ids:
-                continue
-            clean = {k: v for k, v in s.items() if not k.startswith('_')}
-            if make_fingerprint(clean) in server_fingerprints:
-                continue
             cur.execute(
                 f'INSERT INTO "{S}".tool_sessions (user_id, tool_type, session_data) VALUES (%s, %s, %s) RETURNING id',
-                (user_id, tool_type, json.dumps(clean, ensure_ascii=False))
+                (user_id, tool_type, json.dumps(session_data, ensure_ascii=False))
             )
             new_id = cur.fetchone()[0]
-            clean['_server_id'] = new_id
-            server_sessions.append(clean)
-            new_count += 1
 
-        if limit > 0 and len(server_sessions) > limit:
-            to_keep = server_sessions[-limit:]
-            to_remove = server_sessions[:-limit]
-            remove_ids = [s['_server_id'] for s in to_remove if s.get('_server_id')]
-            if remove_ids:
+            if limit > 0:
                 cur.execute(
-                    f'DELETE FROM "{S}".tool_sessions WHERE id IN ({",".join(str(i) for i in remove_ids)})'
+                    f'SELECT id FROM "{S}".tool_sessions WHERE user_id = %s AND tool_type = %s ORDER BY created_at DESC OFFSET %s',
+                    (user_id, tool_type, limit)
                 )
-            server_sessions = to_keep
+                old_ids = [r[0] for r in cur.fetchall()]
+                if old_ids:
+                    placeholders = ','.join(['%s'] * len(old_ids))
+                    cur.execute(
+                        f'DELETE FROM "{S}".tool_sessions WHERE id IN ({placeholders})',
+                        tuple(old_ids)
+                    )
 
-        if new_count > 0:
             conn.commit()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True, 'id': new_id})}
 
+        elif action == 'sync':
+            local_sessions = body.get('sessions', [])
+
+            cur.execute(
+                f'SELECT id, session_data, created_at FROM "{S}".tool_sessions WHERE user_id = %s AND tool_type = %s ORDER BY created_at ASC',
+                (user_id, tool_type)
+            )
+            server_rows = cur.fetchall()
+            server_ids = set()
+            server_fingerprints = set()
+            server_sessions = []
+            for r in server_rows:
+                sd = r[1] if isinstance(r[1], dict) else json.loads(r[1])
+                sd['_server_id'] = r[0]
+                server_sessions.append(sd)
+                server_ids.add(r[0])
+                server_fingerprints.add(make_fingerprint(sd))
+
+            new_count = 0
+            for s in local_sessions:
+                if s.get('_server_id') and s['_server_id'] in server_ids:
+                    continue
+                clean = {k: v for k, v in s.items() if not k.startswith('_')}
+                if make_fingerprint(clean) in server_fingerprints:
+                    continue
+                cur.execute(
+                    f'INSERT INTO "{S}".tool_sessions (user_id, tool_type, session_data) VALUES (%s, %s, %s) RETURNING id',
+                    (user_id, tool_type, json.dumps(clean, ensure_ascii=False))
+                )
+                new_id = cur.fetchone()[0]
+                clean['_server_id'] = new_id
+                server_sessions.append(clean)
+                new_count += 1
+
+            if limit > 0 and len(server_sessions) > limit:
+                to_keep = server_sessions[-limit:]
+                to_remove = server_sessions[:-limit]
+                remove_ids = [s['_server_id'] for s in to_remove if s.get('_server_id')]
+                if remove_ids:
+                    placeholders = ','.join(['%s'] * len(remove_ids))
+                    cur.execute(
+                        f'DELETE FROM "{S}".tool_sessions WHERE id IN ({placeholders})',
+                        tuple(remove_ids)
+                    )
+                server_sessions = to_keep
+
+            if new_count > 0:
+                conn.commit()
+
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sessions': server_sessions, 'synced': new_count}, ensure_ascii=False)}
+
+        return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Unknown action'})}
+    finally:
         conn.close()
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sessions': server_sessions, 'synced': new_count}, ensure_ascii=False)}
-
-    conn.close()
-    return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Unknown action'})}

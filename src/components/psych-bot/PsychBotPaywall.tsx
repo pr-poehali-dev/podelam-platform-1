@@ -8,7 +8,7 @@ type Props = {
 };
 
 export default function PsychBotPaywall({ onPay }: Props) {
-  const [balance, setBalance] = useState(getBalance);
+  const [balance, setBalance] = useState(() => getBalance());
   const [loading, setLoading] = useState(false);
   const [showTopUp, setShowTopUp] = useState(false);
   const canPay = balance >= TOOL_PRICE;

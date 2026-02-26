@@ -29,6 +29,17 @@ export default function CareerTest() {
   const q = CAREER_QUESTIONS[current];
   const progress = Math.round(((current) / CAREER_QUESTIONS.length) * 100);
 
+  if (!q && !done) {
+    return (
+      <div className="min-h-screen gradient-soft flex items-center justify-center font-golos">
+        <div className="text-center">
+          <Icon name="Loader2" size={32} className="animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Загрузка вопроса...</p>
+        </div>
+      </div>
+    );
+  }
+
   const choose = async (type: CareerType) => {
     const newAnswers = [...answers, type];
     setAnswers(newAnswers);
@@ -38,8 +49,8 @@ export default function CareerTest() {
       setResult(res);
       const topInfo = CAREER_TYPES[res.topType];
       const careerData = {
-        id: "",
-        date: "",
+        id: Date.now().toString(),
+        date: new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }),
         topType: res.topType,
         topTypeName: topInfo.name,
         topTypeDesc: topInfo.desc,

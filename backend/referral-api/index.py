@@ -80,115 +80,111 @@ def handler(event: dict, context) -> dict:
         return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'email required'})}
 
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
 
-    cur.execute(
-        f'SELECT id, ref_code, ref_balance, partner_rules_accepted, partner_rules_accepted_at FROM "{S}".users WHERE email = %s',
-        (user_email,)
-    )
-    user = cur.fetchone()
-    if not user:
+        cur.execute(
+            f'SELECT id, ref_code, ref_balance, partner_rules_accepted, partner_rules_accepted_at FROM "{S}".users WHERE email = %s',
+            (user_email,)
+        )
+        user = cur.fetchone()
+        if not user:
+            return {'statusCode': 404, 'headers': cors, 'body': json.dumps({'error': 'user not found'})}
+
+        user_id, ref_code, ref_balance, rules_accepted, rules_accepted_at = user
+
+        if action == 'info':
+            cur.execute(
+                f'SELECT COUNT(*) FROM "{S}".users WHERE referred_by = %s',
+                (user_id,)
+            )
+            referrals_count = cur.fetchone()[0]
+
+            cur.execute(
+                f'SELECT COALESCE(SUM(amount), 0) FROM "{S}".referral_transactions WHERE referrer_id = %s',
+                (user_id,)
+            )
+            total_earned = cur.fetchone()[0]
+
+            cur.execute(
+                f'''SELECT rt.amount, rt.created_at, u.name, p.tariff
+                FROM "{S}".referral_transactions rt
+                JOIN "{S}".users u ON u.id = rt.referred_id
+                JOIN "{S}".payments p ON p.id = rt.payment_id
+                WHERE rt.referrer_id = %s
+                ORDER BY rt.created_at DESC LIMIT 50''',
+                (user_id,)
+            )
+            history = []
+            for row in cur.fetchall():
+                history.append({
+                    'amount': row[0],
+                    'date': str(row[1]),
+                    'referral_name': row[2],
+                    'tariff': row[3],
+                })
+
+            return {
+                'statusCode': 200,
+                'headers': cors,
+                'body': json.dumps({
+                    'ref_code': ref_code,
+                    'ref_balance': ref_balance,
+                    'referrals_count': referrals_count,
+                    'total_earned': total_earned,
+                    'history': history,
+                    'rules_accepted': bool(rules_accepted),
+                    'rules_accepted_at': str(rules_accepted_at) if rules_accepted_at else None,
+                })
+            }
+
+        elif action == 'accept_rules':
+            cur.execute(
+                f'UPDATE "{S}".users SET partner_rules_accepted = TRUE, partner_rules_accepted_at = NOW() WHERE id = %s RETURNING partner_rules_accepted_at',
+                (user_id,)
+            )
+            accepted_at = cur.fetchone()[0]
+            conn.commit()
+
+            try:
+                from datetime import datetime
+                dt = accepted_at if isinstance(accepted_at, datetime) else datetime.fromisoformat(str(accepted_at))
+                date_str = dt.strftime('%d.%m.%Y в %H:%M')
+                send_partner_email(user_email, date_str)
+            except Exception as e:
+                print(f"Email send error: {e}")
+
+            return {
+                'statusCode': 200,
+                'headers': cors,
+                'body': json.dumps({'ok': True, 'rules_accepted': True, 'rules_accepted_at': str(accepted_at)})
+            }
+
+        elif action == 'use_bonus':
+            amount = body.get('amount', 0)
+            if not amount or amount <= 0:
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'invalid amount'})}
+
+            if amount > ref_balance:
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'insufficient ref_balance'})}
+
+            cur.execute(
+                f'UPDATE "{S}".users SET ref_balance = ref_balance - %s, balance = balance + %s WHERE id = %s RETURNING balance, ref_balance',
+                (amount, amount, user_id)
+            )
+            new_balance, new_ref = cur.fetchone()
+            conn.commit()
+            return {
+                'statusCode': 200,
+                'headers': cors,
+                'body': json.dumps({
+                    'ok': True,
+                    'balance': new_balance,
+                    'ref_balance': new_ref,
+                })
+            }
+
+        return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'unknown action'})}
+    finally:
         conn.close()
-        return {'statusCode': 404, 'headers': cors, 'body': json.dumps({'error': 'user not found'})}
-
-    user_id, ref_code, ref_balance, rules_accepted, rules_accepted_at = user
-
-    if action == 'info':
-        cur.execute(
-            f'SELECT COUNT(*) FROM "{S}".users WHERE referred_by = %s',
-            (user_id,)
-        )
-        referrals_count = cur.fetchone()[0]
-
-        cur.execute(
-            f'SELECT COALESCE(SUM(amount), 0) FROM "{S}".referral_transactions WHERE referrer_id = %s',
-            (user_id,)
-        )
-        total_earned = cur.fetchone()[0]
-
-        cur.execute(
-            f'''SELECT rt.amount, rt.created_at, u.name, p.tariff
-            FROM "{S}".referral_transactions rt
-            JOIN "{S}".users u ON u.id = rt.referred_id
-            JOIN "{S}".payments p ON p.id = rt.payment_id
-            WHERE rt.referrer_id = %s
-            ORDER BY rt.created_at DESC LIMIT 50''',
-            (user_id,)
-        )
-        history = []
-        for row in cur.fetchall():
-            history.append({
-                'amount': row[0],
-                'date': str(row[1]),
-                'referral_name': row[2],
-                'tariff': row[3],
-            })
-
-        conn.close()
-        return {
-            'statusCode': 200,
-            'headers': cors,
-            'body': json.dumps({
-                'ref_code': ref_code,
-                'ref_balance': ref_balance,
-                'referrals_count': referrals_count,
-                'total_earned': total_earned,
-                'history': history,
-                'rules_accepted': bool(rules_accepted),
-                'rules_accepted_at': str(rules_accepted_at) if rules_accepted_at else None,
-            })
-        }
-
-    elif action == 'accept_rules':
-        cur.execute(
-            f'UPDATE "{S}".users SET partner_rules_accepted = TRUE, partner_rules_accepted_at = NOW() WHERE id = %s RETURNING partner_rules_accepted_at',
-            (user_id,)
-        )
-        accepted_at = cur.fetchone()[0]
-        conn.commit()
-        conn.close()
-
-        try:
-            from datetime import datetime
-            dt = accepted_at if isinstance(accepted_at, datetime) else datetime.fromisoformat(str(accepted_at))
-            date_str = dt.strftime('%d.%m.%Y в %H:%M')
-            send_partner_email(user_email, date_str)
-        except Exception as e:
-            print(f"Email send error: {e}")
-
-        return {
-            'statusCode': 200,
-            'headers': cors,
-            'body': json.dumps({'ok': True, 'rules_accepted': True, 'rules_accepted_at': str(accepted_at)})
-        }
-
-    elif action == 'use_bonus':
-        amount = body.get('amount', 0)
-        if not amount or amount <= 0:
-            conn.close()
-            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'invalid amount'})}
-
-        if amount > ref_balance:
-            conn.close()
-            return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'insufficient ref_balance'})}
-
-        cur.execute(
-            f'UPDATE "{S}".users SET ref_balance = ref_balance - %s, balance = balance + %s WHERE id = %s RETURNING balance, ref_balance',
-            (amount, amount, user_id)
-        )
-        new_balance, new_ref = cur.fetchone()
-        conn.commit()
-        conn.close()
-        return {
-            'statusCode': 200,
-            'headers': cors,
-            'body': json.dumps({
-                'ok': True,
-                'balance': new_balance,
-                'ref_balance': new_ref,
-            })
-        }
-
-    conn.close()
-    return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'unknown action'})}

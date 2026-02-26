@@ -61,7 +61,7 @@ export default function PsychBot() {
       const serverSessions = data.sessions || [];
       if (serverSessions.length === 0) return false;
 
-      const latest = serverSessions[serverSessions.length - 1];
+      const latest = serverSessions[0];
       const sd = latest.session_data || latest;
       if (!sd.topSeg || !sd.profileName) return false;
 
@@ -364,10 +364,11 @@ export default function PsychBot() {
     const primMotiv = st.primaryMotivation!;
 
     if (highRated.length === 0) {
-      setBotState((s) => ({ ...s, step: "collect_ratings", ratings }));
+      const allProfs = st.professions.map((p) => p.name);
+      setBotState((s) => ({ ...s, step: "ask_final_choice", ratings, highRated: allProfs }));
       botReply(
-        `Ни одна профессия не набрала 4+ баллов. Попробуй пересмотреть — возможно, ты оцениваешь слишком строго.`,
-        { type: "rating_list", professions: st.professions.map((p) => p.name) }
+        `Ни одна профессия не набрала 4+ баллов — это нормально. Иногда нужно просто попробовать.\n\nВыбери любую профессию из списка — с какой хочешь начать?`,
+        { type: "button_list", options: allProfs }
       );
       return;
     }

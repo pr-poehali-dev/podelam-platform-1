@@ -91,7 +91,7 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
   const [paywall, setPaywall] = useState<{ tool: ToolDef } | null>(null);
   const [hasSub, setHasSub] = useState(false);
   const [subExp, setSubExp] = useState<Date | null>(null);
-  const [balance, setBalance] = useState(getBalance);
+  const [balance, setBalance] = useState(() => getBalance());
   const [showTopUp, setShowTopUp] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
   const [lastActivity, setLastActivity] = useState<Record<string, string>>({});

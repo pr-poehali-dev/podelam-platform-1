@@ -105,39 +105,41 @@ def handle_list(qs):
     offset = (page - 1) * limit
 
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
 
-    where = f'WHERE a.is_published = TRUE'
-    params = []
-    if category:
-        where += f' AND c.slug = %s'
-        params.append(category)
+        where = f'WHERE a.is_published = TRUE'
+        params = []
+        if category:
+            where += f' AND c.slug = %s'
+            params.append(category)
 
-    cur.execute(f"""
-        SELECT COUNT(*) FROM "{S}".articles a
-        LEFT JOIN "{S}".categories c ON c.id = a.category_id
-        {where}
-    """, params)
-    total = cur.fetchone()[0]
+        cur.execute(f"""
+            SELECT COUNT(*) FROM "{S}".articles a
+            LEFT JOIN "{S}".categories c ON c.id = a.category_id
+            {where}
+        """, params)
+        total = cur.fetchone()[0]
 
-    cur.execute(f"""
-        SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.reading_time,
-               a.views_count, a.created_at, c.name as category_name, c.slug as category_slug
-        FROM "{S}".articles a
-        LEFT JOIN "{S}".categories c ON c.id = a.category_id
-        {where}
-        ORDER BY a.created_at DESC
-        LIMIT %s OFFSET %s
-    """, params + [limit, offset])
+        cur.execute(f"""
+            SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.reading_time,
+                   a.views_count, a.created_at, c.name as category_name, c.slug as category_slug
+            FROM "{S}".articles a
+            LEFT JOIN "{S}".categories c ON c.id = a.category_id
+            {where}
+            ORDER BY a.created_at DESC
+            LIMIT %s OFFSET %s
+        """, params + [limit, offset])
 
-    cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'reading_time', 'views_count', 'created_at', 'category_name', 'category_slug']
-    articles = []
-    for row in cur.fetchall():
-        articles.append({cols[i]: row[i] for i in range(len(cols))})
+        cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'reading_time', 'views_count', 'created_at', 'category_name', 'category_slug']
+        articles = []
+        for row in cur.fetchall():
+            articles.append({cols[i]: row[i] for i in range(len(cols))})
 
-    conn.close()
-    return ok({'articles': articles, 'total': total, 'page': page, 'pages': max(1, -(-total // limit))})
+        return ok({'articles': articles, 'total': total, 'page': page, 'pages': max(1, -(-total // limit))})
+    finally:
+        conn.close()
 
 def handle_detail(qs):
     slug = qs.get('slug', '')
@@ -145,99 +147,105 @@ def handle_detail(qs):
         return err('slug required')
 
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
 
-    cur.execute(f"""
-        SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.body, a.video_url,
-               a.reading_time, a.views_count, a.created_at, a.updated_at,
-               a.meta_title, a.meta_description, a.meta_keywords,
-               c.name as category_name, c.slug as category_slug
-        FROM "{S}".articles a
-        LEFT JOIN "{S}".categories c ON c.id = a.category_id
-        WHERE a.slug = %s AND a.is_published = TRUE
-    """, [slug])
-    row = cur.fetchone()
-    if not row:
+        cur.execute(f"""
+            SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.body, a.video_url,
+                   a.reading_time, a.views_count, a.created_at, a.updated_at,
+                   a.meta_title, a.meta_description, a.meta_keywords,
+                   c.name as category_name, c.slug as category_slug
+            FROM "{S}".articles a
+            LEFT JOIN "{S}".categories c ON c.id = a.category_id
+            WHERE a.slug = %s AND a.is_published = TRUE
+        """, [slug])
+        row = cur.fetchone()
+        if not row:
+            return err('Статья не найдена', 404)
+
+        cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'body', 'video_url',
+                'reading_time', 'views_count', 'created_at', 'updated_at',
+                'meta_title', 'meta_description', 'meta_keywords',
+                'category_name', 'category_slug']
+        article = {cols[i]: row[i] for i in range(len(cols))}
+
+        cur.execute(f'UPDATE "{S}".articles SET views_count = views_count + 1 WHERE id = %s', [article['id']])
+        conn.commit()
+        return ok(article)
+    finally:
         conn.close()
-        return err('Статья не найдена', 404)
-
-    cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'body', 'video_url',
-            'reading_time', 'views_count', 'created_at', 'updated_at',
-            'meta_title', 'meta_description', 'meta_keywords',
-            'category_name', 'category_slug']
-    article = {cols[i]: row[i] for i in range(len(cols))}
-
-    cur.execute(f'UPDATE "{S}".articles SET views_count = views_count + 1 WHERE id = %s', [article['id']])
-    conn.commit()
-    conn.close()
-    return ok(article)
 
 def handle_categories():
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
-    cur.execute(f"""
-        SELECT c.id, c.slug, c.name,
-               COUNT(a.id) FILTER (WHERE a.is_published = TRUE) as article_count
-        FROM "{S}".categories c
-        LEFT JOIN "{S}".articles a ON a.category_id = c.id
-        GROUP BY c.id, c.slug, c.name, c.sort_order
-        ORDER BY c.sort_order
-    """)
-    cats = []
-    for row in cur.fetchall():
-        cats.append({'id': row[0], 'slug': row[1], 'name': row[2], 'count': row[3]})
-    conn.close()
-    return ok({'categories': cats})
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
+        cur.execute(f"""
+            SELECT c.id, c.slug, c.name,
+                   COUNT(a.id) FILTER (WHERE a.is_published = TRUE) as article_count
+            FROM "{S}".categories c
+            LEFT JOIN "{S}".articles a ON a.category_id = c.id
+            GROUP BY c.id, c.slug, c.name, c.sort_order
+            ORDER BY c.sort_order
+        """)
+        cats = []
+        for row in cur.fetchall():
+            cats.append({'id': row[0], 'slug': row[1], 'name': row[2], 'count': row[3]})
+        return ok({'categories': cats})
+    finally:
+        conn.close()
 
 def handle_admin_list():
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
-    cur.execute(f"""
-        SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.is_published,
-               a.views_count, a.created_at, a.updated_at,
-               c.name as category_name
-        FROM "{S}".articles a
-        LEFT JOIN "{S}".categories c ON c.id = a.category_id
-        ORDER BY a.created_at DESC
-    """)
-    cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'is_published', 'views_count', 'created_at', 'updated_at', 'category_name']
-    articles = []
-    for row in cur.fetchall():
-        articles.append({cols[i]: row[i] for i in range(len(cols))})
-    conn.close()
-    return ok({'articles': articles})
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
+        cur.execute(f"""
+            SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.is_published,
+                   a.views_count, a.created_at, a.updated_at,
+                   c.name as category_name
+            FROM "{S}".articles a
+            LEFT JOIN "{S}".categories c ON c.id = a.category_id
+            ORDER BY a.created_at DESC
+        """)
+        cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'is_published', 'views_count', 'created_at', 'updated_at', 'category_name']
+        articles = []
+        for row in cur.fetchall():
+            articles.append({cols[i]: row[i] for i in range(len(cols))})
+        return ok({'articles': articles})
+    finally:
+        conn.close()
 
 def handle_admin_detail(qs):
     article_id = qs.get('id', '')
     if not article_id:
         return err('id required')
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
-    cur.execute(f"""
-        SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.body, a.video_url,
-               a.reading_time, a.views_count, a.created_at, a.updated_at,
-               a.meta_title, a.meta_description, a.meta_keywords,
-               a.category_id, a.is_published,
-               c.name as category_name, c.slug as category_slug
-        FROM "{S}".articles a
-        LEFT JOIN "{S}".categories c ON c.id = a.category_id
-        WHERE a.id = %s
-    """, [int(article_id)])
-    row = cur.fetchone()
-    if not row:
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
+        cur.execute(f"""
+            SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.body, a.video_url,
+                   a.reading_time, a.views_count, a.created_at, a.updated_at,
+                   a.meta_title, a.meta_description, a.meta_keywords,
+                   a.category_id, a.is_published,
+                   c.name as category_name, c.slug as category_slug
+            FROM "{S}".articles a
+            LEFT JOIN "{S}".categories c ON c.id = a.category_id
+            WHERE a.id = %s
+        """, [int(article_id)])
+        row = cur.fetchone()
+        if not row:
+            return err('Not found', 404)
+        cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'body', 'video_url',
+                'reading_time', 'views_count', 'created_at', 'updated_at',
+                'meta_title', 'meta_description', 'meta_keywords',
+                'category_id', 'is_published', 'category_name', 'category_slug']
+        article = {cols[i]: row[i] for i in range(len(cols))}
+        return ok(article)
+    finally:
         conn.close()
-        return err('Not found', 404)
-    cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'body', 'video_url',
-            'reading_time', 'views_count', 'created_at', 'updated_at',
-            'meta_title', 'meta_description', 'meta_keywords',
-            'category_id', 'is_published', 'category_name', 'category_slug']
-    article = {cols[i]: row[i] for i in range(len(cols))}
-    conn.close()
-    return ok(article)
 
 def handle_upload_cover(body):
     b64 = body.get('image', '')
@@ -266,31 +274,33 @@ def handle_save(body):
         return err('title and summary required')
 
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
 
-    if article_id:
-        cur.execute(f"""
-            UPDATE "{S}".articles SET
-                title=%s, summary=%s, body=%s, slug=%s, category_id=%s,
-                cover_url=%s, video_url=%s, meta_title=%s, meta_description=%s,
-                meta_keywords=%s, reading_time=%s, is_published=%s, updated_at=NOW()
-            WHERE id=%s RETURNING id
-        """, [title, summary, article_body, slug, category_id, cover_url, video_url,
-              meta_title, meta_description, meta_keywords, reading_time, is_published, article_id])
-    else:
-        cur.execute(f"""
-            INSERT INTO "{S}".articles
-                (title, summary, body, slug, category_id, cover_url, video_url,
-                 meta_title, meta_description, meta_keywords, reading_time, is_published)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
-        """, [title, summary, article_body, slug, category_id, cover_url, video_url,
-              meta_title, meta_description, meta_keywords, reading_time, is_published])
+        if article_id:
+            cur.execute(f"""
+                UPDATE "{S}".articles SET
+                    title=%s, summary=%s, body=%s, slug=%s, category_id=%s,
+                    cover_url=%s, video_url=%s, meta_title=%s, meta_description=%s,
+                    meta_keywords=%s, reading_time=%s, is_published=%s, updated_at=NOW()
+                WHERE id=%s RETURNING id
+            """, [title, summary, article_body, slug, category_id, cover_url, video_url,
+                  meta_title, meta_description, meta_keywords, reading_time, is_published, article_id])
+        else:
+            cur.execute(f"""
+                INSERT INTO "{S}".articles
+                    (title, summary, body, slug, category_id, cover_url, video_url,
+                     meta_title, meta_description, meta_keywords, reading_time, is_published)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
+            """, [title, summary, article_body, slug, category_id, cover_url, video_url,
+                  meta_title, meta_description, meta_keywords, reading_time, is_published])
 
-    row = cur.fetchone()
-    conn.commit()
-    conn.close()
-    return ok({'id': row[0], 'slug': slug})
+        row = cur.fetchone()
+        conn.commit()
+        return ok({'id': row[0], 'slug': slug})
+    finally:
+        conn.close()
 
 def handle_toggle_publish(body):
     article_id = body.get('id')
@@ -298,10 +308,12 @@ def handle_toggle_publish(body):
         return err('id required')
 
     conn = get_conn()
-    cur = conn.cursor()
-    S = SCHEMA
-    cur.execute(f'UPDATE "{S}".articles SET is_published = NOT is_published, updated_at = NOW() WHERE id = %s RETURNING is_published', [article_id])
-    row = cur.fetchone()
-    conn.commit()
-    conn.close()
-    return ok({'id': article_id, 'is_published': row[0]})
+    try:
+        cur = conn.cursor()
+        S = SCHEMA
+        cur.execute(f'UPDATE "{S}".articles SET is_published = NOT is_published, updated_at = NOW() WHERE id = %s RETURNING is_published', [article_id])
+        row = cur.fetchone()
+        conn.commit()
+        return ok({'id': article_id, 'is_published': row[0]})
+    finally:
+        conn.close()
