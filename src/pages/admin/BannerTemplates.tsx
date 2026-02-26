@@ -2,12 +2,13 @@ import { useRef, useCallback } from "react";
 import { toPng } from "html-to-image";
 import Icon from "@/components/ui/icon";
 
-const BANNER_SIZE = 1080;
+const W = 240;
+const H = 400;
 
 function DownloadBtn({ nodeRef, filename }: { nodeRef: React.RefObject<HTMLDivElement>; filename: string }) {
   const handleDownload = useCallback(async () => {
     if (!nodeRef.current) return;
-    const url = await toPng(nodeRef.current, { width: BANNER_SIZE, height: BANNER_SIZE, pixelRatio: 1 });
+    const url = await toPng(nodeRef.current, { width: W, height: H, pixelRatio: 1 });
     const a = document.createElement("a");
     a.href = url;
     a.download = filename + ".png";
@@ -27,11 +28,8 @@ function BannerWrapper({ children, title, id }: { children: React.ReactNode; tit
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <div className="border border-border rounded-2xl overflow-hidden" style={{ maxWidth: 540 }}>
-        <div
-          ref={ref}
-          style={{ width: BANNER_SIZE, height: BANNER_SIZE, transform: "scale(0.5)", transformOrigin: "top left", marginBottom: -BANNER_SIZE / 2 }}
-        >
+      <div className="border border-border rounded-2xl overflow-hidden inline-block">
+        <div ref={ref} style={{ width: W, height: H }}>
           {children}
         </div>
       </div>
@@ -42,26 +40,26 @@ function BannerWrapper({ children, title, id }: { children: React.ReactNode; tit
 
 function Banner1() {
   return (
-    <div style={{ width: 1080, height: 1080, position: "relative", overflow: "hidden", background: "linear-gradient(150deg, #1a0a3e 0%, #3b1d8e 40%, #6c3fc7 70%, #9b6ff0 100%)", fontFamily: "'Golos Text', sans-serif" }}>
-      <div style={{ position: "absolute", top: -120, right: -120, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(155,111,240,0.4) 0%, transparent 70%)" }} />
-      <div style={{ position: "absolute", bottom: -80, left: -80, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,60,200,0.3) 0%, transparent 70%)" }} />
-      <div style={{ position: "absolute", top: 60, left: 70, right: 70, bottom: 60, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+    <div style={{ width: W, height: H, position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #1a0a3e 0%, #3b1d8e 45%, #6c3fc7 75%, #9b6ff0 100%)", fontFamily: "'Golos Text', sans-serif" }}>
+      <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: "radial-gradient(circle, rgba(155,111,240,0.45) 0%, transparent 70%)" }} />
+      <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,60,200,0.35) 0%, transparent 70%)" }} />
+      <div style={{ position: "absolute", top: 18, left: 16, right: 16, bottom: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
-          <div style={{ display: "inline-block", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", borderRadius: 50, padding: "12px 28px", marginBottom: 50 }}>
-            <span style={{ color: "#e0d4ff", fontSize: 28, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase" }}>Бесплатный тест</span>
+          <div style={{ display: "inline-block", background: "rgba(255,255,255,0.15)", borderRadius: 20, padding: "4px 10px", marginBottom: 14 }}>
+            <span style={{ color: "#e0d4ff", fontSize: 9, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Бесплатный тест</span>
           </div>
-          <h1 style={{ color: "#fff", fontSize: 82, fontWeight: 800, lineHeight: 1.1, margin: 0, marginBottom: 30 }}>
-            Какая профессия<br />создана для тебя?
+          <h1 style={{ color: "#fff", fontSize: 22, fontWeight: 800, lineHeight: 1.15, margin: 0, marginBottom: 10 }}>
+            Какая профессия создана для тебя?
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 36, lineHeight: 1.5, maxWidth: 700, margin: 0 }}>
-            Научный тест определит твои сильные стороны и подберёт идеальное направление
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, lineHeight: 1.45, margin: 0 }}>
+            Тест определит твои сильные стороны и подберёт направление
           </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
-          <div style={{ background: "#fff", borderRadius: 24, padding: "24px 52px", display: "inline-block" }}>
-            <span style={{ color: "#3b1d8e", fontSize: 32, fontWeight: 800 }}>Пройти тест →</span>
+        <div>
+          <div style={{ background: "#fff", borderRadius: 8, padding: "8px 0", textAlign: "center", marginBottom: 8 }}>
+            <span style={{ color: "#3b1d8e", fontSize: 12, fontWeight: 800 }}>Пройти тест →</span>
           </div>
-          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 26 }}>2 минуты · Бесплатно</span>
+          <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 8, textAlign: "center", margin: 0 }}>2 минуты · Бесплатно</p>
         </div>
       </div>
     </div>
@@ -70,20 +68,20 @@ function Banner1() {
 
 function Banner2() {
   return (
-    <div style={{ width: 1080, height: 1080, position: "relative", overflow: "hidden", background: "#0d0d0d", fontFamily: "'Golos Text', sans-serif" }}>
-      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 700, height: 700, borderRadius: "50%", background: "conic-gradient(from 180deg, #6c3fc7, #ff6b6b, #ffd93d, #6c3fc7)", opacity: 0.15, filter: "blur(80px)" }} />
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 80 }}>
-        <div style={{ fontSize: 80, marginBottom: 30 }}>🎯</div>
-        <h1 style={{ color: "#fff", fontSize: 74, fontWeight: 800, lineHeight: 1.15, margin: 0, marginBottom: 24 }}>
-          Не знаешь,<br />чем заниматься?
+    <div style={{ width: W, height: H, position: "relative", overflow: "hidden", background: "#0d0d0d", fontFamily: "'Golos Text', sans-serif" }}>
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 200, height: 200, borderRadius: "50%", background: "conic-gradient(from 180deg, #6c3fc7, #ff6b6b, #ffd93d, #6c3fc7)", opacity: 0.15, filter: "blur(40px)" }} />
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 16px" }}>
+        <div style={{ fontSize: 28, marginBottom: 12 }}>🎯</div>
+        <h1 style={{ color: "#fff", fontSize: 20, fontWeight: 800, lineHeight: 1.2, margin: 0, marginBottom: 10 }}>
+          Не знаешь, чем заниматься?
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 34, lineHeight: 1.5, margin: 0, marginBottom: 50, maxWidth: 750 }}>
-          Пройди бесплатный тест и узнай профессию, в которой ты раскроешь свой потенциал
+        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, lineHeight: 1.45, margin: 0, marginBottom: 20 }}>
+          Пройди тест и узнай профессию, в которой раскроешь потенциал
         </p>
-        <div style={{ background: "linear-gradient(135deg, #6c3fc7, #9b6ff0)", borderRadius: 24, padding: "28px 64px", display: "inline-block" }}>
-          <span style={{ color: "#fff", fontSize: 34, fontWeight: 700 }}>Узнать свою профессию</span>
+        <div style={{ background: "linear-gradient(135deg, #6c3fc7, #9b6ff0)", borderRadius: 8, padding: "8px 20px", width: "100%" }}>
+          <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>Узнать профессию</span>
         </div>
-        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 24, marginTop: 24 }}>Результат мгновенно · Без регистрации</p>
+        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 8, marginTop: 8 }}>Без регистрации · Мгновенно</p>
       </div>
     </div>
   );
@@ -91,30 +89,29 @@ function Banner2() {
 
 function Banner3() {
   return (
-    <div style={{ width: 1080, height: 1080, position: "relative", overflow: "hidden", background: "linear-gradient(180deg, #faf8ff 0%, #ede5ff 100%)", fontFamily: "'Golos Text', sans-serif" }}>
-      <div style={{ position: "absolute", top: -200, right: -100, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(108,63,199,0.12) 0%, transparent 70%)" }} />
-      <div style={{ position: "absolute", bottom: -150, left: -50, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(155,111,240,0.1) 0%, transparent 70%)" }} />
-      <div style={{ position: "absolute", top: 70, left: 70, right: 70, bottom: 70, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+    <div style={{ width: W, height: H, position: "relative", overflow: "hidden", background: "linear-gradient(180deg, #faf8ff 0%, #ede5ff 100%)", fontFamily: "'Golos Text', sans-serif" }}>
+      <div style={{ position: "absolute", top: -50, right: -30, width: 140, height: 140, borderRadius: "50%", background: "radial-gradient(circle, rgba(108,63,199,0.12) 0%, transparent 70%)" }} />
+      <div style={{ position: "absolute", top: 18, left: 16, right: 16, bottom: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
-          <div style={{ display: "flex", gap: 16, marginBottom: 50 }}>
-            {["💼", "🎨", "💻", "📊", "🏥"].map((e, i) => (
-              <div key={i} style={{ width: 72, height: 72, borderRadius: 20, background: "#fff", boxShadow: "0 4px 20px rgba(108,63,199,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>{e}</div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+            {["💼", "🎨", "💻", "📊"].map((e, i) => (
+              <div key={i} style={{ width: 28, height: 28, borderRadius: 7, background: "#fff", boxShadow: "0 2px 8px rgba(108,63,199,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{e}</div>
             ))}
           </div>
-          <h1 style={{ color: "#1a0a3e", fontSize: 76, fontWeight: 800, lineHeight: 1.12, margin: 0, marginBottom: 28 }}>
-            Найди профессию<br />мечты за 2 минуты
+          <h1 style={{ color: "#1a0a3e", fontSize: 21, fontWeight: 800, lineHeight: 1.15, margin: 0, marginBottom: 10 }}>
+            Найди профессию мечты за 2 минуты
           </h1>
-          <p style={{ color: "#6b5b8a", fontSize: 34, lineHeight: 1.5, margin: 0, maxWidth: 700 }}>
-            Тест на основе психологических методик покажет, в какой сфере ты добьёшься успеха
+          <p style={{ color: "#6b5b8a", fontSize: 10, lineHeight: 1.5, margin: 0 }}>
+            Психологический тест покажет, в какой сфере ты добьёшься успеха
           </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <div style={{ background: "linear-gradient(135deg, #3b1d8e, #6c3fc7)", borderRadius: 22, padding: "24px 50px" }}>
-            <span style={{ color: "#fff", fontSize: 32, fontWeight: 700 }}>Пройти бесплатно →</span>
+        <div>
+          <div style={{ background: "linear-gradient(135deg, #3b1d8e, #6c3fc7)", borderRadius: 8, padding: "8px 0", textAlign: "center", marginBottom: 8 }}>
+            <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>Пройти бесплатно →</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-            <span style={{ color: "#3b1d8e", fontSize: 22, fontWeight: 700 }}>12 000+ прошли</span>
-            <span style={{ color: "#9b8ab5", fontSize: 20 }}>Результат сразу</span>
+          <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+            <span style={{ color: "#3b1d8e", fontSize: 8, fontWeight: 700 }}>12 000+ прошли</span>
+            <span style={{ color: "#9b8ab5", fontSize: 8 }}>Результат сразу</span>
           </div>
         </div>
       </div>
@@ -124,31 +121,31 @@ function Banner3() {
 
 function Banner4() {
   return (
-    <div style={{ width: 1080, height: 1080, position: "relative", overflow: "hidden", background: "#1a0a3e", fontFamily: "'Golos Text', sans-serif" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "repeating-linear-gradient(0deg, transparent, transparent 53px, rgba(108,63,199,0.08) 53px, rgba(108,63,199,0.08) 54px), repeating-linear-gradient(90deg, transparent, transparent 53px, rgba(108,63,199,0.08) 53px, rgba(108,63,199,0.08) 54px)" }} />
-      <div style={{ position: "absolute", top: 70, left: 70, right: 70, bottom: 70, display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ display: "flex", gap: 14, marginBottom: 40, flexWrap: "wrap" as const }}>
-            {["Маркетолог", "Дизайнер", "Психолог", "Разработчик", "Массажист"].map((p, i) => (
-              <div key={i} style={{ background: "rgba(108,63,199,0.25)", border: "1px solid rgba(155,111,240,0.3)", borderRadius: 14, padding: "10px 22px" }}>
-                <span style={{ color: "#c4b0f0", fontSize: 24, fontWeight: 500 }}>{p}</span>
+    <div style={{ width: W, height: H, position: "relative", overflow: "hidden", background: "#1a0a3e", fontFamily: "'Golos Text', sans-serif" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(108,63,199,0.1) 19px, rgba(108,63,199,0.1) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(108,63,199,0.1) 19px, rgba(108,63,199,0.1) 20px)" }} />
+      <div style={{ position: "absolute", top: 18, left: 16, right: 16, bottom: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ display: "flex", gap: 5, marginBottom: 14, flexWrap: "wrap" }}>
+            {["Маркетолог", "Дизайнер", "Психолог", "Аналитик"].map((p, i) => (
+              <div key={i} style={{ background: "rgba(108,63,199,0.3)", border: "1px solid rgba(155,111,240,0.3)", borderRadius: 5, padding: "3px 7px" }}>
+                <span style={{ color: "#c4b0f0", fontSize: 8, fontWeight: 500 }}>{p}</span>
               </div>
             ))}
           </div>
-          <h1 style={{ color: "#fff", fontSize: 80, fontWeight: 800, lineHeight: 1.1, margin: 0, marginBottom: 24 }}>
+          <h1 style={{ color: "#fff", fontSize: 24, fontWeight: 800, lineHeight: 1.1, margin: 0, marginBottom: 10 }}>
             Кем тебе работать?
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 36, lineHeight: 1.45, margin: 0, maxWidth: 750 }}>
-            Ответь на несколько вопросов —<br />и мы покажем твоё идеальное направление
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 10, lineHeight: 1.4, margin: 0 }}>
+            Ответь на вопросы — и мы покажем идеальное направление
           </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ background: "#fff", borderRadius: 22, padding: "24px 52px" }}>
-            <span style={{ color: "#1a0a3e", fontSize: 32, fontWeight: 800 }}>Пройти тест бесплатно</span>
+        <div>
+          <div style={{ background: "#fff", borderRadius: 8, padding: "8px 0", textAlign: "center", marginBottom: 8 }}>
+            <span style={{ color: "#1a0a3e", fontSize: 12, fontWeight: 800 }}>Пройти тест</span>
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 2 }}>
             {[1, 2, 3, 4, 5].map(s => (
-              <div key={s} style={{ width: 36, height: 36, color: "#ffd93d", fontSize: 28, lineHeight: "36px" }}>★</div>
+              <span key={s} style={{ color: "#ffd93d", fontSize: 10 }}>★</span>
             ))}
           </div>
         </div>
@@ -159,38 +156,38 @@ function Banner4() {
 
 function Banner5() {
   return (
-    <div style={{ width: 1080, height: 1080, position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", fontFamily: "'Golos Text', sans-serif" }}>
-      <div style={{ position: "absolute", top: 100, right: 80, width: 320, height: 320, border: "2px solid rgba(255,255,255,0.12)", borderRadius: "50%" }} />
-      <div style={{ position: "absolute", top: 40, right: 20, width: 480, height: 480, border: "2px solid rgba(255,255,255,0.06)", borderRadius: "50%" }} />
-      <div style={{ position: "absolute", bottom: -100, left: -60, width: 400, height: 400, border: "2px solid rgba(255,255,255,0.08)", borderRadius: "50%" }} />
-      <div style={{ position: "absolute", top: 70, left: 70, right: 70, bottom: 70, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+    <div style={{ width: W, height: H, position: "relative", overflow: "hidden", background: "linear-gradient(145deg, #667eea 0%, #764ba2 100%)", fontFamily: "'Golos Text', sans-serif" }}>
+      <div style={{ position: "absolute", top: 30, right: 20, width: 90, height: 90, border: "1.5px solid rgba(255,255,255,0.12)", borderRadius: "50%" }} />
+      <div style={{ position: "absolute", top: 10, right: 0, width: 140, height: 140, border: "1.5px solid rgba(255,255,255,0.06)", borderRadius: "50%" }} />
+      <div style={{ position: "absolute", bottom: -30, left: -20, width: 100, height: 100, border: "1.5px solid rgba(255,255,255,0.08)", borderRadius: "50%" }} />
+      <div style={{ position: "absolute", top: 18, left: 16, right: 16, bottom: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
-          <div style={{ background: "rgba(255,255,255,0.18)", borderRadius: 16, padding: "14px 30px", display: "inline-block", marginBottom: 44 }}>
-            <span style={{ color: "#fff", fontSize: 26, fontWeight: 600 }}>⚡ Бесплатно · 2 минуты</span>
+          <div style={{ background: "rgba(255,255,255,0.18)", borderRadius: 6, padding: "4px 10px", display: "inline-block", marginBottom: 14 }}>
+            <span style={{ color: "#fff", fontSize: 8, fontWeight: 600 }}>⚡ Бесплатно · 2 мин</span>
           </div>
-          <h1 style={{ color: "#fff", fontSize: 78, fontWeight: 800, lineHeight: 1.12, margin: 0, marginBottom: 28 }}>
-            Узнай свою<br />идеальную<br />профессию
+          <h1 style={{ color: "#fff", fontSize: 22, fontWeight: 800, lineHeight: 1.15, margin: 0, marginBottom: 10 }}>
+            Узнай свою идеальную профессию
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 34, lineHeight: 1.5, margin: 0, maxWidth: 650 }}>
-            Тест определит твои таланты и покажет, где ты можешь зарабатывать больше всего
+          <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 10, lineHeight: 1.45, margin: 0 }}>
+            Тест определит таланты и покажет, где зарабатывать больше
           </p>
         </div>
         <div>
-          <div style={{ background: "#fff", borderRadius: 24, padding: "26px 56px", display: "inline-block", marginBottom: 20 }}>
-            <span style={{ color: "#764ba2", fontSize: 34, fontWeight: 800 }}>Начать тест →</span>
+          <div style={{ background: "#fff", borderRadius: 8, padding: "8px 0", textAlign: "center", marginBottom: 10 }}>
+            <span style={{ color: "#764ba2", fontSize: 12, fontWeight: 800 }}>Начать тест →</span>
           </div>
-          <div style={{ display: "flex", gap: 40 }}>
-            <div style={{ display: "flex", flexDirection: "column" as const }}>
-              <span style={{ color: "#fff", fontSize: 38, fontWeight: 800 }}>50+</span>
-              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 22 }}>профессий</span>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ color: "#fff", fontSize: 13, fontWeight: 800 }}>50+</div>
+              <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 7 }}>профессий</div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column" as const }}>
-              <span style={{ color: "#fff", fontSize: 38, fontWeight: 800 }}>12K+</span>
-              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 22 }}>прошли тест</span>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ color: "#fff", fontSize: 13, fontWeight: 800 }}>12K+</div>
+              <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 7 }}>прошли</div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column" as const }}>
-              <span style={{ color: "#fff", fontSize: 38, fontWeight: 800 }}>95%</span>
-              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 22 }}>точность</span>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ color: "#fff", fontSize: 13, fontWeight: 800 }}>95%</div>
+              <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 7 }}>точность</div>
             </div>
           </div>
         </div>
@@ -200,11 +197,11 @@ function Banner5() {
 }
 
 export const BANNERS = [
-  { id: "career-test-dark-purple", title: "Баннер 1 — Тёмный фиолетовый", component: Banner1 },
-  { id: "career-test-black-minimal", title: "Баннер 2 — Чёрный минимализм", component: Banner2 },
-  { id: "career-test-light-soft", title: "Баннер 3 — Светлый мягкий", component: Banner3 },
-  { id: "career-test-grid-dark", title: "Баннер 4 — Тёмный с сеткой", component: Banner4 },
-  { id: "career-test-gradient-vivid", title: "Баннер 5 — Яркий градиент", component: Banner5 },
+  { id: "rsy-career-dark-purple", title: "Баннер 1 — Тёмный фиолетовый", component: Banner1 },
+  { id: "rsy-career-black-minimal", title: "Баннер 2 — Чёрный минимализм", component: Banner2 },
+  { id: "rsy-career-light-soft", title: "Баннер 3 — Светлый мягкий", component: Banner3 },
+  { id: "rsy-career-grid-dark", title: "Баннер 4 — Тёмный с сеткой", component: Banner4 },
+  { id: "rsy-career-gradient-vivid", title: "Баннер 5 — Яркий градиент", component: Banner5 },
 ];
 
 export { BannerWrapper };

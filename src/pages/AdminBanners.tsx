@@ -48,7 +48,7 @@ export default function AdminBanners() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground mb-2">Рекламные баннеры</h1>
           <p className="text-muted-foreground text-sm">
-            1080x1080 px — идеальный формат для VK, Telegram, Instagram. Нажмите «Скачать PNG» или правый клик → «Сохранить как...»
+            240×400 px — формат для РСЯ (Яндекс Директ). Нажмите «Скачать PNG» под баннером.
           </p>
         </div>
 
