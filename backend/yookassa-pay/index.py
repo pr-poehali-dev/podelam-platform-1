@@ -44,7 +44,10 @@ def handler(event: dict, context) -> dict:
         return {'statusCode': 200, 'headers': CORS, 'body': ''}
 
     body = json.loads(event.get('body') or '{}')
-    action = body.get('action', 'create')
+    action = body.get('action', '')
+
+    if body.get('event') and body.get('object'):
+        return handle_webhook(event, body)
 
     if action == 'webhook':
         return handle_webhook(event, body)
@@ -134,17 +137,17 @@ def handle_create(event, body):
 
 def handle_webhook(event, body):
     """Вебхук от ЮКассы — подтверждение оплаты"""
-    notification_type = body.get('type', '')
+    event_type = body.get('event', '')
     payment_obj = body.get('object', {})
 
-    if notification_type != 'notification' or not payment_obj:
-        obj_type = body.get('event', '')
-        if 'succeeded' not in obj_type and 'canceled' not in obj_type:
-            return respond(200, {'status': 'ignored'})
+    if not payment_obj or not event_type:
+        return respond(200, {'status': 'ignored'})
+
+    if 'succeeded' not in event_type and 'canceled' not in event_type and 'waiting_for_capture' not in event_type:
+        return respond(200, {'status': 'ignored'})
 
     yookassa_id = payment_obj.get('id', '')
     yk_status = payment_obj.get('status', '')
-    metadata = payment_obj.get('metadata', {})
 
     if not yookassa_id:
         return respond(200, {'status': 'no_id'})
