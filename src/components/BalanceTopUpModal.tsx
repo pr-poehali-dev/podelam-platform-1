@@ -1,20 +1,32 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
-import { topUpBalance, getBalance, TOOL_PRICE, SUB_PRICE, SUB_DAYS } from "@/lib/access";
+import { getBalance, TOOL_PRICE, SUB_PRICE, SUB_DAYS } from "@/lib/access";
+
+const YOOKASSA_URL = "https://functions.poehali.dev/1b07c03c-bee7-4b25-aeee-836e7331e044";
 
 type Props = {
   onClose: () => void;
   onSuccess: () => void;
 };
 
-export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
-  const [selected, setSelected] = useState<290 | 990 | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+function getUserData() {
+  try {
+    const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
+    return { email: u.email || "", name: u.name || "" };
+  } catch {
+    return { email: "", name: "" };
+  }
+}
 
-  const options = [
+export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [customAmount, setCustomAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const presets = [
     {
-      amount: TOOL_PRICE as 290,
+      amount: TOOL_PRICE,
       label: "Разовый доступ",
       desc: "1 инструмент · 1 прохождение",
       icon: "Zap",
@@ -23,7 +35,7 @@ export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
       badge: null,
     },
     {
-      amount: SUB_PRICE as 990,
+      amount: SUB_PRICE,
       label: `Подписка ${SUB_DAYS} дней`,
       desc: "Все инструменты + Дневник",
       icon: "Crown",
@@ -33,18 +45,45 @@ export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
     },
   ] as const;
 
-  const handleTopUp = () => {
-    if (!selected) return;
+  const finalAmount = selected === -1 ? parseInt(customAmount) || 0 : selected || 0;
+
+  const handlePay = async () => {
+    if (finalAmount < 1) return;
+
+    const { email, name } = getUserData();
+    if (!email) {
+      setError("Войдите в аккаунт, чтобы пополнить баланс");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      topUpBalance(selected);
+    setError("");
+
+    try {
+      const res = await fetch(YOOKASSA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
+          user_email: email,
+          user_name: name,
+          amount: finalAmount,
+          return_url: window.location.origin,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.confirmation_url) {
+        window.location.href = data.confirmation_url;
+      } else {
+        setError(data.error || "Не удалось создать платёж. Попробуйте позже.");
+        setLoading(false);
+      }
+    } catch {
+      setError("Ошибка соединения. Проверьте интернет и попробуйте снова.");
       setLoading(false);
-      setDone(true);
-      setTimeout(() => {
-        onSuccess();
-        onClose();
-      }, 1400);
-    }, 900);
+    }
   };
 
   const balance = getBalance();
@@ -73,10 +112,10 @@ export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
         </div>
 
         <div className="p-4 space-y-2.5">
-          {options.map((opt) => (
+          {presets.map((opt) => (
             <button
               key={opt.amount}
-              onClick={() => setSelected(opt.amount)}
+              onClick={() => { setSelected(opt.amount); setCustomAmount(""); setError(""); }}
               className={`w-full rounded-2xl border-2 p-3.5 text-left transition-all ${selected === opt.amount ? opt.activeColor : opt.color}`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -99,32 +138,71 @@ export default function BalanceTopUpModal({ onClose, onSuccess }: Props) {
             </button>
           ))}
 
-          <div className="pt-1.5">
-            {done ? (
-              <div className="flex items-center justify-center gap-2 py-3 bg-green-100 text-green-700 font-semibold rounded-2xl text-sm">
-                <Icon name="CheckCircle" size={18} />
-                Баланс пополнен на {selected} ₽!
+          <button
+            onClick={() => { setSelected(-1); setError(""); }}
+            className={`w-full rounded-2xl border-2 p-3.5 text-left transition-all ${
+              selected === -1
+                ? "border-blue-500 bg-blue-50 ring-2 ring-blue-400"
+                : "border-blue-200 bg-blue-50/80 hover:border-blue-400"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${selected === -1 ? "bg-blue-100" : "bg-white"}`}>
+                <Icon name="PenLine" size={16} className={selected === -1 ? "text-blue-600" : "text-gray-500"} />
               </div>
-            ) : (
-              <button
-                onClick={handleTopUp}
-                disabled={!selected || loading}
-                className="w-full gradient-brand text-white font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity disabled:opacity-50 text-[15px] flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Icon name="Loader2" size={17} className="animate-spin" />
-                    Зачисляем...
-                  </>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-gray-900 text-sm">Своя сумма</div>
+                {selected === -1 ? (
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max="100000"
+                      value={customAmount}
+                      onChange={(e) => setCustomAmount(e.target.value)}
+                      placeholder="Введите сумму"
+                      className="w-full bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400"
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <span className="text-sm font-bold text-gray-500 shrink-0">₽</span>
+                  </div>
                 ) : (
-                  <>
-                    <Icon name="Plus" size={17} />
-                    Пополнить{selected ? ` ${selected} ₽` : ""}
-                  </>
+                  <div className="text-xs text-gray-500 mt-0.5">Любая сумма от 1₽</div>
                 )}
-              </button>
-            )}
-            <p className="text-center text-[11px] text-muted-foreground mt-2.5 pb-1">Тестовый режим — деньги зачисляются мгновенно</p>
+              </div>
+            </div>
+          </button>
+
+          {error && (
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              <Icon name="AlertCircle" size={16} className="shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <div className="pt-1.5">
+            <button
+              onClick={handlePay}
+              disabled={finalAmount < 1 || loading}
+              className="w-full gradient-brand text-white font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity disabled:opacity-50 text-[15px] flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Icon name="Loader2" size={17} className="animate-spin" />
+                  Переходим к оплате...
+                </>
+              ) : (
+                <>
+                  <Icon name="CreditCard" size={17} />
+                  Оплатить{finalAmount > 0 ? ` ${finalAmount} ₽` : ""}
+                </>
+              )}
+            </button>
+            <div className="flex items-center justify-center gap-1.5 mt-3 pb-1">
+              <Icon name="Shield" size={12} className="text-muted-foreground" />
+              <p className="text-center text-[11px] text-muted-foreground">Безопасная оплата через ЮКассу</p>
+            </div>
           </div>
         </div>
       </div>

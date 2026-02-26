@@ -1,0 +1,45 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Create payment - missing email",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "create", "amount": 290, "return_url": "https://example.com"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Create payment - missing return_url",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "create", "user_email": "test@test.com", "amount": 290},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Check status - missing payment_id",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "status"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Check status - non-existent payment",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "status", "payment_id": 999999},
+      "expectedStatus": 404
+    },
+    {
+      "name": "Webhook - empty notification",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "webhook"},
+      "expectedStatus": 200
+    }
+  ]
+}
