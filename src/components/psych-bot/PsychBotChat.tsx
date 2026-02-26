@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Message, BotStep } from "./psychBotEngine";
+import CourseRecommendation from "./CourseRecommendation";
+import { findCourseForProfession } from "./courseOffers";
 
 // ─── РЕНДЕР ТЕКСТА ────────────────────────────────────────────────────────────
 
@@ -85,6 +87,7 @@ type Props = {
   bottomRef: React.RefObject<HTMLDivElement>;
   step: BotStep;
   paidOnce?: boolean;
+  selectedProfession?: string;
 };
 
 export default function PsychBotChat({
@@ -98,6 +101,7 @@ export default function PsychBotChat({
   bottomRef,
   step,
   paidOnce,
+  selectedProfession,
 }: Props) {
   const [saved, setSaved] = useState(false);
 
@@ -174,6 +178,11 @@ export default function PsychBotChat({
             </div>
           </div>
         )}
+
+        {isFinished && !loading && selectedProfession && (() => {
+          const course = findCourseForProfession(selectedProfession);
+          return course ? <CourseRecommendation course={course} /> : null;
+        })()}
 
         {isFinished && !loading && (
           <div className="mt-4 pb-6 space-y-2">

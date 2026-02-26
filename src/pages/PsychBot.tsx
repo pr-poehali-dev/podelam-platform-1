@@ -393,6 +393,7 @@ export default function PsychBot() {
         onExit={() => navigate("/cabinet?tab=tools")}
         step={botState.step}
         paidOnce={accessType === "paid_once"}
+        selectedProfession={botState.selectedProfession}
       />
     </div>
   );
