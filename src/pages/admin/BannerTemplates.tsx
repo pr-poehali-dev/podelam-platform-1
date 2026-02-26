@@ -1,10 +1,11 @@
 import { useRef, useCallback, useState } from "react";
-import { toPng } from "html-to-image";
+import { toCanvas } from "html-to-image";
 import Icon from "@/components/ui/icon";
 import funcUrls from "@/../backend/func2url.json";
 
 const W = 240;
 const H = 400;
+const MAX_KB = 120;
 const PROXY_URL = funcUrls["image-proxy"];
 
 async function imgToBase64(url: string): Promise<string> {
@@ -13,11 +14,32 @@ async function imgToBase64(url: string): Promise<string> {
   return json.dataUrl;
 }
 
+function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+  return new Promise((resolve) => {
+    canvas.toBlob((b) => resolve(b!), "image/jpeg", quality);
+  });
+}
+
+async function compressToJpeg(canvas: HTMLCanvasElement): Promise<string> {
+  let quality = 0.92;
+  while (quality > 0.3) {
+    const blob = await canvasToBlob(canvas, quality);
+    if (blob.size <= MAX_KB * 1024) {
+      return URL.createObjectURL(blob);
+    }
+    quality -= 0.05;
+  }
+  const blob = await canvasToBlob(canvas, 0.3);
+  return URL.createObjectURL(blob);
+}
+
 function DownloadBtn({ nodeRef, filename }: { nodeRef: React.RefObject<HTMLDivElement>; filename: string }) {
   const [loading, setLoading] = useState(false);
+  const [sizeKb, setSizeKb] = useState<number | null>(null);
   const handleDownload = useCallback(async () => {
     if (!nodeRef.current || loading) return;
     setLoading(true);
+    setSizeKb(null);
     try {
       const imgs = nodeRef.current.querySelectorAll("img[src^='http']");
       const originals = new Map<HTMLImageElement, string>();
@@ -26,22 +48,34 @@ function DownloadBtn({ nodeRef, filename }: { nodeRef: React.RefObject<HTMLDivEl
         originals.set(el, el.src);
         el.src = await imgToBase64(el.src);
       }
-      const url = await toPng(nodeRef.current, { width: W, height: H, pixelRatio: 1 });
+      const canvas = await toCanvas(nodeRef.current, { width: W, height: H, pixelRatio: 1 });
       for (const [el, src] of originals) el.src = src;
+      const blobUrl = await compressToJpeg(canvas);
+      const resp = await fetch(blobUrl);
+      const blob = await resp.blob();
+      setSizeKb(Math.round(blob.size / 1024));
       const a = document.createElement("a");
-      a.href = url;
-      a.download = filename + ".png";
+      a.href = blobUrl;
+      a.download = filename + ".jpg";
       a.click();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     } finally {
       setLoading(false);
     }
   }, [nodeRef, filename, loading]);
 
   return (
-    <button onClick={handleDownload} disabled={loading} className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
-      <Icon name={loading ? "Loader2" : "Download"} size={16} className={loading ? "animate-spin" : ""} />
-      {loading ? "Загрузка..." : "Скачать PNG"}
-    </button>
+    <div className="flex items-center gap-3 mt-3">
+      <button onClick={handleDownload} disabled={loading} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+        <Icon name={loading ? "Loader2" : "Download"} size={16} className={loading ? "animate-spin" : ""} />
+        {loading ? "Сжатие..." : "Скачать JPG"}
+      </button>
+      {sizeKb !== null && (
+        <span className={`text-xs font-medium ${sizeKb <= MAX_KB ? "text-green-600" : "text-red-500"}`}>
+          {sizeKb} КБ {sizeKb <= MAX_KB ? "✓" : "⚠"}
+        </span>
+      )}
+    </div>
   );
 }
 
