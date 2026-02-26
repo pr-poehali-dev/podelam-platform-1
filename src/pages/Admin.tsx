@@ -82,6 +82,10 @@ export default function Admin() {
               <Icon name="BookOpen" size={14} />
               Статьи
             </a>
+            <a href="/admin/banners" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 text-sm font-semibold hover:bg-violet-100 transition-colors">
+              <Icon name="Image" size={14} />
+              Баннеры
+            </a>
             <button
               onClick={() => setShowSettings(!showSettings)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${

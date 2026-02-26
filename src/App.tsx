@@ -17,6 +17,7 @@ import PlanBot from "./pages/PlanBot";
 import BarrierBot from "./pages/BarrierBot";
 import Admin from "./pages/Admin";
 import AdminArticles from "./pages/AdminArticles";
+import AdminBanners from "./pages/AdminBanners";
 import Blog from "./pages/Blog";
 import BlogArticle from "./pages/BlogArticle";
 import CareerTest from "./pages/CareerTest";
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/barrier-bot" element={<BarrierBot />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/articles" element={<AdminArticles />} />
+          <Route path="/admin/banners" element={<AdminBanners />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route path="/career-test" element={<CareerTest />} />
