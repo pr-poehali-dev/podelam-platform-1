@@ -5,10 +5,28 @@ import Icon from "@/components/ui/icon";
 const W = 240;
 const H = 400;
 
+async function imgToBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
+}
+
 function DownloadBtn({ nodeRef, filename }: { nodeRef: React.RefObject<HTMLDivElement>; filename: string }) {
   const handleDownload = useCallback(async () => {
     if (!nodeRef.current) return;
+    const imgs = nodeRef.current.querySelectorAll("img[src^='http']");
+    const originals = new Map<HTMLImageElement, string>();
+    for (const img of imgs) {
+      const el = img as HTMLImageElement;
+      originals.set(el, el.src);
+      el.src = await imgToBase64(el.src);
+    }
     const url = await toPng(nodeRef.current, { width: W, height: H, pixelRatio: 1 });
+    for (const [el, src] of originals) el.src = src;
     const a = document.createElement("a");
     a.href = url;
     a.download = filename + ".png";
