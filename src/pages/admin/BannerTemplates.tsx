@@ -1,42 +1,46 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { toPng } from "html-to-image";
 import Icon from "@/components/ui/icon";
+import funcUrls from "@/../backend/func2url.json";
 
 const W = 240;
 const H = 400;
+const PROXY_URL = funcUrls["image-proxy"];
 
 async function imgToBase64(url: string): Promise<string> {
-  const res = await fetch(url);
-  const blob = await res.blob();
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.readAsDataURL(blob);
-  });
+  const proxyRes = await fetch(`${PROXY_URL}?url=${encodeURIComponent(url)}`);
+  const json = await proxyRes.json();
+  return json.dataUrl;
 }
 
 function DownloadBtn({ nodeRef, filename }: { nodeRef: React.RefObject<HTMLDivElement>; filename: string }) {
+  const [loading, setLoading] = useState(false);
   const handleDownload = useCallback(async () => {
-    if (!nodeRef.current) return;
-    const imgs = nodeRef.current.querySelectorAll("img[src^='http']");
-    const originals = new Map<HTMLImageElement, string>();
-    for (const img of imgs) {
-      const el = img as HTMLImageElement;
-      originals.set(el, el.src);
-      el.src = await imgToBase64(el.src);
+    if (!nodeRef.current || loading) return;
+    setLoading(true);
+    try {
+      const imgs = nodeRef.current.querySelectorAll("img[src^='http']");
+      const originals = new Map<HTMLImageElement, string>();
+      for (const img of imgs) {
+        const el = img as HTMLImageElement;
+        originals.set(el, el.src);
+        el.src = await imgToBase64(el.src);
+      }
+      const url = await toPng(nodeRef.current, { width: W, height: H, pixelRatio: 1 });
+      for (const [el, src] of originals) el.src = src;
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename + ".png";
+      a.click();
+    } finally {
+      setLoading(false);
     }
-    const url = await toPng(nodeRef.current, { width: W, height: H, pixelRatio: 1 });
-    for (const [el, src] of originals) el.src = src;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename + ".png";
-    a.click();
-  }, [nodeRef, filename]);
+  }, [nodeRef, filename, loading]);
 
   return (
-    <button onClick={handleDownload} className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity">
-      <Icon name="Download" size={16} />
-      Скачать PNG
+    <button onClick={handleDownload} disabled={loading} className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+      <Icon name={loading ? "Loader2" : "Download"} size={16} className={loading ? "animate-spin" : ""} />
+      {loading ? "Загрузка..." : "Скачать PNG"}
     </button>
   );
 }

@@ -1,0 +1,1 @@
+{"tests": [{"name": "OPTIONS returns 200", "method": "OPTIONS", "path": "/", "expectedStatus": 200}, {"name": "Missing url returns 400", "method": "GET", "path": "/?url=", "expectedStatus": 400, "expectedBody": {"error": "string"}, "bodyMatcher": "partial"}]}
