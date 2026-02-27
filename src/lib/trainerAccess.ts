@@ -102,7 +102,38 @@ export function hasTrainerAccess(trainerId: TrainerId): boolean {
   const sub = getTrainerSubscription();
   if (!sub) return false;
   if (sub.allTrainers) return true;
+  if (!sub.trainerId) return true;
   return sub.trainerId === trainerId;
+}
+
+export function isBasicUnbound(): boolean {
+  const sub = getTrainerSubscription();
+  return !!sub && !sub.allTrainers && !sub.trainerId;
+}
+
+export async function bindBasicPlan(trainerId: TrainerId): Promise<void> {
+  const sub = getTrainerSubscription();
+  if (!sub || sub.allTrainers || sub.trainerId) return;
+
+  const email = getEmail();
+  const updated: TrainerSubscription = { ...sub, trainerId };
+  localStorage.setItem(trainerSubKey(email), JSON.stringify(updated));
+  window.dispatchEvent(new CustomEvent("pdd_balance_change"));
+
+  try {
+    await fetch(TRAINER_ACCESS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "activate",
+        email,
+        plan_id: sub.planId,
+        trainer_id: trainerId,
+      }),
+    });
+  } catch {
+    // local already saved
+  }
 }
 
 function saveSubLocally(sub: TrainerSubscription): void {
@@ -376,6 +407,8 @@ export async function checkDeviceBlocked(): Promise<{ blocked: boolean; trainerI
 
 export default {
   hasTrainerAccess,
+  isBasicUnbound,
+  bindBasicPlan,
   getTrainerSubscription,
   activateTrainerPlan,
   syncTrainerSubscription,

@@ -10,6 +10,8 @@ import {
   hasTrainerAccess,
   checkDeviceBlocked,
   syncTrainerSubscription,
+  isBasicUnbound,
+  bindBasicPlan,
 } from "@/lib/trainerAccess";
 
 const VALID_IDS: TrainerId[] = [
@@ -41,6 +43,7 @@ export default function Trainers() {
   );
   const [paywallTrainer, setPaywallTrainer] = useState<TrainerId | null>(null);
   const [deviceBlocked, setDeviceBlocked] = useState<string | null>(null);
+  const [bindConfirm, setBindConfirm] = useState<TrainerId | null>(null);
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
@@ -65,6 +68,11 @@ export default function Trainers() {
       return;
     }
 
+    if (isBasicUnbound()) {
+      setBindConfirm(id);
+      return;
+    }
+
     const { blocked, trainerId } = await checkDeviceBlocked();
     if (blocked) {
       setDeviceBlocked(trainerId || id);
@@ -73,6 +81,21 @@ export default function Trainers() {
 
     setActiveTrainer(id);
     navigate(`/trainers?id=${id}`, { replace: true });
+  };
+
+  const confirmBind = async () => {
+    if (!bindConfirm) return;
+    await bindBasicPlan(bindConfirm);
+    setBindConfirm(null);
+
+    const { blocked, trainerId } = await checkDeviceBlocked();
+    if (blocked) {
+      setDeviceBlocked(trainerId || bindConfirm);
+      return;
+    }
+
+    setActiveTrainer(bindConfirm);
+    navigate(`/trainers?id=${bindConfirm}`, { replace: true });
   };
 
   const handlePaywallSuccess = () => {
@@ -161,6 +184,43 @@ export default function Trainers() {
           onClose={() => setPaywallTrainer(null)}
           onSuccess={handlePaywallSuccess}
         />
+      )}
+
+      {bindConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl border shadow-xl max-w-sm w-full p-6 text-center animate-scale-in">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-violet-50 flex items-center justify-center">
+              <Icon name="Lock" size={28} className="text-primary" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground mb-2">
+              Выбор тренажёра
+            </h3>
+            <p className="text-sm text-muted-foreground mb-1">
+              На базовом тарифе доступен 1 тренажёр. Вы выбираете:
+            </p>
+            <p className="text-base font-bold text-foreground mb-4">
+              «{TRAINER_NAMES[bindConfirm] || bindConfirm}»
+            </p>
+            <p className="text-xs text-muted-foreground mb-5 leading-relaxed">
+              После подтверждения этот тренажёр будет закреплён за вами на весь период подписки. Изменить выбор нельзя.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setBindConfirm(null)}
+                variant="outline"
+                className="flex-1 rounded-xl"
+              >
+                Отмена
+              </Button>
+              <Button
+                onClick={confirmBind}
+                className="flex-1 rounded-xl gradient-brand text-white border-0"
+              >
+                Подтвердить
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {deviceBlocked && (
