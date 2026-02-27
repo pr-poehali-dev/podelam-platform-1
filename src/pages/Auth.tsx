@@ -100,10 +100,11 @@ export default function Auth() {
 
       const keysToRemove: string[] = [];
       const staleKeys = ["plan_chat", "plan_state", "plan_result", "progress_entries", "progress_chat", "diary_chat", "diary_entries", "pdd_tests"];
+      const preservePrefixes = ["pdd_trainer_sub_", "pdd_trainer_"];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         if (!k) continue;
-        if (k.includes(user.email)) keysToRemove.push(k);
+        if (k.includes(user.email) && !preservePrefixes.some(p => k.startsWith(p))) keysToRemove.push(k);
         if (staleKeys.includes(k)) keysToRemove.push(k);
       }
       keysToRemove.forEach(k => localStorage.removeItem(k));
