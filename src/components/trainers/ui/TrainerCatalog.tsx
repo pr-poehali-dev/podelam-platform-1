@@ -13,6 +13,7 @@ import {
   payTrainerPlanFromBalance,
   createTrainerPayment,
   trainerSubExpiresFormatted,
+  getSessionLimitInfo,
 } from "@/lib/trainerAccess";
 import { getBalance } from "@/lib/access";
 import BalanceTopUpModal from "@/components/BalanceTopUpModal";
@@ -263,24 +264,49 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
         </div>
       )}
 
-      {sub && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-            <Icon name="CheckCircle" className="w-5 h-5 text-emerald-600" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="font-semibold text-foreground text-sm">
-              Тариф «{TRAINER_PLANS.find((p) => p.id === sub.planId)?.name}» активен
+      {sub && (() => {
+        const boundTrainer = sub.trainerId as TrainerId | undefined;
+        const limitInfo = boundTrainer ? getSessionLimitInfo(boundTrainer) : null;
+        const limitExhausted = limitInfo?.limited && !sub.allTrainers;
+
+        return limitExhausted ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+              <Icon name="AlertTriangle" className="w-5 h-5 text-amber-600" />
             </div>
-            <div className="text-xs text-muted-foreground mt-0.5">
-              {sub.allTrainers
-                ? "Все тренажёры доступны"
-                : `Тренажёр: ${TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}`}
-              {subExpires && ` · до ${subExpires}`}
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-foreground text-sm">
+                Лимит исчерпан — {limitInfo!.used} из {limitInfo!.limit} сессий использовано
+              </div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Тренажёр: {TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}
+                {subExpires && ` · до ${subExpires}`}
+              </div>
+              <div className="text-xs text-primary mt-1 font-medium">
+                Оформите Продвинутый или Годовой тариф для безлимитного доступа
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+              <Icon name="CheckCircle" className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-foreground text-sm">
+                Тариф «{TRAINER_PLANS.find((p) => p.id === sub.planId)?.name}» активен
+              </div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {sub.allTrainers
+                  ? "Все тренажёры доступны"
+                  : `Тренажёр: ${TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}`}
+                {subExpires && ` · до ${subExpires}`}
+                {limitInfo && !sub.allTrainers && ` · ${limitInfo.used} из ${limitInfo.limit} сессий`}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Pricing section */}
       <div className="flex flex-col gap-4">
@@ -377,7 +403,23 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                   ))}
                 </ul>
 
-                {isCurrentPlan ? (
+                {isCurrentPlan && plan.id === "basic" && (() => {
+                  const bt = sub?.trainerId as TrainerId | undefined;
+                  const li = bt ? getSessionLimitInfo(bt) : null;
+                  return li?.limited;
+                })() ? (
+                  <Button
+                    onClick={() => handleBuyPlan(plan.id as TrainerPlanId)}
+                    disabled={!!planLoading}
+                    className="w-full h-10 rounded-xl text-sm font-medium gradient-brand text-white border-0"
+                  >
+                    {planLoading === plan.id ? (
+                      <><Icon name="Loader2" size={16} className="animate-spin mr-1.5" />Активируем...</>
+                    ) : (
+                      <><Icon name="RefreshCw" size={16} className="mr-1.5" />Продлить за {plan.price.toLocaleString("ru-RU")} ₽</>
+                    )}
+                  </Button>
+                ) : isCurrentPlan ? (
                   <Button
                     variant="outline"
                     disabled
