@@ -1,7 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import InstallPWA from "@/components/InstallPWA";
+
+function setMeta(name: string, content: string, property?: boolean) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
 
 const STEPS = [
   {
@@ -92,6 +99,15 @@ const FAQ = [
 
 export default function Partner() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "Партнерская программа — ПоДелам";
+    setMeta("description", "Зарабатывайте 20% с каждой оплаты приглашенных друзей. Бессрочная привязка, прозрачная статистика, бонусы на баланс.");
+    setMeta("og:title", "Партнерская программа — ПоДелам", true);
+    setMeta("og:description", "Приглашайте друзей и получайте 20% с каждой их покупки. Без скрытых условий.", true);
+    setMeta("og:image", "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/og-image-1771939680459.jpg", true);
+    setMeta("og:url", "https://podelam.su/partner", true);
+  }, []);
 
   return (
     <div className="min-h-screen font-golos" style={{ background: "hsl(248, 50%, 98%)" }}>
