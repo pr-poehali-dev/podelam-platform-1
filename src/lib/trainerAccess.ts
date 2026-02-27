@@ -111,6 +111,27 @@ export function isBasicUnbound(): boolean {
   return !!sub && !sub.allTrainers && !sub.trainerId;
 }
 
+const BASIC_SESSION_LIMIT = 4;
+
+export function getSessionLimitInfo(trainerId: TrainerId): { limited: boolean; used: number; limit: number } {
+  const sub = getTrainerSubscription();
+  if (!sub || sub.allTrainers) return { limited: false, used: 0, limit: Infinity };
+
+  try {
+    const email = getEmail();
+    const raw = localStorage.getItem(`pdd_trainer_${email}_sessions_${trainerId}`);
+    const sessions = raw ? JSON.parse(raw) : [];
+    const completed = sessions.filter((s: { completedAt?: string }) => s.completedAt);
+    return {
+      limited: completed.length >= BASIC_SESSION_LIMIT,
+      used: completed.length,
+      limit: BASIC_SESSION_LIMIT,
+    };
+  } catch {
+    return { limited: false, used: 0, limit: BASIC_SESSION_LIMIT };
+  }
+}
+
 export async function bindBasicPlan(trainerId: TrainerId): Promise<void> {
   const sub = getTrainerSubscription();
   if (!sub || sub.allTrainers || sub.trainerId) return;
@@ -409,6 +430,7 @@ export default {
   hasTrainerAccess,
   isBasicUnbound,
   bindBasicPlan,
+  getSessionLimitInfo,
   getTrainerSubscription,
   activateTrainerPlan,
   syncTrainerSubscription,

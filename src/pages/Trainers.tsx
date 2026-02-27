@@ -12,6 +12,7 @@ import {
   syncTrainerSubscription,
   isBasicUnbound,
   bindBasicPlan,
+  getSessionLimitInfo,
 } from "@/lib/trainerAccess";
 
 const VALID_IDS: TrainerId[] = [
@@ -44,6 +45,7 @@ export default function Trainers() {
   const [paywallTrainer, setPaywallTrainer] = useState<TrainerId | null>(null);
   const [deviceBlocked, setDeviceBlocked] = useState<string | null>(null);
   const [bindConfirm, setBindConfirm] = useState<TrainerId | null>(null);
+  const [sessionLimit, setSessionLimit] = useState<{ trainerId: TrainerId; used: number; limit: number } | null>(null);
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
@@ -70,6 +72,12 @@ export default function Trainers() {
 
     if (isBasicUnbound()) {
       setBindConfirm(id);
+      return;
+    }
+
+    const limitInfo = getSessionLimitInfo(id);
+    if (limitInfo.limited) {
+      setSessionLimit({ trainerId: id, used: limitInfo.used, limit: limitInfo.limit });
       return;
     }
 
@@ -184,6 +192,53 @@ export default function Trainers() {
           onClose={() => setPaywallTrainer(null)}
           onSuccess={handlePaywallSuccess}
         />
+      )}
+
+      {sessionLimit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl border shadow-xl max-w-sm w-full p-6 text-center animate-scale-in">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-50 flex items-center justify-center">
+              <Icon name="Lock" size={28} className="text-amber-600" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground mb-2">
+              Лимит сессий исчерпан
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+              На базовом тарифе доступно {sessionLimit.limit} сессии в месяц. Вы уже прошли {sessionLimit.used} из {sessionLimit.limit}.
+            </p>
+            <div className="rounded-xl border bg-violet-50/50 p-4 mb-5">
+              <p className="text-xs font-semibold text-foreground mb-2">Безлимитный доступ:</p>
+              <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Продвинутый — все тренажёры, 3 мес</span>
+                  <span className="font-bold text-foreground">2 490 ₽</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Годовой — все тренажёры, 1 год</span>
+                  <span className="font-bold text-foreground">6 990 ₽</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setSessionLimit(null)}
+                variant="outline"
+                className="flex-1 rounded-xl"
+              >
+                Закрыть
+              </Button>
+              <Button
+                onClick={() => {
+                  setSessionLimit(null);
+                  setPaywallTrainer(sessionLimit.trainerId);
+                }}
+                className="flex-1 rounded-xl gradient-brand text-white border-0"
+              >
+                Сменить тариф
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {bindConfirm && (
