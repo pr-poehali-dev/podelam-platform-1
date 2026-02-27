@@ -19,6 +19,7 @@ type Props = {
   trainer: TrainerDef;
   onRestart: () => void;
   onBack: () => void;
+  sessionLimitReached?: boolean;
 };
 
 function useCounter(target: number, duration = 1200, delay = 400) {
@@ -372,6 +373,7 @@ export default function TrainerResultScreen({
   trainer,
   onRestart,
   onBack,
+  sessionLimitReached,
 }: Props) {
   const [sectionVisible, setSectionVisible] = useState(0);
 
@@ -842,10 +844,20 @@ export default function TrainerResultScreen({
             : "opacity-0 translate-y-6"
         }`}
       >
-        <Button onClick={onRestart} className="w-full h-12 text-base font-medium rounded-xl">
-          <Icon name="RotateCcw" className="w-4 h-4 mr-2" />
-          Пройти ещё раз
-        </Button>
+        {sessionLimitReached ? (
+          <div className="flex items-center gap-3 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-left">
+            <Icon name="Lock" size={20} className="text-amber-600 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Лимит сессий на базовом тарифе исчерпан</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Оформите Продвинутый или Годовой тариф для безлимита</p>
+            </div>
+          </div>
+        ) : (
+          <Button onClick={onRestart} className="w-full h-12 text-base font-medium rounded-xl">
+            <Icon name="RotateCcw" className="w-4 h-4 mr-2" />
+            Пройти ещё раз
+          </Button>
+        )}
         <Button
           variant="outline"
           onClick={onBack}

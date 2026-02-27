@@ -16,7 +16,7 @@ import {
   addCompletedSession,
   clearCurrentSession,
 } from "../trainerStorage";
-import { startTrainerSession, sendHeartbeat, endTrainerSession } from "@/lib/trainerAccess";
+import { startTrainerSession, sendHeartbeat, endTrainerSession, getSessionLimitInfo } from "@/lib/trainerAccess";
 import TrainerStepRenderer from "./TrainerStepRenderer";
 import TrainerProgressBar from "./TrainerProgressBar";
 import TrainerResultScreen from "./TrainerResultScreen";
@@ -155,6 +155,11 @@ export default function TrainerSessionView({
 
   /* Handle restart */
   const handleRestart = useCallback(() => {
+    const limitInfo = getSessionLimitInfo(trainerId);
+    if (limitInfo.limited) {
+      onExit();
+      return;
+    }
     clearCurrentSession(trainerId);
     const fresh = createSession(trainerId);
     setSession(fresh);
@@ -229,6 +234,7 @@ export default function TrainerSessionView({
             trainer={trainer}
             onRestart={handleRestart}
             onBack={onExit}
+            sessionLimitReached={getSessionLimitInfo(trainerId).limited}
           />
         </div>
       </div>
