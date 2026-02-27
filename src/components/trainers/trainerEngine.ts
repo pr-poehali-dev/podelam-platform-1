@@ -608,68 +608,108 @@ function calculateAntiProcrastinationResult(
 function calculateSelfEsteemResult(
   session: TrainerSession
 ): TrainerResult {
-  const selfWorth = session.scores["self-worth"] || 0;
-  const innerCritic = session.scores["inner-critic"] || 0;
-  const boundaries = session.scores["boundaries"] || 0;
-  const total = selfWorth + boundaries - innerCritic;
+  const achievementsAnswer = session.answers["se-achievements"];
+  const achievements: string[] = achievementsAnswer
+    ? Array.isArray(achievementsAnswer.value)
+      ? (achievementsAnswer.value as string[])
+      : []
+    : [];
+  const A = Math.min(achievements.length, 6);
+
+  const copingAnswer = session.answers["se-coping"];
+  const copingId = typeof copingAnswer?.value === "string" ? copingAnswer.value : "";
+
+  const COPING_SCORES: Record<string, number> = {
+    "cop-acted": 10,
+    "cop-boundary": 10,
+    "cop-mistake": 9,
+    "cop-help": 8,
+    "cop-postpone": 7,
+    "cop-ignored": 3,
+    "cop-avoided": 2,
+  };
+  const MRI = COPING_SCORES[copingId] || 5;
+
+  const S = session.scores["self_value"] || 5;
+  const E = session.scores["external_dependency"] || 5;
+
+  const FOI = A * 5;
+  const rawIOS = FOI + MRI + S * 4;
+  const IOS = Math.round(Math.min(100, (rawIOS / 80) * 100));
+
+  const EDI = E * 10;
+  const SSI = 70;
+  const rawIA = SSI - EDI;
+  const IA = Math.max(0, Math.min(100, rawIA));
+
+  const DI = 100;
+  const rawIVO = IOS * 0.5 + IA * 0.3 + DI * 0.2;
+  const IVO = Math.max(0, Math.min(100, Math.round(rawIVO)));
 
   let level: string;
   let title: string;
   let summary: string;
 
-  if (total >= 20) {
+  if (IVO >= 86) {
+    level = "excellent";
+    title = "Сильная автономная личность";
+    summary = "У вас крепкая внутренняя опора. Вы цените себя на основе фактов, а не чужого мнения.";
+  } else if (IVO >= 71) {
     level = "high";
-    title = "Устойчивая самооценка";
-    summary =
-      "У вас крепкий внутренний фундамент. Вы цените себя и умеете отстаивать границы.";
-  } else if (total >= 10) {
+    title = "Зрелая внутренняя устойчивость";
+    summary = "Ваша самооценка опирается на реальные действия. Продолжайте фиксировать достижения.";
+  } else if (IVO >= 51) {
     level = "medium";
-    title = "Растущая внутренняя опора";
-    summary =
-      "Внутренний критик ещё силён, но вы учитесь опираться на себя. Продолжайте!";
-  } else {
+    title = "Формируется опора";
+    summary = "Вы учитесь опираться на себя. Регулярная фиксация достижений укрепит фундамент.";
+  } else if (IVO >= 31) {
     level = "developing";
-    title = "Начало пути к себе";
-    summary =
-      "Самооценка пока неустойчива — это нормально. Регулярная работа поможет укрепить внутреннюю опору.";
+    title = "Нестабильная самооценка";
+    summary = "Внешнее мнение ещё сильно влияет. Каждый день с тренажёром — шаг к устойчивости.";
+  } else {
+    level = "beginning";
+    title = "Низкая опора";
+    summary = "Самооценка зависит от внешнего. Начните с малого: 3 достижения каждый день.";
   }
 
+  const COPING_LABELS: Record<string, string> = {
+    "cop-acted": "Действовал", "cop-boundary": "Защитил границы",
+    "cop-mistake": "Ошибся, сделал вывод", "cop-help": "Попросил помощи",
+    "cop-postpone": "Отложил осознанно", "cop-ignored": "Проигнорировал",
+    "cop-avoided": "Избежал",
+  };
+  const copingLabel = COPING_LABELS[copingId] || copingId;
+
+  const insights: string[] = [
+    `Достижений сегодня: ${A}`,
+    `Реакция на трудность: ${copingLabel} (${MRI}/10)`,
+    `Самоценность: ${S}/10`,
+    `Зависимость от внешнего: ${E}/10`,
+  ];
+
   const recommendations: string[] = [];
-  if (innerCritic > 10)
-    recommendations.push(
-      "Замечайте внутреннего критика и спрашивайте: «Я бы сказал это другу?»"
-    );
-  if (selfWorth < 10)
-    recommendations.push(
-      "Каждый вечер записывайте 3 вещи, за которые вы себе благодарны."
-    );
-  if (boundaries < 8)
-    recommendations.push(
-      "Начните с маленьких «нет» — они тренируют мышцу границ."
-    );
-  recommendations.push(
-    "Проходите тренажёр каждые 2 недели — динамика покажет рост."
-  );
+  if (S <= 4)
+    recommendations.push("Ваша самоценность сейчас снижена — это нормальный период. Фиксируйте даже мелкие достижения.");
+  if (E >= 7)
+    recommendations.push("Высокая зависимость от чужого мнения. Попробуйте записать: «Что я думаю о себе сам?»");
+  if (copingId === "cop-avoided" || copingId === "cop-ignored")
+    recommendations.push("Избегание снижает опору. Попробуйте завтра хотя бы назвать проблему вслух.");
+  if (A < 3)
+    recommendations.push("Старайтесь находить минимум 3 достижения — они формируют фактическую опору.");
+  if (MRI >= 8)
+    recommendations.push("Отличная реакция на трудность! Это укрепляет вашу внутреннюю устойчивость.");
+  recommendations.push("Проходите тренажёр ежедневно — динамика IVO покажет рост вашей внутренней опоры.");
 
   return {
     title,
     summary,
     level,
-    scores: {
-      "self-worth": selfWorth,
-      "inner-critic": innerCritic,
-      boundaries,
-      total,
-    },
+    scores: { FOI, MRI, IOS, IA, IVO },
     recommendations,
-    insights: [
-      `Самоценность: ${selfWorth} баллов`,
-      `Внутренний критик: ${innerCritic} баллов`,
-      `Личные границы: ${boundaries} баллов`,
-    ],
+    insights,
     nextActions: [
-      "Записать 3 своих сильных качества",
-      "Практиковать одно «нет» на этой неделе",
+      "Завтра снова зафиксировать 3+ достижения",
+      "Замечать моменты зависимости от чужого мнения",
     ],
   };
 }
