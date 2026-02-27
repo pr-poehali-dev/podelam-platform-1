@@ -12,6 +12,7 @@ export default function MultipleChoiceStep({ step, onSubmit }: Props) {
   const [visibleCount, setVisibleCount] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const maxSelect = step.maxSelect || Infinity;
 
   useEffect(() => {
     setVisibleCount(0);
@@ -25,11 +26,11 @@ export default function MultipleChoiceStep({ step, onSubmit }: Props) {
       count += 1;
       setVisibleCount(count);
       if (count < total) {
-        timerRef.current = setTimeout(tick, 50);
+        timerRef.current = setTimeout(tick, 30);
       }
     };
 
-    timerRef.current = setTimeout(tick, 80);
+    timerRef.current = setTimeout(tick, 60);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -42,6 +43,10 @@ export default function MultipleChoiceStep({ step, onSubmit }: Props) {
       if (next.has(id)) {
         next.delete(id);
       } else {
+        if (next.size >= maxSelect) {
+          const first = next.values().next().value;
+          if (first) next.delete(first);
+        }
         next.add(id);
       }
       return next;
@@ -54,77 +59,123 @@ export default function MultipleChoiceStep({ step, onSubmit }: Props) {
     }
   };
 
+  const hasGroups = step.optionGroups && step.optionGroups.length > 0;
+
+  const renderOption = (option: { id: string; label: string }, idx: number) => {
+    const isVisible = idx < visibleCount;
+    const isChecked = selected.has(option.id);
+    const isDisabled = !isChecked && selected.size >= maxSelect && maxSelect !== Infinity;
+
+    return (
+      <button
+        key={option.id}
+        onClick={() => !isDisabled && toggle(option.id)}
+        className={`
+          relative w-full text-left px-3 py-2.5 rounded-xl border
+          transition-all duration-200 ease-out
+          ${
+            isVisible
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-2"
+          }
+          ${
+            isChecked
+              ? "border-primary bg-primary/5 shadow-sm"
+              : isDisabled
+              ? "border-border bg-muted/50 opacity-50 cursor-not-allowed"
+              : "border-border bg-card hover:border-primary/40 hover:bg-primary/[0.02]"
+          }
+        `}
+        style={{
+          transitionDelay: isVisible ? "0ms" : `${idx * 30}ms`,
+        }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div
+            className={`
+              w-4.5 h-4.5 rounded-md border-2 flex items-center justify-center flex-shrink-0
+              transition-all duration-200
+              ${
+                isChecked
+                  ? "border-primary bg-primary"
+                  : "border-muted-foreground/30"
+              }
+            `}
+            style={{ width: 18, height: 18 }}
+          >
+            {isChecked && (
+              <Icon
+                name="Check"
+                className="w-2.5 h-2.5 text-white animate-scale-in"
+              />
+            )}
+          </div>
+          <span
+            className={`text-sm leading-snug ${
+              isChecked
+                ? "text-foreground font-medium"
+                : "text-foreground/80"
+            }`}
+          >
+            {option.label}
+          </span>
+        </div>
+      </button>
+    );
+  };
+
+  let globalIdx = 0;
+
   return (
     <div className="flex flex-col px-1">
       <h2 className="text-xl font-bold text-foreground mb-2 leading-tight">
         {step.title}
       </h2>
       {step.description && (
-        <p className="text-muted-foreground text-sm leading-relaxed mb-5">
+        <p className="text-muted-foreground text-sm leading-relaxed mb-4">
           {step.description}
         </p>
       )}
 
-      <div className="flex flex-col gap-2.5 mb-6">
-        {step.options?.map((option, idx) => {
-          const isVisible = idx < visibleCount;
-          const isChecked = selected.has(option.id);
+      {maxSelect < Infinity && (
+        <div className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
+          <Icon name="Info" className="w-3.5 h-3.5" />
+          Можно выбрать до {maxSelect}
+          {selected.size > 0 && (
+            <span className="text-primary font-medium ml-1">
+              (выбрано {selected.size})
+            </span>
+          )}
+        </div>
+      )}
 
-          return (
-            <button
-              key={option.id}
-              onClick={() => toggle(option.id)}
-              className={`
-                relative w-full text-left px-4 py-3.5 rounded-xl border
-                transition-all duration-200 ease-out
-                ${
-                  isVisible
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-3"
-                }
-                ${
-                  isChecked
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/[0.02]"
-                }
-              `}
-              style={{
-                transitionDelay: isVisible ? "0ms" : `${idx * 50}ms`,
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`
-                    w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0
-                    transition-all duration-200
-                    ${
-                      isChecked
-                        ? "border-primary bg-primary"
-                        : "border-muted-foreground/30"
-                    }
-                  `}
-                >
-                  {isChecked && (
-                    <Icon
-                      name="Check"
-                      className="w-3 h-3 text-white animate-scale-in"
-                    />
-                  )}
+      {hasGroups ? (
+        <div className="flex flex-col gap-4 mb-5 max-h-[50vh] overflow-y-auto pr-1">
+          {step.optionGroups!.map((group) => {
+            const groupOptions = group.optionIds
+              .map((id) => step.options?.find((o) => o.id === id))
+              .filter(Boolean) as { id: string; label: string }[];
+
+            return (
+              <div key={group.label}>
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                  {group.label}
                 </div>
-                <span
-                  className={`text-sm leading-snug ${
-                    isChecked
-                      ? "text-foreground font-medium"
-                      : "text-foreground/80"
-                  }`}
-                >
-                  {option.label}
-                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {groupOptions.map((option) => {
+                    const idx = globalIdx++;
+                    return renderOption(option, idx);
+                  })}
+                </div>
               </div>
-            </button>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2.5 mb-6">
+          {step.options?.map((option, idx) => renderOption(option, idx))}
+        </div>
+      )}
 
       <Button
         onClick={handleSubmit}

@@ -218,22 +218,36 @@ export default function TrainerStats() {
   });
 
   /* Line chart data for selected trainer */
+  const isEMITrainer = selectedTrainer === "emotions-in-action";
   const lineData = useMemo(() => {
     if (!selectedTrainer) return [];
     const sessions = getSessions(selectedTrainer).filter(
       (s) => s.completedAt && s.result
     );
-    return sessions.map((s, i) => ({
-      session: i + 1,
-      total: s.result?.scores?.total ?? 0,
-      date: s.completedAt
-        ? new Date(s.completedAt).toLocaleDateString("ru-RU", {
-            day: "numeric",
-            month: "short",
-          })
-        : "",
-    }));
-  }, [selectedTrainer]);
+    return sessions.map((s, i) => {
+      const scores = s.result?.scores || {};
+      const mainScore = isEMITrainer
+        ? scores["EMI"] ?? 0
+        : scores["total"] ?? 0;
+      return {
+        session: i + 1,
+        total: mainScore,
+        ...(isEMITrainer
+          ? {
+              EA: scores["EA"] ?? 0,
+              SR: scores["SR"] ?? 0,
+              IP: scores["IP"] ?? 0,
+            }
+          : {}),
+        date: s.completedAt
+          ? new Date(s.completedAt).toLocaleDateString("ru-RU", {
+              day: "numeric",
+              month: "short",
+            })
+          : "",
+      };
+    });
+  }, [selectedTrainer, isEMITrainer]);
 
   const selectedDef = selectedTrainer
     ? TRAINER_DEFS.find((d) => d.id === selectedTrainer)
@@ -468,6 +482,7 @@ export default function TrainerStats() {
                 <Line
                   type="monotone"
                   dataKey="total"
+                  name={isEMITrainer ? "EMI" : "Балл"}
                   stroke="hsl(var(--primary))"
                   strokeWidth={2.5}
                   dot={{
@@ -483,6 +498,37 @@ export default function TrainerStats() {
                     stroke: "hsl(var(--card))",
                   }}
                 />
+                {isEMITrainer && (
+                  <>
+                    <Line
+                      type="monotone"
+                      dataKey="EA"
+                      name="Осознанность"
+                      stroke="hsl(252, 60%, 52%)"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 4"
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="SR"
+                      name="Саморегуляция"
+                      stroke="hsl(160, 55%, 42%)"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 4"
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="IP"
+                      name="Импульсивность"
+                      stroke="hsl(25, 70%, 50%)"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 4"
+                      dot={false}
+                    />
+                  </>
+                )}
               </LineChart>
             </ResponsiveContainer>
 
@@ -496,7 +542,7 @@ export default function TrainerStats() {
                   Дата
                 </span>
                 <span className="text-muted-foreground font-medium text-right">
-                  Балл
+                  {isEMITrainer ? "EMI" : "Балл"}
                 </span>
                 {lineData.map((row) => (
                   <React.Fragment key={row.session}>

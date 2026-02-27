@@ -5,6 +5,7 @@ import {
   SessionAnswer,
   TrainerResult,
   TrainerId,
+  StepOption,
 } from "./types";
 import { consciousChoiceScenario } from "./scenarios/consciousChoice";
 import { emotionsScenario } from "./scenarios/emotions";
@@ -40,7 +41,12 @@ export function getCurrentStep(
 ): ScenarioStep | null {
   const scenario = getScenario(session.trainerId);
   if (!scenario) return null;
-  return scenario.steps[session.currentStepIndex] || null;
+  const step = scenario.steps[session.currentStepIndex] || null;
+
+  if (step && step.meta?.dynamic && step.id === "em-strategy") {
+    return getDynamicStrategyStep(session, step);
+  }
+  return step;
 }
 
 export function getTotalSteps(trainerId: TrainerId): number {
@@ -67,8 +73,12 @@ export function answerStep(
   const scenario = getScenario(session.trainerId);
   if (!scenario) return session;
 
-  const step = scenario.steps.find((s) => s.id === stepId);
+  let step = scenario.steps.find((s) => s.id === stepId);
   if (!step) return session;
+
+  if (step.meta?.dynamic && step.id === "em-strategy") {
+    step = getDynamicStrategyStep(session, step);
+  }
 
   const answer: SessionAnswer = {
     stepId,
@@ -79,7 +89,6 @@ export function answerStep(
 
   const newScores = { ...session.scores };
 
-  // Calculate scores based on step type
   if (step.type === "single-choice" && step.options) {
     const selected = step.options.find((o) => o.id === value);
     if (selected?.score !== undefined) {
@@ -105,7 +114,6 @@ export function answerStep(
     newScores[cat] = (newScores[cat] || 0) + value;
   }
 
-  // Determine next step
   let nextIndex = session.currentStepIndex + 1;
 
   if (step.type === "single-choice" && step.options) {
@@ -120,7 +128,7 @@ export function answerStep(
 
   if (!step.options && step.nextStep) {
     const targetIdx = scenario.steps.findIndex(
-      (s) => s.id === step.nextStep
+      (s) => s.id === step!.nextStep
     );
     if (targetIdx >= 0) nextIndex = targetIdx;
   }
@@ -140,7 +148,88 @@ export function skipToNext(session: TrainerSession): TrainerSession {
   };
 }
 
-// Result calculators for each trainer
+const EMOTION_STRATEGY_MAP: Record<string, StepOption[]> = {
+  "fear-group": [
+    { id: "str-prepare", label: "Подготовиться к тому, что пугает", score: 3 },
+    { id: "str-split-task", label: "Разделить задачу на маленький шаг", score: 3 },
+    { id: "str-talk-fear", label: "Обсудить страх с кем-то", score: 2 },
+  ],
+  "anger-group": [
+    { id: "str-boundaries", label: "Обсудить границы", score: 3 },
+    { id: "str-pause", label: "Сделать паузу перед реакцией", score: 3 },
+    { id: "str-formulate", label: "Сформулировать требования", score: 2 },
+  ],
+  "guilt-group": [
+    { id: "str-fix", label: "Исправить ситуацию", score: 3 },
+    { id: "str-forgive", label: "Попросить прощения", score: 2 },
+    { id: "str-release", label: "Отпустить — вы сделали, что могли", score: 3 },
+  ],
+  "fatigue-group": [
+    { id: "str-rest", label: "Позволить себе отдых", score: 3 },
+    { id: "str-delegate", label: "Делегирование — передать часть задач", score: 3 },
+    { id: "str-reduce", label: "Снизить нагрузку на ближайшие дни", score: 2 },
+  ],
+  positive: [
+    { id: "str-anchor", label: "Закрепить результат — записать, что сработало", score: 3 },
+    { id: "str-next-step", label: "Сделать следующий шаг, пока есть энергия", score: 3 },
+    { id: "str-share", label: "Поделиться с кем-то важным", score: 2 },
+  ],
+};
+
+function getDynamicStrategyStep(
+  session: TrainerSession,
+  baseStep: ScenarioStep
+): ScenarioStep {
+  const emotionAnswer = session.answers["em-emotion"];
+  const selectedEmotions: string[] = emotionAnswer
+    ? Array.isArray(emotionAnswer.value)
+      ? (emotionAnswer.value as string[])
+      : [emotionAnswer.value as string]
+    : [];
+
+  const emotionScenario = getScenario("emotions-in-action");
+  const emotionStep = emotionScenario?.steps.find((s) => s.id === "em-emotion");
+  const allOptions = emotionStep?.options || [];
+
+  const tagGroups = new Set<string>();
+  for (const eid of selectedEmotions) {
+    const opt = allOptions.find((o) => o.id === eid);
+    if (opt?.tags) {
+      for (const tag of opt.tags) {
+        if (tag !== "negative" && tag !== "positive") {
+          tagGroups.add(tag);
+        }
+        if (tag === "positive") tagGroups.add("positive");
+      }
+    }
+  }
+
+  const strategyOptions: StepOption[] = [];
+  const usedIds = new Set<string>();
+
+  for (const group of tagGroups) {
+    const opts = EMOTION_STRATEGY_MAP[group] || EMOTION_STRATEGY_MAP["positive"];
+    for (const opt of opts) {
+      if (!usedIds.has(opt.id)) {
+        usedIds.add(opt.id);
+        strategyOptions.push(opt);
+      }
+    }
+  }
+
+  if (strategyOptions.length === 0) {
+    const fallback = EMOTION_STRATEGY_MAP["positive"];
+    for (const opt of fallback) {
+      strategyOptions.push(opt);
+    }
+  }
+
+  return {
+    ...baseStep,
+    options: strategyOptions,
+  };
+}
+
 const RESULT_CALCULATORS: Record<
   string,
   (session: TrainerSession) => TrainerResult
@@ -231,59 +320,179 @@ function calculateConsciousChoiceResult(
 function calculateEmotionsResult(
   session: TrainerSession
 ): TrainerResult {
-  const awareness = session.scores["awareness"] || 0;
-  const regulation = session.scores["regulation"] || 0;
-  const triggers = session.scores["triggers"] || 0;
-  const total = awareness + regulation;
+  const emotionAnswer = session.answers["em-emotion"];
+  const selectedEmotions: string[] = emotionAnswer
+    ? Array.isArray(emotionAnswer.value)
+      ? (emotionAnswer.value as string[])
+      : [emotionAnswer.value as string]
+    : [];
+
+  const bodyAnswer = session.answers["em-body"];
+  const bodySignals: string[] = bodyAnswer
+    ? Array.isArray(bodyAnswer.value)
+      ? (bodyAnswer.value as string[])
+      : []
+    : [];
+
+  const thoughtAnswer = session.answers["em-thought"];
+  const hasThought = !!thoughtAnswer;
+
+  const intensityAnswer = session.answers["em-intensity"];
+  const intensity =
+    typeof intensityAnswer?.value === "number" ? intensityAnswer.value : 5;
+
+  const impulseAnswer = session.answers["em-impulse"];
+  const impulseId =
+    typeof impulseAnswer?.value === "string" ? impulseAnswer.value : "";
+
+  const strategyAnswer = session.answers["em-strategy"];
+  const hasStrategy = !!strategyAnswer;
+
+  const planAnswer = session.answers["em-plan"];
+  const hasAction = !!planAnswer && typeof planAnswer.value === "string" && planAnswer.value.length > 3;
+
+  const R = selectedEmotions.length > 0 ? 1 : 0;
+  const B = bodySignals.length > 0 ? 1 : 0;
+  const T = hasThought ? 1 : 0;
+  const EA = (R + B + T) * 10;
+
+  const C = hasStrategy ? 1 : 0;
+  const A = hasAction ? 1 : 0;
+  const SR = C * 20 + A * 10;
+
+  const IMPULSE_WEIGHTS: Record<string, number> = {
+    avoid: 8,
+    postpone: 8,
+    attack: 9,
+    withdraw: 7,
+    justify: 6,
+    devalue: 7,
+    comply: 7,
+    overwork: 6,
+    freeze: 7,
+    act: 2,
+    discuss: 3,
+    "other-impulse": 5,
+  };
+  const impulseWeight = IMPULSE_WEIGHTS[impulseId] || 5;
+  const IP = Math.round((intensity * impulseWeight) / 10);
+
+  const rawEMI = EA + SR - IP;
+  const EMI = Math.max(0, Math.min(100, rawEMI));
 
   let level: string;
   let title: string;
   let summary: string;
 
-  if (total >= 25) {
+  if (EMI >= 86) {
+    level = "excellent";
+    title = "Высокий уровень осознанности";
+    summary =
+      "Вы отлично распознаёте эмоции, понимаете их источник и выбираете экологичные реакции. Продолжайте отслеживать паттерны.";
+  } else if (EMI >= 71) {
     level = "high";
-    title = "Высокий эмоциональный интеллект";
+    title = "Зрелая саморегуляция";
     summary =
-      "Вы хорошо распознаёте и управляете эмоциями. Продолжайте отслеживать паттерны.";
-  } else if (total >= 15) {
+      "Вы хорошо управляете эмоциями. Импульсивные реакции редки — вы осознанно выбираете свои действия.";
+  } else if (EMI >= 51) {
     level = "medium";
-    title = "Развивающийся эмоциональный интеллект";
+    title = "Средний уровень";
     summary =
-      "Вы учитесь замечать свои эмоции. Регулярная практика поможет улучшить саморегуляцию.";
-  } else {
+      "Вы на пути к осознанности. Иногда эмоции берут верх, но вы учитесь замечать паттерны.";
+  } else if (EMI >= 31) {
     level = "developing";
-    title = "Начало эмоциональной осознанности";
+    title = "Нестабильная регуляция";
     summary =
-      "Эмоции часто захватывают вас. Тренажёр поможет научиться их замечать до того, как они повлияют на действия.";
+      "Эмоции часто управляют вашими реакциями. Регулярная работа с тренажёром поможет увидеть закономерности.";
+  } else {
+    level = "beginning";
+    title = "Эмоции управляют";
+    summary =
+      "Сейчас эмоции сильно влияют на ваши решения. Каждое прохождение тренажёра — шаг к осознанности.";
   }
 
+  const EMOTION_LABELS: Record<string, string> = {
+    fear: "Страх", anxiety: "Тревога", panic: "Паника", shame: "Стыд",
+    guilt: "Вина", anger: "Злость", irritation: "Раздражение",
+    resentment: "Обида", jealousy: "Ревность", envy: "Зависть",
+    helplessness: "Беспомощность", disappointment: "Разочарование",
+    fatigue: "Усталость", apathy: "Апатия", loneliness: "Одиночество",
+    insecurity: "Неуверенность", tension: "Напряжение", overload: "Перегруз",
+    joy: "Радость", interest: "Интерес", inspiration: "Вдохновение",
+    excitement: "Азарт", calm: "Спокойствие", confidence: "Уверенность",
+    gratitude: "Благодарность", pride: "Гордость",
+    anticipation: "Предвкушение", enthusiasm: "Воодушевление",
+  };
+
+  const TRIGGER_LABELS: Record<string, string> = {
+    work: "Работа", money: "Деньги", relationships: "Отношения",
+    family: "Семья", "self-esteem": "Самооценка", publicity: "Публичность",
+    mistake: "Ошибка", criticism: "Критика", uncertainty: "Неопределённость",
+    tiredness: "Усталость", conflict: "Конфликт", comparison: "Сравнение",
+    "other-trigger": "Другое",
+  };
+
+  const IMPULSE_LABELS: Record<string, string> = {
+    avoid: "Избегание", postpone: "Откладывание", attack: "Нападение",
+    withdraw: "Замыкание", justify: "Оправдание", devalue: "Обесценивание",
+    comply: "Уступчивость", overwork: "Переработка", freeze: "Замирание",
+    act: "Действие", discuss: "Обсуждение", "other-impulse": "Другое",
+  };
+
+  const emotionNames = selectedEmotions
+    .map((id) => EMOTION_LABELS[id] || id)
+    .join(", ");
+
+  const triggerAnswer = session.answers["em-trigger"];
+  const triggerId =
+    typeof triggerAnswer?.value === "string" ? triggerAnswer.value : "";
+  const triggerName = TRIGGER_LABELS[triggerId] || triggerId;
+
+  const impulseName = IMPULSE_LABELS[impulseId] || impulseId;
+
+  const insights: string[] = [
+    `Эмоции: ${emotionNames} (интенсивность ${intensity}/10)`,
+    `Триггер: ${triggerName}`,
+    `Телесные сигналы: ${bodySignals.length} зон`,
+    `Импульсивная реакция: ${impulseName}`,
+  ];
+
   const recommendations: string[] = [];
-  if (awareness < 10)
+  if (IP > 6)
     recommendations.push(
-      "Ведите краткий дневник эмоций: 3 раза в день фиксируйте, что чувствуете."
+      "Попробуйте технику «пауза 5 секунд» перед реакцией — она снижает импульсивность."
     );
-  if (regulation < 10)
+  if (EA < 20)
     recommendations.push(
-      "Освойте технику «пауза 5 секунд» перед реакцией на раздражитель."
+      "Ведите краткий дневник эмоций: 3 раза в день фиксируйте, что чувствуете и где в теле."
     );
-  if (triggers > 8)
+  if (SR < 20)
     recommendations.push(
-      "Составьте карту триггеров: что вызывает сильные реакции."
+      "Заранее выбирайте стратегию на случай сильных эмоций — это тренирует саморегуляцию."
+    );
+  if (intensity >= 8)
+    recommendations.push(
+      "При высокой интенсивности помогает телесная разрядка: прогулка, дыхание, холодная вода."
     );
   recommendations.push(
-    "Повторяйте тренажёр каждые 2 недели для отслеживания динамики."
+    "Повторяйте тренажёр регулярно — система покажет ваши эмоциональные паттерны."
   );
 
   return {
     title,
     summary,
     level,
-    scores: { awareness, regulation, triggers, total },
+    scores: {
+      EA,
+      SR,
+      IP,
+      EMI,
+    },
     recommendations,
-    insights: [
-      `Осознанность эмоций: ${awareness} баллов`,
-      `Навык саморегуляции: ${regulation} баллов`,
-      `Чувствительность к триггерам: ${triggers} баллов`,
+    insights,
+    nextActions: [
+      "Выполнить план действия из тренажёра",
+      "Повторить через 2–3 дня для отслеживания паттернов",
     ],
   };
 }
@@ -314,7 +523,7 @@ function calculateAntiProcrastinationResult(
     level = "developing";
     title = "Первый малый шаг сделан";
     summary =
-      "Прокрастинация пока сильна, но сам факт прохождения тренажёра — уже победа. Каждый день выбирайте один маленький шаг.";
+      "Прокрастинация пока сильна, но сам факт прохождения тренажёра — уже победа.";
   }
 
   const recommendations: string[] = [];
@@ -377,7 +586,7 @@ function calculateSelfEsteemResult(
     level = "developing";
     title = "Начало пути к себе";
     summary =
-      "Самооценка пока неустойчива — это нормально. Регулярная работа с тренажёром поможет укрепить внутреннюю опору.";
+      "Самооценка пока неустойчива — это нормально. Регулярная работа поможет укрепить внутреннюю опору.";
   }
 
   const recommendations: string[] = [];
@@ -413,6 +622,10 @@ function calculateSelfEsteemResult(
       `Внутренний критик: ${innerCritic} баллов`,
       `Личные границы: ${boundaries} баллов`,
     ],
+    nextActions: [
+      "Записать 3 своих сильных качества",
+      "Практиковать одно «нет» на этой неделе",
+    ],
   };
 }
 
@@ -430,36 +643,36 @@ function calculateMoneyAnxietyResult(
 
   if (total >= 20) {
     level = "high";
-    title = "Здоровое отношение к деньгам";
+    title = "Финансовое спокойствие";
     summary =
-      "Вы умеете работать с финансовой тревогой и принимать денежные решения без стресса.";
+      "У вас здоровое отношение к деньгам. Тревога минимальна, стратегия выстроена.";
   } else if (total >= 10) {
     level = "medium";
-    title = "Денежная осознанность растёт";
+    title = "На пути к финансовому спокойствию";
     summary =
-      "Тревога о деньгах ещё влияет на решения, но вы начинаете менять паттерны.";
+      "Денежная тревога ещё присутствует, но вы работаете над стратегией и убеждениями.";
   } else {
     level = "developing";
-    title = "Первый шаг к финансовому спокойствию";
+    title = "Начало работы с денежной тревогой";
     summary =
-      "Деньги вызывают сильное напряжение. Тренажёр поможет разобраться в корнях тревоги и начать менять установки.";
+      "Финансовые вопросы вызывают сильное напряжение. Тренажёр поможет выстроить здоровое отношение.";
   }
 
   const recommendations: string[] = [];
   if (anxiety > 10)
     recommendations.push(
-      "Запишите свой главный денежный страх и спросите: «Что самое худшее может случиться?»"
+      "Замечайте моменты денежной тревоги — осознание снижает её силу."
     );
-  if (beliefs < 8)
+  if (beliefs < 10)
     recommendations.push(
-      "Запишите 5 убеждений о деньгах из детства — осознание меняет установки."
+      "Запишите 3 родительских установки о деньгах и проверьте: они ваши?"
     );
   if (strategy < 8)
     recommendations.push(
-      "Создайте простой финансовый план на месяц — конкретика снижает тревогу."
+      "Начните с простого: фиксируйте доходы и расходы 1 неделю."
     );
   recommendations.push(
-    "Для предпринимателей рекомендуем годовой доступ для глубокой проработки."
+    "Повторяйте тренажёр ежемесячно для отслеживания прогресса."
   );
 
   return {
@@ -471,11 +684,11 @@ function calculateMoneyAnxietyResult(
     insights: [
       `Денежные убеждения: ${beliefs} баллов`,
       `Финансовая тревога: ${anxiety} баллов`,
-      `Денежная стратегия: ${strategy} баллов`,
+      `Стратегическое мышление: ${strategy} баллов`,
     ],
     nextActions: [
-      "Записать 3 денежных убеждения из семьи",
-      "Повторить через 2 недели",
+      "Записать 3 главных страха о деньгах",
+      "Составить план расходов на неделю",
     ],
   };
 }

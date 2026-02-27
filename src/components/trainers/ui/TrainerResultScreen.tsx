@@ -21,7 +21,6 @@ type Props = {
   onBack: () => void;
 };
 
-/* ---------- animated counter hook ---------- */
 function useCounter(target: number, duration = 1200, delay = 400) {
   const [value, setValue] = useState(0);
   const raf = useRef(0);
@@ -54,7 +53,6 @@ function useCounter(target: number, duration = 1200, delay = 400) {
   return value;
 }
 
-/* ---------- checkmark animation ---------- */
 function AnimatedCheckmark() {
   const [drawn, setDrawn] = useState(false);
   const [glow, setGlow] = useState(false);
@@ -110,7 +108,145 @@ function AnimatedCheckmark() {
   );
 }
 
-/* ---------- score card ---------- */
+function EMIGauge({ value, delay = 500 }: { value: number; delay?: number }) {
+  const animated = useCounter(value, 1500, delay);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay - 200);
+    return () => clearTimeout(t);
+  }, [delay]);
+
+  const radius = 60;
+  const stroke = 8;
+  const circumference = 2 * Math.PI * radius;
+  const arc = circumference * 0.75;
+  const offset = arc - (arc * animated) / 100;
+
+  const getColor = (v: number) => {
+    if (v >= 86) return "hsl(160, 60%, 42%)";
+    if (v >= 71) return "hsl(160, 50%, 48%)";
+    if (v >= 51) return "hsl(40, 70%, 50%)";
+    if (v >= 31) return "hsl(25, 70%, 50%)";
+    return "hsl(0, 60%, 50%)";
+  };
+
+  return (
+    <div
+      className={`relative flex flex-col items-center transition-all duration-700 ease-out ${
+        visible ? "opacity-100 scale-100" : "opacity-0 scale-90"
+      }`}
+    >
+      <svg
+        width={radius * 2 + stroke * 2}
+        height={radius * 2 + stroke * 2 - 30}
+        viewBox={`0 0 ${radius * 2 + stroke * 2} ${radius * 2 + stroke * 2 - 30}`}
+      >
+        <circle
+          cx={radius + stroke}
+          cy={radius + stroke}
+          r={radius}
+          fill="none"
+          stroke="hsl(var(--muted))"
+          strokeWidth={stroke}
+          strokeDasharray={`${arc} ${circumference}`}
+          strokeDashoffset={0}
+          strokeLinecap="round"
+          transform={`rotate(135, ${radius + stroke}, ${radius + stroke})`}
+        />
+        <circle
+          cx={radius + stroke}
+          cy={radius + stroke}
+          r={radius}
+          fill="none"
+          stroke={getColor(animated)}
+          strokeWidth={stroke}
+          strokeDasharray={`${arc} ${circumference}`}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform={`rotate(135, ${radius + stroke}, ${radius + stroke})`}
+          style={{ transition: "stroke-dashoffset 0.1s ease-out, stroke 0.3s" }}
+        />
+      </svg>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[60%] text-center">
+        <div
+          className="text-3xl font-bold tabular-nums"
+          style={{ color: getColor(animated) }}
+        >
+          {animated}
+        </div>
+        <div className="text-xs text-muted-foreground mt-0.5">EMI</div>
+      </div>
+    </div>
+  );
+}
+
+function IndexCard({
+  label,
+  value,
+  maxValue,
+  icon,
+  color,
+  delay,
+  description,
+}: {
+  label: string;
+  value: number;
+  maxValue: number;
+  icon: string;
+  color: string;
+  delay: number;
+  description: string;
+}) {
+  const animated = useCounter(value, 1000, delay);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay - 100);
+    return () => clearTimeout(t);
+  }, [delay]);
+
+  const pct = Math.round((value / maxValue) * 100);
+
+  return (
+    <div
+      className={`
+        rounded-xl border bg-card p-3.5
+        transition-all duration-500 ease-out
+        ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+      `}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <div
+          className="w-7 h-7 rounded-lg flex items-center justify-center"
+          style={{ backgroundColor: `${color}15` }}
+        >
+          <Icon name={icon} className="w-3.5 h-3.5" style={{ color }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-xs text-muted-foreground truncate">{label}</div>
+        </div>
+        <div className="text-lg font-bold tabular-nums" style={{ color }}>
+          {animated}
+        </div>
+      </div>
+      <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-1000 ease-out"
+          style={{
+            width: visible ? `${pct}%` : "0%",
+            backgroundColor: color,
+            transitionDelay: `${delay}ms`,
+          }}
+        />
+      </div>
+      <div className="text-xs text-muted-foreground/70 mt-1.5 leading-tight">
+        {description}
+      </div>
+    </div>
+  );
+}
+
 function ScoreCard({
   label,
   value,
@@ -151,7 +287,6 @@ function ScoreCard({
   );
 }
 
-/* ---------- stagger list item ---------- */
 function StaggerItem({
   children,
   index,
@@ -192,14 +327,15 @@ function StaggerItem({
   );
 }
 
-/* ---------- level badge ---------- */
 function LevelBadge({ level }: { level?: string }) {
   if (!level) return null;
 
   const config: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
-    high: { label: "Высокий уровень", variant: "default" },
+    excellent: { label: "Высокий уровень осознанности", variant: "default" },
+    high: { label: "Зрелая саморегуляция", variant: "default" },
     medium: { label: "Средний уровень", variant: "secondary" },
     developing: { label: "Развивается", variant: "outline" },
+    beginning: { label: "Начальный уровень", variant: "outline" },
   };
 
   const c = config[level] || { label: level, variant: "outline" as const };
@@ -211,7 +347,6 @@ function LevelBadge({ level }: { level?: string }) {
   );
 }
 
-/* ---------- chart colors ---------- */
 const CHART_COLORS = [
   "hsl(252, 60%, 48%)",
   "hsl(280, 50%, 52%)",
@@ -221,7 +356,9 @@ const CHART_COLORS = [
   "hsl(32, 60%, 50%)",
 ];
 
-/* ---------- main component ---------- */
+const isEmotionsTrainer = (trainerId: string) =>
+  trainerId === "emotions-in-action";
+
 export default function TrainerResultScreen({
   result,
   trainer,
@@ -241,9 +378,10 @@ export default function TrainerResultScreen({
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  /* Prepare chart data -- exclude "total" key */
+  const isEMI = isEmotionsTrainer(trainer.id);
+
   const chartData = Object.entries(result.scores)
-    .filter(([key]) => key !== "total")
+    .filter(([key]) => key !== "total" && key !== "EMI")
     .map(([key, value]) => ({
       name: key,
       value,
@@ -265,6 +403,10 @@ export default function TrainerResultScreen({
     beliefs: "Убеждения",
     anxiety: "Тревога",
     strategy: "Стратегия",
+    EA: "Осознанность",
+    SR: "Саморегуляция",
+    IP: "Импульсивность",
+    EMI: "Эмоц. зрелость",
   };
 
   const COLOR_HUES: Record<string, number> = {
@@ -283,11 +425,14 @@ export default function TrainerResultScreen({
     beliefs: 220,
     anxiety: 0,
     strategy: 160,
+    EA: 252,
+    SR: 160,
+    IP: 25,
+    EMI: 220,
   };
 
   return (
     <div className="flex flex-col gap-6 pb-8">
-      {/* Section 1: Checkmark + title */}
       <div
         className={`flex flex-col items-center text-center transition-all duration-600 ease-out ${
           sectionVisible >= 1
@@ -295,7 +440,11 @@ export default function TrainerResultScreen({
             : "opacity-0 translate-y-6"
         }`}
       >
-        <AnimatedCheckmark />
+        {isEMI ? (
+          <EMIGauge value={result.scores["EMI"] || 0} delay={500} />
+        ) : (
+          <AnimatedCheckmark />
+        )}
 
         <h2 className="text-2xl font-bold text-foreground mb-2 leading-tight">
           {result.title}
@@ -308,71 +457,117 @@ export default function TrainerResultScreen({
         </p>
       </div>
 
-      {/* Section 2: Score cards */}
-      {chartData.length > 0 && (
+      {isEMI && (
         <div
-          className={`transition-all duration-500 ease-out ${
+          className={`transition-all duration-600 ease-out ${
             sectionVisible >= 2
               ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4"
+              : "opacity-0 translate-y-6"
           }`}
         >
-          <h3 className="text-sm font-semibold text-foreground/70 uppercase tracking-wide mb-3">
-            Результаты
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            Индексы
           </h3>
-          <div className="grid grid-cols-2 gap-3">
-            {chartData.map((d, i) => (
-              <ScoreCard
-                key={d.name}
-                label={SCORE_LABELS[d.name] || d.name}
-                value={d.value}
-                delay={600 + i * 150}
-                colorHue={COLOR_HUES[d.name] || 252}
-              />
-            ))}
+          <div className="grid grid-cols-1 gap-2.5">
+            <IndexCard
+              label="Эмоциональная осознанность (EA)"
+              value={result.scores["EA"] || 0}
+              maxValue={30}
+              icon="Eye"
+              color="hsl(252, 60%, 52%)"
+              delay={700}
+              description="Распознавание эмоций, телесных сигналов и мыслей"
+            />
+            <IndexCard
+              label="Саморегуляция (SR)"
+              value={result.scores["SR"] || 0}
+              maxValue={30}
+              icon="Shield"
+              color="hsl(160, 55%, 42%)"
+              delay={900}
+              description="Выбор стратегии и составление плана действий"
+            />
+            <IndexCard
+              label="Импульсивность (IP)"
+              value={result.scores["IP"] || 0}
+              maxValue={10}
+              icon="Zap"
+              color="hsl(25, 70%, 50%)"
+              delay={1100}
+              description="Чем ниже — тем лучше. Уровень автоматических реакций"
+            />
           </div>
+        </div>
+      )}
 
-          {/* Bar chart */}
-          <div className="mt-4 rounded-xl border bg-card p-4">
+      {!isEMI && (
+        <div
+          className={`transition-all duration-600 ease-out ${
+            sectionVisible >= 2
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-6"
+          }`}
+        >
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            Показатели
+          </h3>
+          <div className="grid grid-cols-2 gap-2.5">
+            {Object.entries(result.scores)
+              .filter(([key]) => key !== "total")
+              .map(([key, value], idx) => (
+                <ScoreCard
+                  key={key}
+                  label={SCORE_LABELS[key] || key}
+                  value={value}
+                  delay={600 + idx * 150}
+                  colorHue={COLOR_HUES[key] || 252}
+                />
+              ))}
+          </div>
+        </div>
+      )}
+
+      {chartData.length > 1 && (
+        <div
+          className={`transition-all duration-600 ease-out ${
+            sectionVisible >= 3
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-6"
+          }`}
+        >
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            Распределение
+          </h3>
+          <div className="rounded-xl border bg-card p-4">
             <ResponsiveContainer width="100%" height={180}>
               <BarChart
                 data={chartData.map((d) => ({
                   ...d,
-                  displayName: SCORE_LABELS[d.name] || d.name,
+                  name: SCORE_LABELS[d.name] || d.name,
                 }))}
-                margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+                margin={{ top: 4, right: 4, bottom: 4, left: -20 }}
               >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                  vertical={false}
-                />
+                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                 <XAxis
-                  dataKey="displayName"
+                  dataKey="name"
                   tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  axisLine={false}
-                  tickLine={false}
                 />
                 <YAxis
                   tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  axisLine={false}
-                  tickLine={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
+                    background: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    fontSize: "12px",
+                    borderRadius: 8,
+                    fontSize: 12,
                   }}
-                  labelStyle={{ color: "hsl(var(--foreground))" }}
                 />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={40}>
-                  {chartData.map((_, i) => (
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {chartData.map((_, index) => (
                     <Cell
-                      key={`cell-${i}`}
-                      fill={CHART_COLORS[i % CHART_COLORS.length]}
-                      fillOpacity={0.85}
+                      key={`cell-${index}`}
+                      fill={CHART_COLORS[index % CHART_COLORS.length]}
                     />
                   ))}
                 </Bar>
@@ -382,21 +577,20 @@ export default function TrainerResultScreen({
         </div>
       )}
 
-      {/* Section 3: Insights */}
       {result.insights.length > 0 && (
         <div
-          className={`transition-all duration-500 ease-out ${
+          className={`transition-all duration-600 ease-out ${
             sectionVisible >= 3
               ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4"
+              : "opacity-0 translate-y-6"
           }`}
         >
-          <h3 className="text-sm font-semibold text-foreground/70 uppercase tracking-wide mb-3">
+          <h3 className="text-sm font-semibold text-foreground mb-3">
             Наблюдения
           </h3>
-          <div className="flex flex-col gap-2.5">
-            {result.insights.map((insight, i) => (
-              <StaggerItem key={i} index={i} icon="Eye">
+          <div className="flex flex-col gap-2.5 rounded-xl border bg-card p-4">
+            {result.insights.map((insight, idx) => (
+              <StaggerItem key={idx} index={idx} icon="Lightbulb">
                 {insight}
               </StaggerItem>
             ))}
@@ -404,96 +598,74 @@ export default function TrainerResultScreen({
         </div>
       )}
 
-      {/* Section 4: Recommendations */}
       {result.recommendations.length > 0 && (
         <div
-          className={`transition-all duration-500 ease-out ${
+          className={`transition-all duration-600 ease-out ${
             sectionVisible >= 4
               ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4"
+              : "opacity-0 translate-y-6"
           }`}
         >
-          <h3 className="text-sm font-semibold text-foreground/70 uppercase tracking-wide mb-3">
+          <h3 className="text-sm font-semibold text-foreground mb-3">
             Рекомендации
           </h3>
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex flex-col gap-3">
-              {result.recommendations.map((rec, i) => (
-                <StaggerItem
-                  key={i}
-                  index={i}
-                  icon="Lightbulb"
-                  iconColor="bg-amber-50"
-                >
-                  {rec}
-                </StaggerItem>
-              ))}
-            </div>
+          <div className="flex flex-col gap-2.5 rounded-xl border bg-card p-4">
+            {result.recommendations.map((rec, idx) => (
+              <StaggerItem
+                key={idx}
+                index={idx}
+                icon="ArrowRight"
+                iconColor="bg-emerald-50"
+              >
+                {rec}
+              </StaggerItem>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Section 5: Next actions + buttons */}
+      {result.nextActions && result.nextActions.length > 0 && (
+        <div
+          className={`transition-all duration-600 ease-out ${
+            sectionVisible >= 5
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-6"
+          }`}
+        >
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            Следующие шаги
+          </h3>
+          <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+            {result.nextActions.map((action, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary">
+                  {idx + 1}
+                </div>
+                <span className="text-sm text-foreground/80">{action}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div
-        className={`flex flex-col gap-4 transition-all duration-500 ease-out ${
+        className={`flex flex-col gap-3 pt-2 transition-all duration-600 ease-out ${
           sectionVisible >= 5
             ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-4"
+            : "opacity-0 translate-y-6"
         }`}
       >
-        {result.nextActions && result.nextActions.length > 0 && (
-          <div className="rounded-xl bg-gradient-to-br from-primary/5 to-accent/20 border border-primary/10 p-4">
-            <div className="flex items-center gap-2 mb-2.5">
-              <Icon name="Target" className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">
-                Следующие шаги
-              </span>
-            </div>
-            <div className="flex flex-col gap-2">
-              {result.nextActions.map((action, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[10px] font-bold text-primary">
-                      {i + 1}
-                    </span>
-                  </div>
-                  <span className="text-sm text-foreground/80 leading-relaxed">
-                    {action}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-col gap-2.5 pt-2">
-          <Button
-            onClick={onRestart}
-            className="w-full h-12 text-base font-medium rounded-xl"
-          >
-            <Icon name="RotateCcw" className="w-4 h-4 mr-2" />
-            Пройти снова
-          </Button>
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="w-full h-12 text-base font-medium rounded-xl"
-          >
-            <Icon name="ArrowLeft" className="w-4 h-4 mr-2" />
-            Вернуться к тренажёрам
-          </Button>
-        </div>
-
-        {/* Trainer attribution */}
-        <div className="flex items-center justify-center gap-2 pt-2">
-          <Icon
-            name={trainer.icon}
-            className={`w-4 h-4 ${trainer.iconColor}`}
-          />
-          <span className="text-xs text-muted-foreground">
-            {trainer.title}
-          </span>
-        </div>
+        <Button onClick={onRestart} className="w-full h-12 text-base font-medium rounded-xl">
+          <Icon name="RotateCcw" className="w-4 h-4 mr-2" />
+          Пройти ещё раз
+        </Button>
+        <Button
+          variant="outline"
+          onClick={onBack}
+          className="w-full h-11 rounded-xl"
+        >
+          К тренажёрам
+        </Button>
       </div>
     </div>
   );

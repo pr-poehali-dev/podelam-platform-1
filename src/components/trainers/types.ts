@@ -1,18 +1,26 @@
 export type StepType = "intro" | "single-choice" | "multiple-choice" | "scale" | "text-input" | "info" | "result";
 
+export interface OptionGroup {
+  label: string;
+  optionIds: string[];
+}
+
 export interface ScenarioStep {
   id: string;
   type: StepType;
   title: string;
   description?: string;
   options?: StepOption[];
+  optionGroups?: OptionGroup[];
+  maxSelect?: number;
   scaleMin?: number;
   scaleMax?: number;
   scaleLabels?: { min: string; max: string };
   placeholder?: string;
-  nextStep?: string; // default next step ID
-  resultTemplate?: string; // for result steps - template key
-  scoreCategory?: string; // which category this step scores into
+  nextStep?: string;
+  resultTemplate?: string;
+  scoreCategory?: string;
+  meta?: Record<string, unknown>;
 }
 
 export interface StepOption {
@@ -20,8 +28,9 @@ export interface StepOption {
   label: string;
   score?: number;
   scoreCategory?: string;
-  nextStep?: string; // for branching - override default next
+  nextStep?: string;
   tags?: string[];
+  weight?: number;
 }
 
 export interface TrainerScenario {
