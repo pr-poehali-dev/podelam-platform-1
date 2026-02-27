@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { activatePaidOnce } from "@/lib/access";
+import { syncTrainerSubscription } from "@/lib/trainerAccess";
 
 type Mode = "login" | "register" | "reset_email" | "reset_code";
 
@@ -153,6 +154,8 @@ export default function Auth() {
       }
 
       localStorage.setItem(`pdd_tests_${user.email}`, JSON.stringify(testsArr));
+
+      syncTrainerSubscription().catch(() => {});
 
       if (mode === "register") {
         window.ym?.(107022183, 'reachGoal', 'registration');

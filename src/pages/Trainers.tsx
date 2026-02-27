@@ -5,7 +5,12 @@ import TrainerCatalog from "@/components/trainers/ui/TrainerCatalog";
 import TrainerSessionView from "@/components/trainers/ui/TrainerSessionView";
 import TrainerPaywallModal from "@/components/trainers/ui/TrainerPaywallModal";
 import Icon from "@/components/ui/icon";
-import { hasTrainerAccess } from "@/lib/trainerAccess";
+import { Button } from "@/components/ui/button";
+import {
+  hasTrainerAccess,
+  checkDeviceBlocked,
+  syncTrainerSubscription,
+} from "@/lib/trainerAccess";
 
 const VALID_IDS: TrainerId[] = [
   "conscious-choice",
@@ -14,6 +19,14 @@ const VALID_IDS: TrainerId[] = [
   "self-esteem",
   "money-anxiety",
 ];
+
+const TRAINER_NAMES: Record<string, string> = {
+  "conscious-choice": "Осознанный выбор",
+  "emotions-in-action": "Эмоции в действии",
+  "anti-procrastination": "Антипрокрастинация",
+  "self-esteem": "Самооценка",
+  "money-anxiety": "Деньги без тревоги",
+};
 
 function isValidTrainerId(v: string | null): v is TrainerId {
   return !!v && VALID_IDS.includes(v as TrainerId);
@@ -27,12 +40,15 @@ export default function Trainers() {
     isValidTrainerId(paramId) ? paramId : null
   );
   const [paywallTrainer, setPaywallTrainer] = useState<TrainerId | null>(null);
+  const [deviceBlocked, setDeviceBlocked] = useState<string | null>(null);
 
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) {
       navigate("/auth");
+      return;
     }
+    syncTrainerSubscription().catch(() => {});
   }, [navigate]);
 
   useEffect(() => {
@@ -43,13 +59,20 @@ export default function Trainers() {
     }
   }, [paramId]);
 
-  const handleSelectTrainer = (id: TrainerId) => {
-    if (hasTrainerAccess(id)) {
-      setActiveTrainer(id);
-      navigate(`/trainers?id=${id}`, { replace: true });
-    } else {
+  const handleSelectTrainer = async (id: TrainerId) => {
+    if (!hasTrainerAccess(id)) {
       setPaywallTrainer(id);
+      return;
     }
+
+    const { blocked, trainerId } = await checkDeviceBlocked();
+    if (blocked) {
+      setDeviceBlocked(trainerId || id);
+      return;
+    }
+
+    setActiveTrainer(id);
+    navigate(`/trainers?id=${id}`, { replace: true });
   };
 
   const handlePaywallSuccess = () => {
@@ -138,6 +161,35 @@ export default function Trainers() {
           onClose={() => setPaywallTrainer(null)}
           onSuccess={handlePaywallSuccess}
         />
+      )}
+
+      {deviceBlocked && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl border shadow-xl max-w-sm w-full p-6 text-center animate-scale-in">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-50 flex items-center justify-center">
+              <Icon name="Monitor" size={28} className="text-amber-600" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground mb-2">
+              Сессия активна на другом устройстве
+            </h3>
+            <p className="text-sm text-muted-foreground mb-1">
+              Сейчас идёт прохождение тренажёра
+            </p>
+            <p className="text-sm font-medium text-foreground mb-5">
+              «{TRAINER_NAMES[deviceBlocked] || deviceBlocked}»
+            </p>
+            <p className="text-xs text-muted-foreground mb-5 leading-relaxed">
+              Завершите сессию на другом устройстве или подождите ~2 минуты — блокировка снимется автоматически.
+            </p>
+            <Button
+              onClick={() => setDeviceBlocked(null)}
+              variant="outline"
+              className="w-full rounded-xl"
+            >
+              Понятно
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );

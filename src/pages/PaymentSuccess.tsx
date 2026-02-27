@@ -45,7 +45,7 @@ export default function PaymentSuccess() {
           syncFromServer().catch(() => {});
           const pending = getPendingTrainerPlan();
           if (pending) {
-            activateTrainerPlan(pending.planId, pending.trainerId);
+            await activateTrainerPlan(pending.planId, pending.trainerId);
             clearPendingTrainerPlan();
             setIsTrainerPayment(true);
           }

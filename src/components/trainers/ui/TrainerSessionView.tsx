@@ -16,6 +16,7 @@ import {
   addCompletedSession,
   clearCurrentSession,
 } from "../trainerStorage";
+import { startTrainerSession, sendHeartbeat, endTrainerSession } from "@/lib/trainerAccess";
 import TrainerStepRenderer from "./TrainerStepRenderer";
 import TrainerProgressBar from "./TrainerProgressBar";
 import TrainerResultScreen from "./TrainerResultScreen";
@@ -54,6 +55,18 @@ export default function TrainerSessionView({
       setSession(fresh);
       saveCurrentSession(fresh);
     }
+  }, [trainerId]);
+
+  /* Register active session on server + heartbeat every 30s */
+  useEffect(() => {
+    startTrainerSession(trainerId).catch(() => {});
+    const interval = setInterval(() => {
+      sendHeartbeat().catch(() => {});
+    }, 30_000);
+    return () => {
+      clearInterval(interval);
+      endTrainerSession();
+    };
   }, [trainerId]);
 
   /* Transition helper */
