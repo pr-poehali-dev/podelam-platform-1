@@ -426,11 +426,111 @@ export async function checkDeviceBlocked(): Promise<{ blocked: boolean; trainerI
   }
 }
 
+export async function saveSessionToServer(session: {
+  trainerId: string;
+  sessionId: string;
+  startedAt: string;
+  completedAt?: string;
+  scores: Record<string, number>;
+  result?: unknown;
+  answers?: Record<string, unknown>;
+}): Promise<void> {
+  const email = getEmail();
+  if (!email || email === "guest") return;
+
+  try {
+    await fetch(TRAINER_ACCESS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "save_session",
+        email,
+        trainer_id: session.trainerId,
+        session_id: session.sessionId,
+        started_at: session.startedAt,
+        completed_at: session.completedAt || null,
+        scores: session.scores,
+        result: session.result || null,
+        answers: session.answers || {},
+      }),
+    });
+  } catch {
+    // offline fallback — local already saved
+  }
+}
+
+export async function getSessionsFromServer(trainerId?: string): Promise<
+  {
+    session_id: string;
+    trainer_id: string;
+    started_at: string | null;
+    completed_at: string | null;
+    scores: Record<string, number>;
+    result: unknown | null;
+  }[]
+> {
+  const email = getEmail();
+  if (!email || email === "guest") return [];
+
+  try {
+    const res = await fetch(TRAINER_ACCESS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "get_sessions",
+        email,
+        trainer_id: trainerId,
+      }),
+    });
+    const data = await res.json();
+    return data.sessions || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getServerSessionCount(trainerId: string): Promise<number> {
+  const email = getEmail();
+  if (!email || email === "guest") return 0;
+
+  try {
+    const res = await fetch(TRAINER_ACCESS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "get_session_count",
+        email,
+        trainer_id: trainerId,
+      }),
+    });
+    const data = await res.json();
+    return data.count || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function getSessionLimitInfoAsync(trainerId: TrainerId): Promise<{ limited: boolean; used: number; limit: number }> {
+  const sub = getTrainerSubscription();
+  if (!sub || sub.allTrainers) return { limited: false, used: 0, limit: Infinity };
+
+  const serverCount = await getServerSessionCount(trainerId);
+  const localInfo = getSessionLimitInfo(trainerId);
+  const used = Math.max(serverCount, localInfo.used);
+
+  return {
+    limited: used >= BASIC_SESSION_LIMIT,
+    used,
+    limit: BASIC_SESSION_LIMIT,
+  };
+}
+
 export default {
   hasTrainerAccess,
   isBasicUnbound,
   bindBasicPlan,
   getSessionLimitInfo,
+  getSessionLimitInfoAsync,
   getTrainerSubscription,
   activateTrainerPlan,
   syncTrainerSubscription,
@@ -440,5 +540,8 @@ export default {
   sendHeartbeat,
   endTrainerSession,
   checkDeviceBlocked,
+  saveSessionToServer,
+  getSessionsFromServer,
+  getServerSessionCount,
   TRAINER_PLANS,
 };

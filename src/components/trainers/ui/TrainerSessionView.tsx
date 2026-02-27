@@ -16,7 +16,7 @@ import {
   addCompletedSession,
   clearCurrentSession,
 } from "../trainerStorage";
-import { startTrainerSession, sendHeartbeat, endTrainerSession, getSessionLimitInfo } from "@/lib/trainerAccess";
+import { startTrainerSession, sendHeartbeat, endTrainerSession, getSessionLimitInfo, getSessionLimitInfoAsync } from "@/lib/trainerAccess";
 import TrainerStepRenderer from "./TrainerStepRenderer";
 import TrainerProgressBar from "./TrainerProgressBar";
 import TrainerResultScreen from "./TrainerResultScreen";
@@ -43,6 +43,7 @@ export default function TrainerSessionView({
   const [viewState, setViewState] = useState<ViewState>("playing");
   const [isAnimating, setIsAnimating] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [limitReached, setLimitReached] = useState(false);
   const animatingRef = useRef(false);
 
   /* Initialize or restore session */
@@ -123,6 +124,7 @@ export default function TrainerSessionView({
     if (step.type === "result") {
       if (session.completedAt) {
         setViewState("result");
+        getSessionLimitInfoAsync(trainerId).then((info) => setLimitReached(info.limited)).catch(() => {});
         return;
       }
       const completed = completeSession(session);
@@ -130,6 +132,7 @@ export default function TrainerSessionView({
       setSession(completed);
       setViewState("result");
       onComplete(completed);
+      getSessionLimitInfoAsync(trainerId).then((info) => setLimitReached(info.limited)).catch(() => {});
       return;
     }
 
@@ -154,8 +157,8 @@ export default function TrainerSessionView({
   }, [session, onExit]);
 
   /* Handle restart */
-  const handleRestart = useCallback(() => {
-    const limitInfo = getSessionLimitInfo(trainerId);
+  const handleRestart = useCallback(async () => {
+    const limitInfo = await getSessionLimitInfoAsync(trainerId);
     if (limitInfo.limited) {
       onExit();
       return;
@@ -234,7 +237,7 @@ export default function TrainerSessionView({
             trainer={trainer}
             onRestart={handleRestart}
             onBack={onExit}
-            sessionLimitReached={getSessionLimitInfo(trainerId).limited}
+            sessionLimitReached={limitReached}
           />
         </div>
       </div>

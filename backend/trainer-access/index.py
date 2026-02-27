@@ -175,6 +175,80 @@ def handler(event: dict, context) -> dict:
                 }
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'blocked': False})}
 
+        elif action == 'save_session':
+            trainer_id = body.get('trainer_id', '')
+            session_id = body.get('session_id', '')
+            started_at = body.get('started_at')
+            completed_at = body.get('completed_at')
+            scores = body.get('scores', {})
+            result = body.get('result')
+            answers = body.get('answers', {})
+
+            if not trainer_id or not session_id:
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'trainer_id and session_id required'})}
+
+            cur.execute(
+                f'''INSERT INTO "{S}".trainer_sessions (user_id, trainer_id, session_id, started_at, completed_at, scores, result, answers)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (user_id, session_id) DO UPDATE SET
+                        completed_at = EXCLUDED.completed_at,
+                        scores = EXCLUDED.scores,
+                        result = EXCLUDED.result,
+                        answers = EXCLUDED.answers''',
+                (user_id, trainer_id, session_id,
+                 started_at or datetime.now().isoformat(),
+                 completed_at,
+                 json.dumps(scores),
+                 json.dumps(result) if result else None,
+                 json.dumps(answers))
+            )
+            conn.commit()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        elif action == 'get_sessions':
+            trainer_id = body.get('trainer_id')
+            if trainer_id:
+                cur.execute(
+                    f'''SELECT session_id, trainer_id, started_at, completed_at, scores, result
+                        FROM "{S}".trainer_sessions
+                        WHERE user_id = %s AND trainer_id = %s
+                        ORDER BY started_at DESC LIMIT 50''',
+                    (user_id, trainer_id)
+                )
+            else:
+                cur.execute(
+                    f'''SELECT session_id, trainer_id, started_at, completed_at, scores, result
+                        FROM "{S}".trainer_sessions
+                        WHERE user_id = %s
+                        ORDER BY started_at DESC LIMIT 100''',
+                    (user_id,)
+                )
+            rows = cur.fetchall()
+            sessions = []
+            for r in rows:
+                s = {
+                    'session_id': r[0],
+                    'trainer_id': r[1],
+                    'started_at': str(r[2]) if r[2] else None,
+                    'completed_at': str(r[3]) if r[3] else None,
+                    'scores': r[4] if r[4] else {},
+                    'result': r[5] if r[5] else None,
+                }
+                sessions.append(s)
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sessions': sessions})}
+
+        elif action == 'get_session_count':
+            trainer_id = body.get('trainer_id', '')
+            if not trainer_id:
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'trainer_id required'})}
+            cur.execute(
+                f'''SELECT COUNT(*) FROM "{S}".trainer_sessions
+                    WHERE user_id = %s AND trainer_id = %s AND completed_at IS NOT NULL''',
+                (user_id, trainer_id)
+            )
+            count = cur.fetchone()[0]
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'count': count, 'trainer_id': trainer_id})}
+
         return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'unknown action'})}
 
     finally:

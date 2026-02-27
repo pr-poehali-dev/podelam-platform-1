@@ -13,7 +13,9 @@ import {
   isBasicUnbound,
   bindBasicPlan,
   getSessionLimitInfo,
+  getSessionLimitInfoAsync,
 } from "@/lib/trainerAccess";
+import { syncAllSessionsFromServer } from "@/components/trainers/trainerStorage";
 
 const VALID_IDS: TrainerId[] = [
   "conscious-choice",
@@ -69,6 +71,7 @@ export default function Trainers() {
       return;
     }
     syncTrainerSubscription().catch(() => {});
+    syncAllSessionsFromServer().catch(() => {});
   }, [navigate]);
 
   useEffect(() => {
@@ -90,7 +93,7 @@ export default function Trainers() {
       return;
     }
 
-    const limitInfo = getSessionLimitInfo(id);
+    const limitInfo = await getSessionLimitInfoAsync(id);
     if (limitInfo.limited) {
       setSessionLimit({ trainerId: id, used: limitInfo.used, limit: limitInfo.limit });
       return;
