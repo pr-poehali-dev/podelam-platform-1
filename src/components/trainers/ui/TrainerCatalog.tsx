@@ -340,9 +340,8 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
                 {sub.allTrainers
-                  ? "Все тренажеры доступны"
+                  ? `Все тренажеры доступны${subExpires ? ` · до ${subExpires}` : ""}`
                   : `Тренажер: ${TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}`}
-                {subExpires && ` · до ${subExpires}`}
                 {limitInfo && !sub.allTrainers && ` · Осталось ${limitInfo.limit - limitInfo.used} из ${limitInfo.limit} сессий`}
               </div>
             </div>
