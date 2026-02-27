@@ -205,6 +205,49 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
               animationDelay={idx * 100}
             />
           ))}
+
+          {!search.trim() && (
+            <div className="relative flex flex-col rounded-2xl border border-dashed border-border/80 bg-card/60 overflow-hidden opacity-80">
+              <div className="relative h-28 bg-gradient-to-br from-slate-400 to-gray-500 flex items-center justify-center overflow-hidden">
+                <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
+                <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/5" />
+                <div className="relative z-10 w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <Icon name="ShieldOff" className="w-8 h-8 text-white" />
+                </div>
+                <div className="absolute top-3 right-3">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/90 text-slate-600 shadow-sm">
+                    Скоро
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col flex-1 p-4 gap-3">
+                <div>
+                  <h3 className="font-bold text-lg text-foreground leading-tight">
+                    Границы и Нет
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Навык отказывать
+                  </p>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                  Научитесь говорить «нет» без чувства вины. Прокачивает уверенность и самоуважение.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {["границы", "отказ", "уверенность", "самоуважение"].map((tag) => (
+                    <span key={tag} className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-auto pt-3">
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center justify-center">
+                    <Icon name="Hammer" size={15} className="text-slate-400" />
+                    <span className="text-xs font-medium text-slate-500">В разработке</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-center">
