@@ -204,7 +204,7 @@ export default function TrainerSessionView({
   /* ---------- Result view ---------- */
   if (viewState === "result" && session.result) {
     return (
-      <div className="flex flex-col min-h-full">
+      <div className="flex flex-col min-h-full max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
           <button
@@ -243,7 +243,7 @@ export default function TrainerSessionView({
 
   /* ---------- Playing view ---------- */
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col min-h-full max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex flex-col gap-3 px-4 py-3 border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
