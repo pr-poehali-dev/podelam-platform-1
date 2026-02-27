@@ -46,6 +46,9 @@ export function getCurrentStep(
   if (step && step.meta?.dynamic && step.id === "em-strategy") {
     return getDynamicStrategyStep(session, step);
   }
+  if (step && step.meta?.dynamic && step.id === "ma-rational") {
+    return getDynamicRationalStep(session, step);
+  }
   return step;
 }
 
@@ -78,6 +81,9 @@ export function answerStep(
 
   if (step.meta?.dynamic && step.id === "em-strategy") {
     step = getDynamicStrategyStep(session, step);
+  }
+  if (step.meta?.dynamic && step.id === "ma-rational") {
+    step = getDynamicRationalStep(session, step);
   }
 
   const answer: SessionAnswer = {
@@ -230,6 +236,82 @@ function getDynamicStrategyStep(
     for (const opt of fallback) {
       strategyOptions.push(opt);
     }
+  }
+
+  return {
+    ...baseStep,
+    options: strategyOptions,
+  };
+}
+
+const MONEY_RATIONAL_MAP: Record<string, StepOption[]> = {
+  worthlessness: [
+    { id: "rat-market", label: "Сравнить свою цену с рынком", score: 3 },
+    { id: "rat-value", label: "Проанализировать ценность для клиента", score: 3 },
+    { id: "rat-contribution", label: "Посчитать свой вклад в результат", score: 2 },
+  ],
+  distrust: [
+    { id: "rat-stats", label: "Проверить статистику: уходят ли клиенты?", score: 3 },
+    { id: "rat-test-raise", label: "Протестировать повышение на 1 клиенте", score: 3 },
+    { id: "rat-survey", label: "Провести опрос среди клиентов", score: 2 },
+  ],
+  scarcity: [
+    { id: "rat-plan", label: "Сделать финансовый план на 3 месяца", score: 3 },
+    { id: "rat-cushion", label: "Создать подушку безопасности", score: 3 },
+    { id: "rat-sources", label: "Найти дополнительный источник дохода", score: 2 },
+  ],
+  overwork: [
+    { id: "rat-hourly", label: "Посчитать стоимость часа работы", score: 3 },
+    { id: "rat-automate", label: "Автоматизировать рутину", score: 2 },
+    { id: "rat-delegate2", label: "Передать часть задач", score: 3 },
+  ],
+  "money-fear": [
+    { id: "rat-small-step", label: "Начать с минимального финансового шага", score: 3 },
+    { id: "rat-educate", label: "Изучить тему: книга, курс, подкаст", score: 2 },
+    { id: "rat-mentor", label: "Найти наставника в финансовом вопросе", score: 3 },
+  ],
+  "money-guilt": [
+    { id: "rat-deserve", label: "Составить список: что я даю за эти деньги", score: 3 },
+    { id: "rat-permission", label: "Дать себе разрешение зарабатывать больше", score: 2 },
+    { id: "rat-separate", label: "Разделить свою вину и факты", score: 3 },
+  ],
+  positive: [
+    { id: "rat-amplify", label: "Закрепить успех — записать, что сработало", score: 3 },
+    { id: "rat-next", label: "Сделать следующий финансовый шаг", score: 3 },
+    { id: "rat-share-success", label: "Поделиться результатом", score: 2 },
+  ],
+};
+
+function getDynamicRationalStep(
+  session: TrainerSession,
+  baseStep: ScenarioStep
+): ScenarioStep {
+  const thoughtAnswer = session.answers["ma-thought"];
+  const thoughtId =
+    typeof thoughtAnswer?.value === "string" ? thoughtAnswer.value : "";
+
+  const moneyScenario = getScenario("money-anxiety");
+  const thoughtStep = moneyScenario?.steps.find((s) => s.id === "ma-thought");
+  const allOptions = thoughtStep?.options || [];
+
+  const selected = allOptions.find((o) => o.id === thoughtId);
+  const tags = selected?.tags || ["positive"];
+
+  let strategyOptions: StepOption[] = [];
+  const usedIds = new Set<string>();
+
+  for (const tag of tags) {
+    const opts = MONEY_RATIONAL_MAP[tag] || MONEY_RATIONAL_MAP["positive"];
+    for (const opt of opts) {
+      if (!usedIds.has(opt.id)) {
+        usedIds.add(opt.id);
+        strategyOptions.push(opt);
+      }
+    }
+  }
+
+  if (strategyOptions.length === 0) {
+    strategyOptions = [...MONEY_RATIONAL_MAP["positive"]];
   }
 
   return {
@@ -717,63 +799,131 @@ function calculateSelfEsteemResult(
 function calculateMoneyAnxietyResult(
   session: TrainerSession
 ): TrainerResult {
-  const beliefs = session.scores["beliefs"] || 0;
-  const anxiety = session.scores["anxiety"] || 0;
-  const strategy = session.scores["strategy"] || 0;
-  const total = beliefs + strategy - anxiety;
+  const intensityAnswer = session.answers["ma-intensity"];
+  const MA = typeof intensityAnswer?.value === "number" ? intensityAnswer.value : 5;
+
+  const impulseAnswer = session.answers["ma-impulse"];
+  const impulseId = typeof impulseAnswer?.value === "string" ? impulseAnswer.value : "";
+
+  const IMPULSE_WEIGHTS: Record<string, number> = {
+    "lower-price": 8, refuse: 9, postpone: 7, "avoid-talk": 8,
+    "work-free": 9, overwork: 6, "freeze-project": 8, "do-nothing": 8,
+    calculate: 2, "raise-price": 3, "discuss-terms": 3,
+  };
+  const impulseWeight = IMPULSE_WEIGHTS[impulseId] || 5;
+
+  const rationalAnswer = session.answers["ma-rational"];
+  const R = rationalAnswer ? 1 : 0;
+
+  const doneAnswer = session.answers["ma-done"];
+  const doneId = typeof doneAnswer?.value === "string" ? doneAnswer.value : "";
+  let A = 0;
+  if (doneId === "done-full") A = 1;
+  else if (doneId === "done-partial") A = 0.5;
+
+  const MAI = MA * 10;
+  const MII = Math.round((MA * impulseWeight) / 10);
+  const rawMRI = R * 20 + A * 20;
+  const MRI_norm = Math.round(Math.min(100, (rawMRI / 40) * 100));
+
+  const rawFSI = MRI_norm + (100 - MAI) - MII;
+  const FSI = Math.max(0, Math.min(100, rawFSI));
 
   let level: string;
   let title: string;
   let summary: string;
 
-  if (total >= 20) {
+  if (FSI >= 86) {
+    level = "excellent";
+    title = "Устойчивое денежное мышление";
+    summary = "Вы управляете деньгами осознанно. Тревога не влияет на финансовые решения. Продолжайте отслеживать динамику.";
+  } else if (FSI >= 71) {
     level = "high";
-    title = "Финансовое спокойствие";
-    summary =
-      "У вас здоровое отношение к деньгам. Тревога минимальна, стратегия выстроена.";
-  } else if (total >= 10) {
+    title = "Уверенное управление";
+    summary = "Вы хорошо справляетесь с денежной тревогой и принимаете рациональные решения.";
+  } else if (FSI >= 51) {
     level = "medium";
-    title = "На пути к финансовому спокойствию";
-    summary =
-      "Денежная тревога ещё присутствует, но вы работаете над стратегией и убеждениями.";
-  } else {
+    title = "Формируется финансовая зрелость";
+    summary = "Вы на пути к финансовой устойчивости. Тревога иногда влияет на решения, но вы учитесь замечать это.";
+  } else if (FSI >= 31) {
     level = "developing";
-    title = "Начало работы с денежной тревогой";
-    summary =
-      "Финансовые вопросы вызывают сильное напряжение. Тренажёр поможет выстроить здоровое отношение.";
+    title = "Нестабильность";
+    summary = "Денежная тревога часто влияет на решения. Регулярная работа с тренажёром покажет паттерны.";
+  } else {
+    level = "beginning";
+    title = "Тревога управляет деньгами";
+    summary = "Сейчас эмоции сильно влияют на финансовые решения. Каждое прохождение — шаг к устойчивости.";
   }
 
+  const SITUATION_LABELS: Record<string, string> = {
+    shortage: "Нехватка денег", "income-growth": "Рост дохода",
+    "price-raise": "Повышение цены", sales: "Продажи",
+    debts: "Долги", credits: "Кредиты", investments: "Инвестиции",
+    "unstable-income": "Нестабильный доход", "lost-client": "Потеря клиента",
+    "big-purchase": "Большая покупка", scaling: "Масштабирование",
+    "other-situation": "Другое",
+  };
+
+  const TRIGGER_LABELS: Record<string, string> = {
+    "fear-loss": "Страх потери", "fear-instability": "Страх нестабильности",
+    "fear-judgment": "Страх осуждения", "fear-responsibility": "Страх ответственности",
+    "fear-success": "Страх успеха", comparison: "Сравнение с другими",
+    insufficiency: "Чувство недостаточности", hypercontrol: "Контроль и гиперответственность",
+    avoidance: "Избегание денег", "guilt-income": "Вина за доход",
+    "other-trigger": "Другое",
+  };
+
+  const IMPULSE_LABELS: Record<string, string> = {
+    "lower-price": "Снизить цену", refuse: "Отказаться", postpone: "Отложить",
+    "avoid-talk": "Избегать обсуждения", "work-free": "Работать бесплатно",
+    overwork: "Перерабатывать", "freeze-project": "Заморозить проект",
+    "do-nothing": "Ничего не делать", calculate: "Идти в расчёт",
+    "raise-price": "Поднять цену", "discuss-terms": "Обсудить условия",
+  };
+
+  const situationAnswer = session.answers["ma-situation"];
+  const situationId = typeof situationAnswer?.value === "string" ? situationAnswer.value : "";
+  const situationLabel = SITUATION_LABELS[situationId] || situationId;
+
+  const triggerAnswer = session.answers["ma-trigger"];
+  const triggerId = typeof triggerAnswer?.value === "string" ? triggerAnswer.value : "";
+  const triggerLabel = TRIGGER_LABELS[triggerId] || triggerId;
+
+  const impulseLabel = IMPULSE_LABELS[impulseId] || impulseId;
+
+  const insights: string[] = [
+    `Ситуация: ${situationLabel}`,
+    `Триггер: ${triggerLabel}`,
+    `Денежная тревога: ${MA}/10`,
+    `Импульс: ${impulseLabel} (вес ${impulseWeight})`,
+    `Готовность к действию: ${doneId === "done-full" ? "высокая" : doneId === "done-partial" ? "средняя" : "низкая"}`,
+  ];
+
   const recommendations: string[] = [];
-  if (anxiety > 10)
-    recommendations.push(
-      "Замечайте моменты денежной тревоги — осознание снижает её силу."
-    );
-  if (beliefs < 10)
-    recommendations.push(
-      "Запишите 3 родительских установки о деньгах и проверьте: они ваши?"
-    );
-  if (strategy < 8)
-    recommendations.push(
-      "Начните с простого: фиксируйте доходы и расходы 1 неделю."
-    );
-  recommendations.push(
-    "Повторяйте тренажёр ежемесячно для отслеживания прогресса."
-  );
+  if (MAI >= 80)
+    recommendations.push("Тревога очень высока. Попробуйте разбить финансовое действие на ещё меньший шаг.");
+  if (MII > 6)
+    recommendations.push("Высокая импульсивность. Перед финансовым решением берите паузу 24 часа.");
+  if (MRI_norm < 40)
+    recommendations.push("Рациональных действий пока мало. Начните с одного простого шага — считать расходы.");
+  if (impulseId === "lower-price" || impulseId === "work-free")
+    recommendations.push("Вы склонны обесценивать свою работу. Попробуйте сравнить цену с рынком.");
+  if (A === 0)
+    recommendations.push("Не страшно, что не готовы к шагу. Сформулируйте его поменьше.");
+  if (FSI >= 71)
+    recommendations.push("Отличная финансовая зрелость. Отслеживайте динамику FSI.");
+  recommendations.push("Повторяйте тренажёр регулярно — система покажет ваши денежные паттерны и рост FSI.");
 
   return {
     title,
     summary,
     level,
-    scores: { beliefs, anxiety, strategy, total },
+    scores: { MAI, MII, MRI: MRI_norm, FSI },
     recommendations,
-    insights: [
-      `Денежные убеждения: ${beliefs} баллов`,
-      `Финансовая тревога: ${anxiety} баллов`,
-      `Стратегическое мышление: ${strategy} баллов`,
-    ],
+    insights,
     nextActions: [
-      "Записать 3 главных страха о деньгах",
-      "Составить план расходов на неделю",
+      "Выполнить финансовый шаг из тренажёра в течение 48 часов",
+      "Повторить тренажёр через 3–5 дней для отслеживания динамики",
     ],
   };
 }

@@ -357,12 +357,13 @@ const CHART_COLORS = [
 ];
 
 const hasGaugeIndex = (trainerId: string) =>
-  trainerId === "emotions-in-action" || trainerId === "anti-procrastination" || trainerId === "self-esteem";
+  trainerId === "emotions-in-action" || trainerId === "anti-procrastination" || trainerId === "self-esteem" || trainerId === "money-anxiety";
 
 const getGaugeKey = (trainerId: string) => {
   if (trainerId === "emotions-in-action") return "EMI";
   if (trainerId === "anti-procrastination") return "AI";
   if (trainerId === "self-esteem") return "IVO";
+  if (trainerId === "money-anxiety") return "FSI";
   return "total";
 };
 
@@ -390,9 +391,10 @@ export default function TrainerResultScreen({
   const isEMI = trainer.id === "emotions-in-action";
   const isAP = trainer.id === "anti-procrastination";
   const isSE = trainer.id === "self-esteem";
+  const isMA = trainer.id === "money-anxiety";
 
   const chartData = Object.entries(result.scores)
-    .filter(([key]) => key !== "total" && key !== "EMI" && key !== "AI" && key !== "IVO")
+    .filter(([key]) => key !== "total" && key !== "EMI" && key !== "AI" && key !== "IVO" && key !== "FSI")
     .map(([key, value]) => ({
       name: key,
       value,
@@ -428,6 +430,10 @@ export default function TrainerResultScreen({
     IOS: "Опора дня",
     IA: "Автономность",
     IVO: "Внутр. опора",
+    MAI: "Денежная тревога",
+    MII: "Импульсивность",
+    MRI: "Рациональность",
+    FSI: "Фин. устойчивость",
   };
 
   const COLOR_HUES: Record<string, number> = {
@@ -460,6 +466,9 @@ export default function TrainerResultScreen({
     IOS: 220,
     IA: 32,
     IVO: 160,
+    MAI: 0,
+    MII: 25,
+    FSI: 200,
   };
 
   return (
@@ -630,6 +639,49 @@ export default function TrainerResultScreen({
               color="hsl(220, 60%, 52%)"
               delay={1300}
               description="Независимость от внешней оценки"
+            />
+          </div>
+        </div>
+      )}
+
+      {isMA && (
+        <div
+          className={`transition-all duration-600 ease-out ${
+            sectionVisible >= 2
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-6"
+          }`}
+        >
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            Индексы
+          </h3>
+          <div className="grid grid-cols-1 gap-2.5">
+            <IndexCard
+              label="Денежная тревога (MAI)"
+              value={result.scores["MAI"] || 0}
+              maxValue={100}
+              icon="AlertTriangle"
+              color="hsl(0, 60%, 50%)"
+              delay={700}
+              description="Чем ниже — тем лучше. Уровень финансовой тревоги"
+            />
+            <IndexCard
+              label="Импульсивность (MII)"
+              value={result.scores["MII"] || 0}
+              maxValue={10}
+              icon="Zap"
+              color="hsl(25, 70%, 50%)"
+              delay={900}
+              description="Чем ниже — тем лучше. Сила денежного импульса"
+            />
+            <IndexCard
+              label="Рациональность (MRI)"
+              value={result.scores["MRI"] || 0}
+              maxValue={100}
+              icon="Brain"
+              color="hsl(252, 60%, 52%)"
+              delay={1100}
+              description="Выбор альтернативы и выполнение шага"
             />
           </div>
         </div>

@@ -132,7 +132,8 @@ export default function StatsTrainerDetails({
   const isEMITrainer = selectedTrainer === "emotions-in-action";
   const isAPTrainer = selectedTrainer === "anti-procrastination";
   const isSETrainer = selectedTrainer === "self-esteem";
-  const hasCustomIndex = isEMITrainer || isAPTrainer || isSETrainer;
+  const isMATrainer = selectedTrainer === "money-anxiety";
+  const hasCustomIndex = isEMITrainer || isAPTrainer || isSETrainer || isMATrainer;
 
   const lineData = useMemo(() => {
     if (!selectedTrainer) return [];
@@ -147,6 +148,8 @@ export default function StatsTrainerDetails({
         ? scores["AI"] ?? 0
         : isSETrainer
         ? scores["IVO"] ?? 0
+        : isMATrainer
+        ? scores["FSI"] ?? 0
         : scores["total"] ?? 0;
       return {
         session: i + 1,
@@ -172,6 +175,13 @@ export default function StatsTrainerDetails({
               MRI: scores["MRI"] ?? 0,
             }
           : {}),
+        ...(isMATrainer
+          ? {
+              MAI: scores["MAI"] ?? 0,
+              MII: scores["MII"] ?? 0,
+              MRI_m: scores["MRI"] ?? 0,
+            }
+          : {}),
         date: s.completedAt
           ? new Date(s.completedAt).toLocaleDateString("ru-RU", {
               day: "numeric",
@@ -180,7 +190,7 @@ export default function StatsTrainerDetails({
           : "",
       };
     });
-  }, [selectedTrainer, isEMITrainer, isAPTrainer, isSETrainer]);
+  }, [selectedTrainer, isEMITrainer, isAPTrainer, isSETrainer, isMATrainer]);
 
   const selectedDef = selectedTrainer
     ? TRAINER_DEFS.find((d) => d.id === selectedTrainer)
@@ -284,7 +294,7 @@ export default function StatsTrainerDetails({
               <Line
                 type="monotone"
                 dataKey="total"
-                name={isEMITrainer ? "EMI" : isAPTrainer ? "AI" : isSETrainer ? "IVO" : "Балл"}
+                name={isEMITrainer ? "EMI" : isAPTrainer ? "AI" : isSETrainer ? "IVO" : isMATrainer ? "FSI" : "Балл"}
                 stroke="hsl(var(--primary))"
                 strokeWidth={2.5}
                 dot={{
@@ -393,6 +403,37 @@ export default function StatsTrainerDetails({
                   />
                 </>
               )}
+              {isMATrainer && (
+                <>
+                  <Line
+                    type="monotone"
+                    dataKey="MAI"
+                    name="Тревога"
+                    stroke="hsl(0, 60%, 50%)"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="MII"
+                    name="Импульсивность"
+                    stroke="hsl(25, 70%, 50%)"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="MRI_m"
+                    name="Рациональность"
+                    stroke="hsl(252, 60%, 52%)"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    dot={false}
+                  />
+                </>
+              )}
             </LineChart>
           </ResponsiveContainer>
 
@@ -405,7 +446,7 @@ export default function StatsTrainerDetails({
                 Дата
               </span>
               <span className="text-muted-foreground font-medium text-right">
-                {isEMITrainer ? "EMI" : isAPTrainer ? "AI" : isSETrainer ? "IVO" : "Балл"}
+                {isEMITrainer ? "EMI" : isAPTrainer ? "AI" : isSETrainer ? "IVO" : isMATrainer ? "FSI" : "Балл"}
               </span>
               {lineData.map((row) => (
                 <React.Fragment key={row.session}>
