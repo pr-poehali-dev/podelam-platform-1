@@ -37,7 +37,7 @@ export default function LandingPricing({ goTrainers }: LandingPricingProps) {
                 price: "990",
                 desc: "1 тренажер на выбор",
                 features: [
-                  "До 4 сессий за период подписки",
+                  "Пакет из 4 сессий",
                   "Базовая аналитика",
                   "Сохранение результатов",
                 ],

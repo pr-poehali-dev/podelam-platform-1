@@ -848,8 +848,8 @@ export default function TrainerResultScreen({
           <div className="flex items-center gap-3 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-left">
             <Icon name="Lock" size={20} className="text-amber-600 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-foreground">Лимит сессий исчерпан</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Продлите тариф или оформите Продвинутый / Годовой для безлимита</p>
+              <p className="text-sm font-medium text-foreground">Пакет сессий исчерпан</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Купите новый пакет или оформите Продвинутый / Годовой для безлимита</p>
             </div>
           </div>
         ) : (

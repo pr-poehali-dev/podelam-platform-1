@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
-import { getAllStats } from "@/components/trainers/trainerStorage";
+import { getAllStats, syncAllSessionsFromServer } from "@/components/trainers/trainerStorage";
 import {
   TrainerStats as TrainerStatsType,
   TrainerId,
@@ -26,6 +26,9 @@ export default function TrainerStats() {
     }
     setStats(getAllStats());
     requestAnimationFrame(() => setMounted(true));
+    syncAllSessionsFromServer().then(() => {
+      setStats(getAllStats());
+    }).catch(() => {});
   }, [navigate]);
 
   const totalCompleted = stats.reduce(

@@ -25,7 +25,7 @@ export const TRAINER_PLANS: TrainerPlan[] = [
     period: "мес",
     durationDays: 30,
     allTrainers: false,
-    description: "1 тренажер на выбор · 30 дней",
+    description: "1 тренажер на выбор · пакет из 4 сессий",
   },
   {
     id: "advanced",
@@ -75,6 +75,8 @@ export interface TrainerSubscription {
   expiresAt: string;
   startedAt?: string;
   allTrainers: boolean;
+  sessionsTotal?: number;
+  sessionsUsed?: number;
 }
 
 function getDeviceId(): string {
@@ -115,27 +117,17 @@ export function isBasicUnbound(): boolean {
 const BASIC_SESSION_LIMIT = 4;
 
 export function getSessionLimitInfo(trainerId: TrainerId): { limited: boolean; used: number; limit: number } {
+  void trainerId;
   const sub = getTrainerSubscription();
   if (!sub || sub.allTrainers) return { limited: false, used: 0, limit: Infinity };
 
-  try {
-    const email = getEmail();
-    const raw = localStorage.getItem(`pdd_trainer_${email}_sessions_${trainerId}`);
-    const sessions = raw ? JSON.parse(raw) : [];
-    const subStart = sub.startedAt ? new Date(sub.startedAt) : null;
-    const completed = sessions.filter((s: { completedAt?: string }) => {
-      if (!s.completedAt) return false;
-      if (subStart && new Date(s.completedAt) < subStart) return false;
-      return true;
-    });
-    return {
-      limited: completed.length >= BASIC_SESSION_LIMIT,
-      used: completed.length,
-      limit: BASIC_SESSION_LIMIT,
-    };
-  } catch {
-    return { limited: false, used: 0, limit: BASIC_SESSION_LIMIT };
-  }
+  const total = sub.sessionsTotal ?? BASIC_SESSION_LIMIT;
+  const used = sub.sessionsUsed ?? 0;
+  return {
+    limited: used >= total,
+    used,
+    limit: total,
+  };
 }
 
 export async function bindBasicPlan(trainerId: TrainerId): Promise<void> {
@@ -186,6 +178,8 @@ export async function activateTrainerPlan(
     expiresAt: expires.toISOString(),
     startedAt: new Date().toISOString(),
     allTrainers: plan.allTrainers,
+    sessionsTotal: plan.allTrainers ? 0 : BASIC_SESSION_LIMIT,
+    sessionsUsed: 0,
   };
   saveSubLocally(sub);
 
@@ -208,6 +202,8 @@ export async function activateTrainerPlan(
         expiresAt: new Date(data.subscription.expires_at).toISOString(),
         startedAt: data.subscription.started_at ? new Date(data.subscription.started_at).toISOString() : undefined,
         allTrainers: data.subscription.all_trainers,
+        sessionsTotal: data.subscription.sessions_total ?? BASIC_SESSION_LIMIT,
+        sessionsUsed: data.subscription.sessions_used ?? 0,
       };
       saveSubLocally(serverSub);
     }
@@ -234,6 +230,8 @@ export async function syncTrainerSubscription(): Promise<TrainerSubscription | n
         expiresAt: new Date(data.subscription.expires_at).toISOString(),
         startedAt: data.subscription.started_at ? new Date(data.subscription.started_at).toISOString() : undefined,
         allTrainers: data.subscription.all_trainers,
+        sessionsTotal: data.subscription.sessions_total ?? BASIC_SESSION_LIMIT,
+        sessionsUsed: data.subscription.sessions_used ?? 0,
       };
       saveSubLocally(sub);
       return sub;
@@ -520,18 +518,34 @@ export async function getServerSessionCount(trainerId: string): Promise<number> 
 }
 
 export async function getSessionLimitInfoAsync(trainerId: TrainerId): Promise<{ limited: boolean; used: number; limit: number }> {
+  void trainerId;
   const sub = getTrainerSubscription();
   if (!sub || sub.allTrainers) return { limited: false, used: 0, limit: Infinity };
 
-  const serverCount = await getServerSessionCount(trainerId);
-  const localInfo = getSessionLimitInfo(trainerId);
-  const used = Math.max(serverCount, localInfo.used);
+  const email = getEmail();
+  if (!email || email === "guest") return getSessionLimitInfo(trainerId);
 
-  return {
-    limited: used >= BASIC_SESSION_LIMIT,
-    used,
-    limit: BASIC_SESSION_LIMIT,
-  };
+  try {
+    const res = await fetch(TRAINER_ACCESS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "get_limit", email }),
+    });
+    const data = await res.json();
+    const used = data.used ?? 0;
+    const total = data.total ?? BASIC_SESSION_LIMIT;
+
+    const updated: TrainerSubscription = { ...sub, sessionsUsed: used, sessionsTotal: total };
+    saveSubLocally(updated);
+
+    return {
+      limited: used >= total,
+      used,
+      limit: total,
+    };
+  } catch {
+    return getSessionLimitInfo(trainerId);
+  }
 }
 
 export default {

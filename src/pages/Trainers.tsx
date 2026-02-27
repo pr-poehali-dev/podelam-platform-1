@@ -12,9 +12,12 @@ import {
   syncTrainerSubscription,
   isBasicUnbound,
   bindBasicPlan,
-  getSessionLimitInfo,
   getSessionLimitInfoAsync,
+  payTrainerPlanFromBalance,
+  createTrainerPayment,
+  TRAINER_PLANS,
 } from "@/lib/trainerAccess";
+import { getBalance, syncFromServer } from "@/lib/access";
 import { syncAllSessionsFromServer } from "@/components/trainers/trainerStorage";
 
 const VALID_IDS: TrainerId[] = [
@@ -48,6 +51,7 @@ export default function Trainers() {
   const [deviceBlocked, setDeviceBlocked] = useState<string | null>(null);
   const [bindConfirm, setBindConfirm] = useState<TrainerId | null>(null);
   const [sessionLimit, setSessionLimit] = useState<{ trainerId: TrainerId; used: number; limit: number } | null>(null);
+  const [buyingPack, setBuyingPack] = useState(false);
 
   useEffect(() => {
     document.title = "Тренажеры — ПоДелам";
@@ -64,14 +68,20 @@ export default function Trainers() {
     setMeta("og:url", "https://podelam.su/trainers", true);
   }, []);
 
+  const [syncKey, setSyncKey] = useState(0);
+
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) {
       navigate("/auth");
       return;
     }
-    syncTrainerSubscription().catch(() => {});
-    syncAllSessionsFromServer().catch(() => {});
+    Promise.all([
+      syncTrainerSubscription(),
+      syncAllSessionsFromServer(),
+    ]).then(() => {
+      setSyncKey((k) => k + 1);
+    }).catch(() => {});
   }, [navigate]);
 
   useEffect(() => {
@@ -185,7 +195,7 @@ export default function Trainers() {
           </span>
         </div>
 
-        <TrainerCatalog onSelectTrainer={handleSelectTrainer} />
+        <TrainerCatalog key={syncKey} onSelectTrainer={handleSelectTrainer} />
 
         <div className="mt-10 text-center">
           <button
@@ -219,13 +229,38 @@ export default function Trainers() {
               <Icon name="Lock" size={28} className="text-amber-600" />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2">
-              Лимит сессий исчерпан
+              Пакет сессий исчерпан
             </h3>
             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-              На базовом тарифе доступно {sessionLimit.limit} сессии за период подписки. Вы уже прошли {sessionLimit.used} из {sessionLimit.limit}. Продлите тариф, чтобы получить новые сессии.
+              Вы прошли все {sessionLimit.limit} сессии. Купите новый пакет или перейдите на безлимитный тариф.
             </p>
-            <div className="rounded-xl border bg-violet-50/50 p-4 mb-5">
-              <p className="text-xs font-semibold text-foreground mb-2">Безлимитный доступ:</p>
+
+            <Button
+              disabled={buyingPack}
+              onClick={async () => {
+                setBuyingPack(true);
+                await syncFromServer().catch(() => {});
+                const bal = getBalance();
+                const plan = TRAINER_PLANS.find((p) => p.id === "basic");
+                if (plan && bal >= plan.price) {
+                  const ok = await payTrainerPlanFromBalance("basic", sessionLimit.trainerId);
+                  if (ok) {
+                    setSessionLimit(null);
+                    setSyncKey((k) => k + 1);
+                  }
+                } else {
+                  const url = await createTrainerPayment("basic");
+                  if (url) window.location.href = url;
+                }
+                setBuyingPack(false);
+              }}
+              className="w-full h-12 rounded-xl gradient-brand text-white border-0 text-base font-medium mb-3"
+            >
+              {buyingPack ? "Обработка..." : "Купить ещё 4 сессии — 990 ₽"}
+            </Button>
+
+            <div className="rounded-xl border bg-violet-50/50 p-4 mb-4">
+              <p className="text-xs font-semibold text-foreground mb-2">Или безлимитный доступ:</p>
               <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
                 <div className="flex justify-between">
                   <span>Продвинутый — все тренажеры, 3 мес</span>
@@ -246,13 +281,14 @@ export default function Trainers() {
                 Закрыть
               </Button>
               <Button
+                variant="outline"
                 onClick={() => {
                   setSessionLimit(null);
                   setPaywallTrainer(sessionLimit.trainerId);
                 }}
-                className="flex-1 rounded-xl gradient-brand text-white border-0"
+                className="flex-1 rounded-xl"
               >
-                Сменить тариф
+                Другие тарифы
               </Button>
             </div>
           </div>

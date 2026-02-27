@@ -32,7 +32,7 @@ const PRICING_PLANS = [
     trainers: "Осознанный выбор, Антипрокрастинация или Деньги без тревоги",
     features: [
       "1 тренажер на выбор",
-      "До 4 сессий за период подписки",
+      "Пакет из 4 сессий",
       "Базовая аналитика",
       "Сохранение результатов",
     ],
@@ -319,14 +319,13 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-semibold text-foreground text-sm">
-                Лимит исчерпан — {limitInfo!.used} из {limitInfo!.limit} сессий использовано
+                Пакет исчерпан — {limitInfo!.used} из {limitInfo!.limit} сессий использовано
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
                 Тренажер: {TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}
-                {subExpires && ` · до ${subExpires}`}
               </div>
               <div className="text-xs text-primary mt-1 font-medium">
-                Оформите Продвинутый или Годовой тариф для безлимитного доступа
+                Купите новый пакет или оформите Продвинутый / Годовой для безлимита
               </div>
             </div>
           </div>
@@ -344,7 +343,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                   ? "Все тренажеры доступны"
                   : `Тренажер: ${TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}`}
                 {subExpires && ` · до ${subExpires}`}
-                {limitInfo && !sub.allTrainers && ` · ${limitInfo.used} из ${limitInfo.limit} сессий`}
+                {limitInfo && !sub.allTrainers && ` · Осталось ${limitInfo.limit - limitInfo.used} из ${limitInfo.limit} сессий`}
               </div>
             </div>
           </div>

@@ -1,0 +1,3 @@
+ALTER TABLE t_p13403005_podelam_platform_1.trainer_subscriptions
+  ADD COLUMN IF NOT EXISTS sessions_total INTEGER NOT NULL DEFAULT 4,
+  ADD COLUMN IF NOT EXISTS sessions_used INTEGER NOT NULL DEFAULT 0;

@@ -7,16 +7,16 @@ SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
 HEARTBEAT_TIMEOUT_SEC = 90
 
 PLANS = {
-    'basic': {'price': 990, 'days': 30, 'all': False},
-    'advanced': {'price': 2490, 'days': 90, 'all': True},
-    'yearly': {'price': 6990, 'days': 365, 'all': True},
+    'basic': {'price': 990, 'days': 30, 'all': False, 'sessions': 4},
+    'advanced': {'price': 2490, 'days': 90, 'all': True, 'sessions': 0},
+    'yearly': {'price': 6990, 'days': 365, 'all': True, 'sessions': 0},
 }
 
 def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
 
 def handler(event: dict, context) -> dict:
-    """Управление подписками на тренажеры и блокировка одновременных сессий"""
+    """Управление подписками на тренажеры, пакетный лимит сессий и блокировка одновременных сессий"""
     cors = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -58,21 +58,38 @@ def handler(event: dict, context) -> dict:
 
             now = datetime.now()
             expires_at = now + timedelta(days=plan['days'])
+            sessions_total = plan['sessions']
             cur.execute(
-                f'''INSERT INTO "{S}".trainer_subscriptions (user_id, plan_id, trainer_id, all_trainers, expires_at, started_at)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                f'''INSERT INTO "{S}".trainer_subscriptions
+                    (user_id, plan_id, trainer_id, all_trainers, expires_at, started_at, sessions_total, sessions_used)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, 0)
                     ON CONFLICT (user_id) DO UPDATE SET
                         plan_id = EXCLUDED.plan_id,
                         trainer_id = EXCLUDED.trainer_id,
                         all_trainers = EXCLUDED.all_trainers,
                         expires_at = EXCLUDED.expires_at,
-                        started_at = EXCLUDED.started_at''',
-                (user_id, plan_id, trainer_id if not plan['all'] else None, plan['all'], expires_at, now)
+                        started_at = EXCLUDED.started_at,
+                        sessions_total = EXCLUDED.sessions_total,
+                        sessions_used = 0''',
+                (user_id, plan_id, trainer_id if not plan['all'] else None, plan['all'], expires_at, now, sessions_total)
             )
             conn.commit()
 
             sub = _get_sub(cur, S, user_id)
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True, 'subscription': sub})}
+
+        elif action == 'get_limit':
+            sub = _get_sub(cur, S, user_id)
+            if not sub or sub.get('all_trainers'):
+                return {'statusCode': 200, 'headers': cors, 'body': json.dumps({
+                    'limited': False, 'used': 0, 'total': 0, 'remaining': 999
+                })}
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({
+                'limited': sub['sessions_used'] >= sub['sessions_total'],
+                'used': sub['sessions_used'],
+                'total': sub['sessions_total'],
+                'remaining': max(0, sub['sessions_total'] - sub['sessions_used']),
+            })}
 
         elif action == 'session_start':
             trainer_id = body.get('trainer_id', '')
@@ -83,6 +100,9 @@ def handler(event: dict, context) -> dict:
             sub = _get_sub(cur, S, user_id)
             if not sub:
                 return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'no_subscription'})}
+
+            if not sub.get('all_trainers') and sub['sessions_used'] >= sub['sessions_total']:
+                return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'session_limit_reached', 'used': sub['sessions_used'], 'total': sub['sessions_total']})}
 
             cutoff = datetime.now() - timedelta(seconds=HEARTBEAT_TIMEOUT_SEC)
             cur.execute(
@@ -190,6 +210,13 @@ def handler(event: dict, context) -> dict:
                 return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'trainer_id and session_id required'})}
 
             cur.execute(
+                f'SELECT id, completed_at FROM "{S}".trainer_sessions WHERE user_id = %s AND session_id = %s',
+                (user_id, session_id)
+            )
+            existing = cur.fetchone()
+            was_completed = existing and existing[1] is not None
+
+            cur.execute(
                 f'''INSERT INTO "{S}".trainer_sessions (user_id, trainer_id, session_id, started_at, completed_at, scores, result, answers)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (user_id, session_id) DO UPDATE SET
@@ -204,8 +231,30 @@ def handler(event: dict, context) -> dict:
                  json.dumps(result) if result else None,
                  json.dumps(answers))
             )
+
+            if completed_at and not was_completed:
+                cur.execute(
+                    f'''UPDATE "{S}".trainer_subscriptions
+                        SET sessions_used = sessions_used + 1
+                        WHERE user_id = %s AND NOT all_trainers''',
+                    (user_id,)
+                )
+
             conn.commit()
-            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+            cur.execute(
+                f'SELECT sessions_total, sessions_used FROM "{S}".trainer_subscriptions WHERE user_id = %s',
+                (user_id,)
+            )
+            sub_row = cur.fetchone()
+            sessions_used = sub_row[1] if sub_row else 0
+            sessions_total = sub_row[0] if sub_row else 4
+
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({
+                'ok': True,
+                'sessions_used': sessions_used,
+                'sessions_total': sessions_total,
+            })}
 
         elif action == 'get_sessions':
             trainer_id = body.get('trainer_id')
@@ -244,30 +293,25 @@ def handler(event: dict, context) -> dict:
             if not trainer_id:
                 return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'trainer_id required'})}
 
-            sub_started = None
             cur.execute(
-                f'SELECT started_at FROM "{S}".trainer_subscriptions WHERE user_id = %s',
+                f'SELECT sessions_used, sessions_total FROM "{S}".trainer_subscriptions WHERE user_id = %s',
                 (user_id,)
             )
             sub_row = cur.fetchone()
-            if sub_row and sub_row[0]:
-                sub_started = sub_row[0]
-
-            if sub_started:
-                cur.execute(
-                    f'''SELECT COUNT(*) FROM "{S}".trainer_sessions
-                        WHERE user_id = %s AND trainer_id = %s AND completed_at IS NOT NULL
-                        AND completed_at >= %s''',
-                    (user_id, trainer_id, sub_started)
-                )
+            if sub_row:
+                return {'statusCode': 200, 'headers': cors, 'body': json.dumps({
+                    'count': sub_row[0],
+                    'total': sub_row[1],
+                    'trainer_id': trainer_id,
+                })}
             else:
                 cur.execute(
                     f'''SELECT COUNT(*) FROM "{S}".trainer_sessions
                         WHERE user_id = %s AND trainer_id = %s AND completed_at IS NOT NULL''',
                     (user_id, trainer_id)
                 )
-            count = cur.fetchone()[0]
-            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'count': count, 'trainer_id': trainer_id})}
+                count = cur.fetchone()[0]
+                return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'count': count, 'trainer_id': trainer_id})}
 
         return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'unknown action'})}
 
@@ -277,7 +321,8 @@ def handler(event: dict, context) -> dict:
 
 def _get_sub(cur, schema, user_id):
     cur.execute(
-        f'SELECT plan_id, trainer_id, all_trainers, expires_at, started_at FROM "{schema}".trainer_subscriptions WHERE user_id = %s',
+        f'''SELECT plan_id, trainer_id, all_trainers, expires_at, started_at, sessions_total, sessions_used
+            FROM "{schema}".trainer_subscriptions WHERE user_id = %s''',
         (user_id,)
     )
     row = cur.fetchone()
@@ -292,4 +337,6 @@ def _get_sub(cur, schema, user_id):
         'all_trainers': row[2],
         'expires_at': str(expires) if expires else None,
         'started_at': str(row[4]) if row[4] else None,
+        'sessions_total': row[5] or 4,
+        'sessions_used': row[6] or 0,
     }
