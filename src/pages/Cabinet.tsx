@@ -10,7 +10,7 @@ import { getLatestCareerResult, CareerResult, wasEverDone } from "@/lib/access";
 import InstallPWA from "@/components/InstallPWA";
 import useToolSync from "@/hooks/useToolSync";
 
-type Tab = "home" | "tests" | "tools" | "referral" | "blog";
+type Tab = "home" | "tests" | "tools" | "trainers" | "referral" | "blog";
 
 export default function Cabinet() {
   const navigate = useNavigate();
@@ -60,6 +60,7 @@ export default function Cabinet() {
 
   const handleTabChange = (tab: Tab) => {
     if (tab === "blog") { navigate("/blog"); return; }
+    if (tab === "trainers") { navigate("/trainers"); return; }
     setActiveTab(tab);
   };
 
