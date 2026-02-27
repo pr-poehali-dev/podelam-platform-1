@@ -86,21 +86,11 @@ export default function TrainerSessionView({
 
       const nextSession = answerStep(session, step.id, value);
 
-      /* Check if next step is a "result" type */
+      /* Check if next step is a "result" type — just transition to it,
+         actual completion happens in handleSkip when ResultStep fires onFinish */
       const nextStep = scenario?.steps[nextSession.currentStepIndex];
       if (nextStep?.type === "result") {
-        /* Complete the session */
-        const completed = completeSession(nextSession);
-        addCompletedSession(completed);
-        setSession(completed);
-
-        /* Animate to result */
-        setIsAnimating(true);
-        setTimeout(() => {
-          setViewState("result");
-          setIsAnimating(false);
-          onComplete(completed);
-        }, 400);
+        transitionToStep(nextSession);
         return;
       }
 
@@ -118,6 +108,10 @@ export default function TrainerSessionView({
 
     /* For result step, triggered by ResultStep auto-finish */
     if (step.type === "result") {
+      if (session.completedAt) {
+        setViewState("result");
+        return;
+      }
       const completed = completeSession(session);
       addCompletedSession(completed);
       setSession(completed);
@@ -128,19 +122,10 @@ export default function TrainerSessionView({
 
     const nextSession = skipToNext(session);
 
-    /* Check if we landed on a result step */
+    /* Check if we landed on a result step — just transition to it */
     const nextStep = scenario?.steps[nextSession.currentStepIndex];
     if (nextStep?.type === "result") {
-      const completed = completeSession(nextSession);
-      addCompletedSession(completed);
-      setSession(completed);
-
-      setIsAnimating(true);
-      setTimeout(() => {
-        setViewState("result");
-        setIsAnimating(false);
-        onComplete(completed);
-      }, 400);
+      transitionToStep(nextSession);
       return;
     }
 
