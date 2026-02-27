@@ -2,6 +2,8 @@ import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import IndexNav from "@/components/index/IndexNav";
+import InstallPWA from "@/components/InstallPWA";
 
 const TRAINERS = [
   {
@@ -116,42 +118,13 @@ export default function TrainersLanding() {
     trainersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const scrollTo = (id: string) => {
+    navigate(`/#${id}`);
+  };
+
   return (
-    <div className="min-h-screen font-golos bg-[hsl(248,50%,98%)]">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2"
-          >
-            <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center">
-              <Icon name="Compass" size={16} className="text-white" />
-            </div>
-            <span className="font-bold text-[17px] text-foreground">
-              ПоДелам
-            </span>
-          </button>
-          <div className="flex items-center gap-2">
-            {isLoggedIn ? (
-              <Button
-                onClick={goTrainers}
-                className="gradient-brand text-white text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-0"
-              >
-                <Icon name="Dumbbell" size={15} className="mr-1.5" />
-                К тренажёрам
-              </Button>
-            ) : (
-              <Button
-                onClick={() => navigate("/auth")}
-                className="gradient-brand text-white text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-0"
-              >
-                Начать
-              </Button>
-            )}
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen font-golos" style={{ background: "hsl(248, 50%, 98%)" }}>
+      <IndexNav isLoggedIn={isLoggedIn} scrollTo={scrollTo} />
 
       {/* Hero */}
       <section className="relative overflow-hidden">
@@ -618,16 +591,38 @@ export default function TrainersLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-white">
-        <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>ПоДелам — тренажёры для осознанной жизни</span>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">
-              Конфиденциальность
-            </button>
-            <button onClick={() => navigate("/oferta")} className="hover:text-foreground transition-colors">
-              Оферта
-            </button>
+      <footer className="border-t border-border py-8 md:py-10 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
+                <Icon name="Compass" size={14} className="text-white" />
+              </div>
+              <span className="font-bold text-foreground">ПоДелам</span>
+            </div>
+            <div className="text-center text-sm text-muted-foreground space-y-0.5">
+              <p>© 2025 ПоДелам. Найди своё дело.</p>
+              <p>ИП Уварова А. С. · ОГРНИП 322508100398078 · Права защищены</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
+              <InstallPWA />
+              <a href="/pricing" className="hover:text-foreground transition-colors">Тарифы</a>
+              <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
+              <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
+              <a href="/partner" className="hover:text-foreground transition-colors">Партнёрская программа</a>
+              <a href="https://t.me/AnnaUvaro" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+                <Icon name="Send" size={14} />
+                Контакты
+              </a>
+            </div>
+          </div>
+          <div className="mt-6 pt-5 border-t border-border/50 max-w-3xl mx-auto text-[11px] leading-relaxed text-muted-foreground/60 text-center">
+            <p>
+              Проект «ПоДелам» не оказывает медицинских услуг и не является медицинской психотерапией. Материалы и результаты тестов носят
+              информационно-рекомендательный характер и не заменяют консультацию специалиста. Проект не гарантирует достижение конкретных результатов.
+              Сайт предназначен для лиц старше 18 лет. Используя сайт, вы соглашаетесь
+              с <a href="/privacy" className="underline hover:text-muted-foreground transition-colors">Политикой конфиденциальности</a> и <a href="/oferta" className="underline hover:text-muted-foreground transition-colors">Офертой</a>.
+            </p>
           </div>
         </div>
       </footer>
