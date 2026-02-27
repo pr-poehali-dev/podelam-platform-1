@@ -28,7 +28,7 @@ export default function StatsSessionsChart({ barData, mounted }: Props) {
       `}
     >
       <h2 className="font-bold text-foreground mb-4">
-        Сессии по тренажёрам
+        Сессии по тренажерам
       </h2>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart

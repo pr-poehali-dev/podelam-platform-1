@@ -25,7 +25,7 @@ export const TRAINER_PLANS: TrainerPlan[] = [
     period: "мес",
     durationDays: 30,
     allTrainers: false,
-    description: "1 тренажёр на выбор · 30 дней",
+    description: "1 тренажер на выбор · 30 дней",
   },
   {
     id: "advanced",
@@ -34,7 +34,7 @@ export const TRAINER_PLANS: TrainerPlan[] = [
     period: "3 мес",
     durationDays: 90,
     allTrainers: true,
-    description: "Все тренажёры · 90 дней",
+    description: "Все тренажеры · 90 дней",
   },
   {
     id: "yearly",
@@ -43,7 +43,7 @@ export const TRAINER_PLANS: TrainerPlan[] = [
     period: "год",
     durationDays: 365,
     allTrainers: true,
-    description: "Все тренажёры · 365 дней",
+    description: "Все тренажеры · 365 дней",
   },
 ];
 
@@ -271,7 +271,7 @@ export async function payTrainerPlanFromBalance(
         user_email: email,
         user_name: name,
         amount: plan.price,
-        tariff: `Тренажёры: ${plan.name}`,
+        tariff: `Тренажеры: ${plan.name}`,
         status: "paid",
         action: "pay_sub",
         tool_id: trainerId || "all-trainers",

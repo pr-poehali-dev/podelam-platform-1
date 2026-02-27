@@ -88,7 +88,7 @@ export default function TrainerPaywallModal({
               <Icon name="Lock" size={22} />
             </div>
             <h2 className="text-xl font-black mb-1">
-              Оформите доступ к тренажёрам
+              Оформите доступ к тренажерам
             </h2>
             {trainer && (
               <p className="text-white/80 text-sm">
@@ -138,7 +138,7 @@ export default function TrainerPaywallModal({
                       </div>
                       {p.id === "basic" && trainer && (
                         <div className="text-[11px] text-primary/70 mt-1">
-                          Тренажёр: {trainer.title}
+                          Тренажер: {trainer.title}
                         </div>
                       )}
                     </div>

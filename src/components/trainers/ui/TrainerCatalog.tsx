@@ -28,10 +28,10 @@ const PRICING_PLANS = [
     name: "Базовый",
     price: 990,
     period: "мес",
-    description: "Один тренажёр на выбор",
+    description: "Один тренажер на выбор",
     trainers: "Осознанный выбор, Антипрокрастинация или Деньги без тревоги",
     features: [
-      "1 тренажёр на выбор",
+      "1 тренажер на выбор",
       "До 4 сессий в месяц",
       "Базовая аналитика",
       "Сохранение результатов",
@@ -43,10 +43,10 @@ const PRICING_PLANS = [
     name: "Продвинутый",
     price: 2490,
     period: "3 мес",
-    description: "Все тренажёры · полная аналитика",
-    trainers: "Все 5 тренажёров включены",
+    description: "Все тренажеры · полная аналитика",
+    trainers: "Все 5 тренажеров включены",
     features: [
-      "Все 5 тренажёров",
+      "Все 5 тренажеров",
       "Неограниченные сессии",
       "Индексы EMI, AI, IVO, FSI",
       "Аналитика паттернов",
@@ -61,9 +61,9 @@ const PRICING_PLANS = [
     price: 6990,
     period: "год",
     description: "Максимальная глубина проработки",
-    trainers: "Все 5 тренажёров + эксклюзивные функции",
+    trainers: "Все 5 тренажеров + эксклюзивные функции",
     features: [
-      "Все 5 тренажёров",
+      "Все 5 тренажеров",
       "Неограниченные сессии",
       "Годовая динамика EMI, AI, IVO, FSI",
       "Тепловая карта эмоций",
@@ -144,7 +144,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground leading-tight">
-              Тренажёры
+              Тренажеры
             </h1>
             <p className="text-sm text-muted-foreground">
               Психологические инструменты для ежедневной практики
@@ -279,7 +279,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                 Лимит исчерпан — {limitInfo!.used} из {limitInfo!.limit} сессий использовано
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                Тренажёр: {TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}
+                Тренажер: {TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}
                 {subExpires && ` · до ${subExpires}`}
               </div>
               <div className="text-xs text-primary mt-1 font-medium">
@@ -298,8 +298,8 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
                 {sub.allTrainers
-                  ? "Все тренажёры доступны"
-                  : `Тренажёр: ${TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}`}
+                  ? "Все тренажеры доступны"
+                  : `Тренажер: ${TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}`}
                 {subExpires && ` · до ${subExpires}`}
                 {limitInfo && !sub.allTrainers && ` · ${limitInfo.used} из ${limitInfo.limit} сессий`}
               </div>
@@ -317,7 +317,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
           </h2>
         </div>
         <p className="text-sm text-muted-foreground -mt-2">
-          {sub ? "Вы можете обновить тариф" : "Выберите подходящий план для работы с тренажёрами"}
+          {sub ? "Вы можете обновить тариф" : "Выберите подходящий план для работы с тренажерами"}
         </p>
 
         {planError && (

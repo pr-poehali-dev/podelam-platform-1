@@ -35,7 +35,7 @@ export default function LandingPricing({ goTrainers }: LandingPricingProps) {
                 name: "Базовый доступ",
                 period: "1 месяц",
                 price: "990",
-                desc: "1 тренажёр на выбор",
+                desc: "1 тренажер на выбор",
                 features: [
                   "До 4 сессий в месяц",
                   "Базовая аналитика",
@@ -47,9 +47,9 @@ export default function LandingPricing({ goTrainers }: LandingPricingProps) {
                 name: "Углублённый",
                 period: "3 месяца",
                 price: "2 490",
-                desc: "Все тренажёры · полная аналитика",
+                desc: "Все тренажеры · полная аналитика",
                 features: [
-                  "Все 5 тренажёров",
+                  "Все 5 тренажеров",
                   "Неограниченные сессии",
                   "Индексы EMI, AI, IVO, FSI",
                   "Трекер прогресса",
@@ -62,7 +62,7 @@ export default function LandingPricing({ goTrainers }: LandingPricingProps) {
                 price: "6 990",
                 desc: "Максимальная глубина проработки",
                 features: [
-                  "Все 5 тренажёров",
+                  "Все 5 тренажеров",
                   "Годовая динамика индексов",
                   "Анализ паттернов",
                   "Глубокая проработка",
@@ -223,7 +223,7 @@ export default function LandingPricing({ goTrainers }: LandingPricingProps) {
             </span>
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
-            Начало работы с тренажёрами — первый шаг к устойчивой внутренней
+            Начало работы с тренажерами — первый шаг к устойчивой внутренней
             опоре и осознанным решениям.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -232,7 +232,7 @@ export default function LandingPricing({ goTrainers }: LandingPricingProps) {
               className="gradient-brand text-white font-bold px-8 py-6 rounded-2xl text-base border-0 shadow-lg shadow-violet-200/50 hover:shadow-xl transition-shadow"
             >
               <Icon name="Dumbbell" size={18} className="mr-2" />
-              Выбрать тренажёр
+              Выбрать тренажер
             </Button>
             <Button
               onClick={goTrainers}

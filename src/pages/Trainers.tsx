@@ -210,11 +210,11 @@ export default function Trainers() {
               <p className="text-xs font-semibold text-foreground mb-2">Безлимитный доступ:</p>
               <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
                 <div className="flex justify-between">
-                  <span>Продвинутый — все тренажёры, 3 мес</span>
+                  <span>Продвинутый — все тренажеры, 3 мес</span>
                   <span className="font-bold text-foreground">2 490 ₽</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Годовой — все тренажёры, 1 год</span>
+                  <span>Годовой — все тренажеры, 1 год</span>
                   <span className="font-bold text-foreground">6 990 ₽</span>
                 </div>
               </div>
@@ -248,16 +248,16 @@ export default function Trainers() {
               <Icon name="Lock" size={28} className="text-primary" />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2">
-              Выбор тренажёра
+              Выбор тренажера
             </h3>
             <p className="text-sm text-muted-foreground mb-1">
-              На базовом тарифе доступен 1 тренажёр. Вы выбираете:
+              На базовом тарифе доступен 1 тренажер. Вы выбираете:
             </p>
             <p className="text-base font-bold text-foreground mb-4">
               «{TRAINER_NAMES[bindConfirm] || bindConfirm}»
             </p>
             <p className="text-xs text-muted-foreground mb-5 leading-relaxed">
-              После подтверждения этот тренажёр будет закреплён за вами на весь период подписки. Изменить выбор нельзя.
+              После подтверждения этот тренажер будет закреплён за вами на весь период подписки. Изменить выбор нельзя.
             </p>
             <div className="flex gap-2">
               <Button
@@ -288,7 +288,7 @@ export default function Trainers() {
               Сессия активна на другом устройстве
             </h3>
             <p className="text-sm text-muted-foreground mb-1">
-              Сейчас идёт прохождение тренажёра
+              Сейчас идёт прохождение тренажера
             </p>
             <p className="text-sm font-medium text-foreground mb-5">
               «{TRAINER_NAMES[deviceBlocked] || deviceBlocked}»

@@ -206,7 +206,7 @@ export default function StatsTrainerDetails({
             ${mounted ? "opacity-100" : "opacity-0"}
           `}
         >
-          Детали по тренажёрам
+          Детали по тренажерам
         </h2>
 
         {TRAINER_DEFS.map((def, idx) => (
@@ -474,7 +474,7 @@ export default function StatsTrainerDetails({
             className="text-muted-foreground/40 mx-auto mb-2"
           />
           <p className="text-sm text-muted-foreground">
-            Пока нет завершённых сессий для этого тренажёра
+            Пока нет завершённых сессий для этого тренажера
           </p>
         </div>
       )}

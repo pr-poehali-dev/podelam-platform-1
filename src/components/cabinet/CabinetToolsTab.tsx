@@ -190,7 +190,7 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Тренажёры — баннер */}
+      {/* Тренажеры — баннер */}
       <div
         onClick={() => onNavigate("/trainers")}
         className="bg-white rounded-3xl border border-indigo-200/60 p-5 cursor-pointer transition-all hover:border-indigo-300 hover:shadow-md relative overflow-hidden group"
@@ -202,7 +202,7 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <h3 className="font-bold text-foreground text-sm">Тренажёры</h3>
+              <h3 className="font-bold text-foreground text-sm">Тренажеры</h3>
               <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">5 штук</span>
             </div>
             <p className="text-muted-foreground text-xs leading-relaxed">Осознанный выбор, эмоции, прокрастинация, самооценка, деньги</p>

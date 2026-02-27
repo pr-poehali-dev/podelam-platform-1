@@ -114,7 +114,7 @@ export default function PaymentSuccess() {
                     className="w-full gradient-brand text-white font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2"
                   >
                     <Icon name="Dumbbell" size={17} />
-                    Перейти к тренажёрам
+                    Перейти к тренажерам
                   </button>
                   <button
                     onClick={() => navigate("/cabinet")}

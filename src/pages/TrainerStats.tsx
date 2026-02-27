@@ -77,7 +77,7 @@ export default function TrainerStats() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-foreground leading-tight">
-              Статистика тренажёров
+              Статистика тренажеров
             </h1>
             <p className="text-sm text-muted-foreground">
               Отслеживайте прогресс и динамику
@@ -114,7 +114,7 @@ export default function TrainerStats() {
               Пока нет данных
             </h3>
             <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">
-              Пройдите хотя бы один тренажёр, чтобы увидеть статистику
+              Пройдите хотя бы один тренажер, чтобы увидеть статистику
               и отследить динамику
             </p>
             <button
@@ -126,7 +126,7 @@ export default function TrainerStats() {
               "
             >
               <Icon name="Dumbbell" size={16} />
-              Перейти к тренажёрам
+              Перейти к тренажерам
             </button>
           </div>
         )}

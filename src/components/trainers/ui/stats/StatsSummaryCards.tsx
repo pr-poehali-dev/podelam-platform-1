@@ -69,7 +69,7 @@ export default function StatsSummaryCards({
       <SummaryCard
         icon="Target"
         iconClass="text-amber-500"
-        label="Всего тренажёров"
+        label="Всего тренажеров"
         value={5}
         delay={300}
       />

@@ -19,12 +19,12 @@ export default function LandingHero({ goTrainers, goPricing }: LandingHeroProps)
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-border/50 shadow-sm mb-6">
             <Icon name="Dumbbell" size={16} className="text-primary" />
             <span className="text-sm font-medium text-foreground">
-              5 тренажёров для осознанной жизни
+              5 тренажеров для осознанной жизни
             </span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-foreground leading-tight mb-4">
-            Тренажёры{" "}
+            Тренажеры{" "}
             <span className="bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
               ПоДелам
             </span>
@@ -35,7 +35,7 @@ export default function LandingHero({ goTrainers, goPricing }: LandingHeroProps)
           </p>
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
-            Система тренажёров переводит мысли, страхи и цели в конкретные
+            Система тренажеров переводит мысли, страхи и цели в конкретные
             действия. Без мотивации и «воды». Только проверенные алгоритмы для
             развития осознанности и внутренней устойчивости.
           </p>
@@ -46,7 +46,7 @@ export default function LandingHero({ goTrainers, goPricing }: LandingHeroProps)
               className="gradient-brand text-white font-bold px-8 py-6 rounded-2xl text-base border-0 shadow-lg shadow-violet-200/50 hover:shadow-xl transition-shadow"
             >
               <Icon name="Play" size={18} className="mr-2" />
-              Начать с первого тренажёра
+              Начать с первого тренажера
             </Button>
             <Button
               onClick={goPricing}
@@ -101,7 +101,7 @@ export default function LandingHero({ goTrainers, goPricing }: LandingHeroProps)
                 <Icon name="CheckCircle" size={20} className="text-emerald-500" />
               </div>
               <h3 className="font-bold text-lg text-foreground">
-                Тренажёры позволяют
+                Тренажеры позволяют
               </h3>
             </div>
             <ul className="space-y-3">

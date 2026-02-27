@@ -177,7 +177,7 @@ export default function TrainerSessionView({
           className="w-10 h-10 text-muted-foreground mb-3"
         />
         <p className="text-sm text-muted-foreground">
-          Тренажёр не найден
+          Тренажер не найден
         </p>
         <Button variant="outline" onClick={onExit} className="mt-4">
           Назад
@@ -343,7 +343,7 @@ export default function TrainerSessionView({
                 />
               </div>
               <h3 className="text-lg font-bold text-foreground">
-                Выйти из тренажёра?
+                Выйти из тренажера?
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Ваш прогресс сохранится. Вы сможете продолжить с того

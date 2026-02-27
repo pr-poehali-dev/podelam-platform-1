@@ -16,7 +16,7 @@ def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
 
 def handler(event: dict, context) -> dict:
-    """Управление подписками на тренажёры и блокировка одновременных сессий"""
+    """Управление подписками на тренажеры и блокировка одновременных сессий"""
     cors = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',

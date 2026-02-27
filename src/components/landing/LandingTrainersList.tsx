@@ -108,10 +108,10 @@ export default function LandingTrainersList({ trainersRef }: LandingTrainersList
       >
         <div className="text-center mb-12">
           <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-3">
-            5 флагманских тренажёров
+            5 флагманских тренажеров
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Каждый тренажёр решает конкретную задачу и считает индекс прогресса
+            Каждый тренажер решает конкретную задачу и считает индекс прогресса
           </p>
         </div>
 
@@ -138,7 +138,7 @@ export default function LandingTrainersList({ trainersRef }: LandingTrainersList
                 <div className="flex-1 p-5 sm:p-6">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-bold text-muted-foreground/60 uppercase tracking-wider">
-                      Тренажёр {idx + 1}
+                      Тренажер {idx + 1}
                     </span>
                   </div>
                   <h3 className="text-lg font-bold text-foreground mb-1">
@@ -177,7 +177,7 @@ export default function LandingTrainersList({ trainersRef }: LandingTrainersList
         <div className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-3">
-              Как устроены тренажёры
+              Как устроены тренажеры
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -205,7 +205,7 @@ export default function LandingTrainersList({ trainersRef }: LandingTrainersList
             Для кого
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Тренажёры подходят людям, которые:
+            Тренажеры подходят людям, которые:
           </p>
         </div>
         <div className="max-w-2xl mx-auto space-y-3">

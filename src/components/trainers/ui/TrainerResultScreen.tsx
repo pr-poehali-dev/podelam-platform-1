@@ -863,7 +863,7 @@ export default function TrainerResultScreen({
           onClick={onBack}
           className="w-full h-11 rounded-xl"
         >
-          К тренажёрам
+          К тренажерам
         </Button>
       </div>
     </div>
