@@ -48,6 +48,21 @@ export default function Trainers() {
   const [sessionLimit, setSessionLimit] = useState<{ trainerId: TrainerId; used: number; limit: number } | null>(null);
 
   useEffect(() => {
+    document.title = "Тренажеры — ПоДелам";
+    const setMeta = (name: string, content: string, property?: boolean) => {
+      const attr = property ? "property" : "name";
+      let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    setMeta("description", "Психологические тренажеры для ежедневной практики. Осознанный выбор, эмоции, антипрокрастинация, самооценка, деньги без тревоги.");
+    setMeta("og:title", "Тренажеры — ПоДелам", true);
+    setMeta("og:description", "5 тренажеров для осознанной жизни. Индексы EMI, AI, IVO, FSI.", true);
+    setMeta("og:image", "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/4bf0e0ce-5476-4b6e-8961-7b514365e980.jpg", true);
+    setMeta("og:url", "https://podelam.su/trainers", true);
+  }, []);
+
+  useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) {
       navigate("/auth");
