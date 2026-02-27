@@ -1,4 +1,4 @@
-export type StepType = "intro" | "single-choice" | "multiple-choice" | "scale" | "text-input" | "info" | "result";
+export type StepType = "intro" | "single-choice" | "multiple-choice" | "scale" | "text-input" | "info" | "result" | "timer" | "confirm";
 
 export interface OptionGroup {
   label: string;
@@ -21,6 +21,10 @@ export interface ScenarioStep {
   resultTemplate?: string;
   scoreCategory?: string;
   meta?: Record<string, unknown>;
+  timerDuration?: number;
+  confirmYesStep?: string;
+  confirmNoStep?: string;
+  hints?: string[];
 }
 
 export interface StepOption {

@@ -6,6 +6,8 @@ import ScaleStep from "./steps/ScaleStep";
 import TextInputStep from "./steps/TextInputStep";
 import InfoStep from "./steps/InfoStep";
 import ResultStep from "./steps/ResultStep";
+import TimerStep from "./steps/TimerStep";
+import ConfirmStep from "./steps/ConfirmStep";
 
 type Props = {
   step: ScenarioStep;
@@ -50,6 +52,12 @@ export default function TrainerStepRenderer({
       )}
       {step.type === "result" && (
         <ResultStep step={step} onFinish={onSkip} />
+      )}
+      {step.type === "timer" && (
+        <TimerStep step={step} onSubmit={(v) => onAnswer(v)} />
+      )}
+      {step.type === "confirm" && (
+        <ConfirmStep step={step} onSubmit={(v) => onAnswer(v)} />
       )}
     </div>
   );

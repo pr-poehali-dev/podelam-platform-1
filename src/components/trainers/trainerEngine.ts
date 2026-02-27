@@ -126,7 +126,15 @@ export function answerStep(
     }
   }
 
-  if (!step.options && step.nextStep) {
+  if (step.type === "confirm" && typeof value === "string") {
+    const targetId = value === "yes" ? step.confirmYesStep : step.confirmNoStep;
+    if (targetId) {
+      const targetIdx = scenario.steps.findIndex((s) => s.id === targetId);
+      if (targetIdx >= 0) nextIndex = targetIdx;
+    }
+  }
+
+  if (!step.options && step.nextStep && step.type !== "confirm") {
     const targetIdx = scenario.steps.findIndex(
       (s) => s.id === step!.nextStep
     );
@@ -500,62 +508,99 @@ function calculateEmotionsResult(
 function calculateAntiProcrastinationResult(
   session: TrainerSession
 ): TrainerResult {
-  const motivation = session.scores["motivation"] || 0;
-  const resistance = session.scores["resistance"] || 0;
-  const action = session.scores["action"] || 0;
-  const total = motivation + action - resistance;
+  const V = session.scores["value"] || 5;
+  const C = session.scores["complexity"] || 5;
+  const R = session.scores["resistance"] || 5;
+  const R_after = session.scores["resistance_after"] || 5;
+
+  const doneAnswer = session.answers["ap-done"];
+  const doneId = typeof doneAnswer?.value === "string" ? doneAnswer.value : "";
+  let A = 0;
+  if (doneId === "done-full") A = 1;
+  else if (doneId === "done-partial") A = 0.5;
+
+  const RI = R - R_after;
+
+  const rawSI = A * 20 + Math.max(0, RI) * 5;
+  const SI = Math.round(Math.min(100, (rawSI / 70) * 100));
+
+  const PI = Math.round(R * 4 + C * 3 - V * 2);
+
+  const DI = A > 0 ? Math.round(A * 100) : 0;
+
+  const rawAI = SI + DI - Math.max(0, PI);
+  const AI = Math.max(0, Math.min(100, rawAI));
 
   let level: string;
   let title: string;
   let summary: string;
 
-  if (total >= 20) {
+  if (AI >= 86) {
+    level = "excellent";
+    title = "Устойчивый человек действия";
+    summary = "Вы запустили работу и довели до результата. Сопротивление не помешало вам.";
+  } else if (AI >= 71) {
     level = "high";
-    title = "Мастер малых шагов";
-    summary =
-      "Вы отлично справляетесь с прокрастинацией. Метод малых шагов — ваш надёжный инструмент.";
-  } else if (total >= 10) {
+    title = "Высокая дисциплина";
+    summary = "Вы хорошо справляетесь с прокрастинацией. Продолжайте в том же темпе.";
+  } else if (AI >= 51) {
     level = "medium";
-    title = "На пути к действию";
-    summary =
-      "Иногда сопротивление побеждает, но вы учитесь разбивать задачи на маленькие шаги.";
-  } else {
+    title = "Формируется привычка";
+    summary = "Вы учитесь начинать через сопротивление. Каждый запуск укрепляет навык.";
+  } else if (AI >= 31) {
     level = "developing";
-    title = "Первый малый шаг сделан";
-    summary =
-      "Прокрастинация пока сильна, но сам факт прохождения тренажёра — уже победа.";
+    title = "Нестабильный запуск";
+    summary = "Иногда получается начать, иногда нет. Попробуйте уменьшить шаг.";
+  } else {
+    level = "beginning";
+    title = "Хроническая прокрастинация";
+    summary = "Сопротивление пока сильнее. Но вы уже здесь — и это первый шаг.";
   }
 
+  const REASON_LABELS: Record<string, string> = {
+    "fear-fail": "Страх неудачи", "fear-judge": "Страх оценки",
+    "no-energy": "Нет энергии", "no-start": "Не знаю с чего начать",
+    "too-big": "Слишком большая задача", "no-plan": "Нет плана",
+    "perfectionism": "Перфекционизм", "boring": "Неинтересно",
+    "no-deadline": "Нет дедлайна", "no-belief": "Не верю в результат",
+    "other-reason": "Другое",
+  };
+
+  const reasonAnswer = session.answers["ap-reason"];
+  const reasonId = typeof reasonAnswer?.value === "string" ? reasonAnswer.value : "";
+  const reasonLabel = REASON_LABELS[reasonId] || reasonId;
+
+  const insights: string[] = [
+    `Важность задачи: ${V}/10`,
+    `Сложность: ${C}/10`,
+    `Сопротивление до: ${R}/10 → после: ${R_after}/10 (${RI > 0 ? "−" + RI : RI === 0 ? "без изменений" : "+" + Math.abs(RI)})`,
+    `Причина откладывания: ${reasonLabel}`,
+    `Результат: ${doneId === "done-full" ? "выполнено полностью" : doneId === "done-partial" ? "частично" : "не выполнено"}`,
+  ];
+
   const recommendations: string[] = [];
-  if (resistance > 10)
-    recommendations.push(
-      "Когда хочется отложить — сделайте только 2 минуты. Обычно этого хватает, чтобы втянуться."
-    );
-  if (motivation < 8)
-    recommendations.push(
-      "Свяжите задачу с тем, что для вас важно. «Зачем?» сильнее «Надо»."
-    );
-  if (action < 8)
-    recommendations.push(
-      "Запланируйте конкретное время и место для важной задачи."
-    );
-  recommendations.push(
-    "Повторяйте тренажёр еженедельно для формирования привычки."
-  );
+  if (R >= 8 && A === 0)
+    recommendations.push("Попробуйте уменьшить шаг в 2 раза — задача может быть слишком большой.");
+  if (RI <= 0)
+    recommendations.push("Сопротивление не снизилось — попробуйте другой подход к задаче.");
+  if (RI > 3)
+    recommendations.push("Отличное снижение сопротивления! Продолжайте использовать метод малого шага.");
+  if (PI > 40)
+    recommendations.push("Высокий риск откладывания. Разбейте задачу на ещё более мелкие части.");
+  if (A < 1)
+    recommendations.push("Не страшно, что не доделали. Попробуйте завтра ещё меньший шаг.");
+  recommendations.push("Повторяйте тренажёр ежедневно — 3 дня подряд сформируют «Запуск», 21 день — привычку.");
 
   return {
     title,
     summary,
     level,
-    scores: { motivation, resistance, action, total },
+    scores: { RI, SI, PI, DI, AI },
     recommendations,
-    insights: [
-      `Мотивация: ${motivation} баллов`,
-      `Сопротивление: ${resistance} баллов`,
-      `Готовность к действию: ${action} баллов`,
-    ],
+    insights,
     nextActions: [
-      "Выбрать одну задачу и сделать первые 2 минуты сегодня",
+      "Повторить завтра с той же или новой задачей",
+      "Зафиксировать своё наблюдение из рефлексии",
     ],
   };
 }

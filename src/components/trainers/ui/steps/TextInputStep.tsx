@@ -37,6 +37,20 @@ export default function TextInputStep({ step, onSubmit }: Props) {
         </p>
       )}
 
+      {step.hints && step.hints.length > 0 && !text && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {step.hints.map((hint) => (
+            <button
+              key={hint}
+              onClick={() => setText(hint)}
+              className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-card hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-all duration-200"
+            >
+              {hint}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="relative mb-2">
         <Textarea
           value={text}

@@ -108,7 +108,7 @@ function AnimatedCheckmark() {
   );
 }
 
-function EMIGauge({ value, delay = 500 }: { value: number; delay?: number }) {
+function EMIGauge({ value, delay = 500, label = "EMI" }: { value: number; delay?: number; label?: string }) {
   const animated = useCounter(value, 1500, delay);
   const [visible, setVisible] = useState(false);
 
@@ -175,7 +175,7 @@ function EMIGauge({ value, delay = 500 }: { value: number; delay?: number }) {
         >
           {animated}
         </div>
-        <div className="text-xs text-muted-foreground mt-0.5">EMI</div>
+        <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
       </div>
     </div>
   );
@@ -356,8 +356,11 @@ const CHART_COLORS = [
   "hsl(32, 60%, 50%)",
 ];
 
-const isEmotionsTrainer = (trainerId: string) =>
-  trainerId === "emotions-in-action";
+const hasGaugeIndex = (trainerId: string) =>
+  trainerId === "emotions-in-action" || trainerId === "anti-procrastination";
+
+const getGaugeKey = (trainerId: string) =>
+  trainerId === "emotions-in-action" ? "EMI" : "AI";
 
 export default function TrainerResultScreen({
   result,
@@ -378,10 +381,13 @@ export default function TrainerResultScreen({
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const isEMI = isEmotionsTrainer(trainer.id);
+  const isGauge = hasGaugeIndex(trainer.id);
+  const gaugeKey = getGaugeKey(trainer.id);
+  const isEMI = trainer.id === "emotions-in-action";
+  const isAP = trainer.id === "anti-procrastination";
 
   const chartData = Object.entries(result.scores)
-    .filter(([key]) => key !== "total" && key !== "EMI")
+    .filter(([key]) => key !== "total" && key !== "EMI" && key !== "AI")
     .map(([key, value]) => ({
       name: key,
       value,
@@ -407,6 +413,11 @@ export default function TrainerResultScreen({
     SR: "Саморегуляция",
     IP: "Импульсивность",
     EMI: "Эмоц. зрелость",
+    RI: "Снижение сопр.",
+    SI: "Индекс запуска",
+    PI: "Прокрастинация",
+    DI: "Дисциплина",
+    AI: "Индекс действия",
   };
 
   const COLOR_HUES: Record<string, number> = {
@@ -429,6 +440,11 @@ export default function TrainerResultScreen({
     SR: 160,
     IP: 25,
     EMI: 220,
+    RI: 160,
+    SI: 220,
+    PI: 0,
+    DI: 252,
+    AI: 32,
   };
 
   return (
@@ -440,8 +456,8 @@ export default function TrainerResultScreen({
             : "opacity-0 translate-y-6"
         }`}
       >
-        {isEMI ? (
-          <EMIGauge value={result.scores["EMI"] || 0} delay={500} />
+        {isGauge ? (
+          <EMIGauge value={result.scores[gaugeKey] || 0} delay={500} label={gaugeKey} />
         ) : (
           <AnimatedCheckmark />
         )}
@@ -500,7 +516,59 @@ export default function TrainerResultScreen({
         </div>
       )}
 
-      {!isEMI && (
+      {isAP && (
+        <div
+          className={`transition-all duration-600 ease-out ${
+            sectionVisible >= 2
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-6"
+          }`}
+        >
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            Индексы
+          </h3>
+          <div className="grid grid-cols-1 gap-2.5">
+            <IndexCard
+              label="Индекс запуска (SI)"
+              value={result.scores["SI"] || 0}
+              maxValue={100}
+              icon="Rocket"
+              color="hsl(220, 60%, 52%)"
+              delay={700}
+              description="Способность начать и довести шаг до результата"
+            />
+            <IndexCard
+              label="Снижение сопротивления (RI)"
+              value={result.scores["RI"] || 0}
+              maxValue={10}
+              icon="TrendingDown"
+              color="hsl(160, 55%, 42%)"
+              delay={900}
+              description="Чем выше — тем больше сопротивление снизилось"
+            />
+            <IndexCard
+              label="Индекс прокрастинации (PI)"
+              value={result.scores["PI"] || 0}
+              maxValue={70}
+              icon="Clock"
+              color="hsl(0, 60%, 50%)"
+              delay={1100}
+              description="Чем ниже — тем лучше. Риск откладывания"
+            />
+            <IndexCard
+              label="Дисциплина (DI)"
+              value={result.scores["DI"] || 0}
+              maxValue={100}
+              icon="Target"
+              color="hsl(252, 60%, 52%)"
+              delay={1300}
+              description="Процент выполненных шагов"
+            />
+          </div>
+        </div>
+      )}
+
+      {!isGauge && (
         <div
           className={`transition-all duration-600 ease-out ${
             sectionVisible >= 2
