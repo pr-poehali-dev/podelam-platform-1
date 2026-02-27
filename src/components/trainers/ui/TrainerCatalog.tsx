@@ -5,6 +5,17 @@ import { getStats, getCurrentSession } from "../trainerStorage";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import TrainerCard from "./TrainerCard";
+import {
+  TrainerPlanId,
+  TRAINER_PLANS,
+  getTrainerSubscription,
+  hasTrainerAccess,
+  payTrainerPlanFromBalance,
+  createTrainerPayment,
+  trainerSubExpiresFormatted,
+} from "@/lib/trainerAccess";
+import { getBalance } from "@/lib/access";
+import BalanceTopUpModal from "@/components/BalanceTopUpModal";
 
 type Props = {
   onSelectTrainer: (trainerId: TrainerId) => void;
@@ -65,6 +76,43 @@ const PRICING_PLANS = [
 
 export default function TrainerCatalog({ onSelectTrainer }: Props) {
   const [search, setSearch] = useState("");
+  const [planLoading, setPlanLoading] = useState<TrainerPlanId | null>(null);
+  const [planError, setPlanError] = useState("");
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [balance, setBalance] = useState(getBalance);
+  const [, forceUpdate] = useState(0);
+
+  const sub = getTrainerSubscription();
+  const subExpires = trainerSubExpiresFormatted();
+  const refreshBalance = () => {
+    setBalance(getBalance());
+    forceUpdate((n) => n + 1);
+  };
+
+  const handleBuyPlan = async (planId: TrainerPlanId) => {
+    setPlanLoading(planId);
+    setPlanError("");
+    const plan = TRAINER_PLANS.find((p) => p.id === planId);
+    if (!plan) return;
+
+    if (balance >= plan.price) {
+      const ok = await payTrainerPlanFromBalance(planId);
+      setPlanLoading(null);
+      if (ok) {
+        refreshBalance();
+      } else {
+        setPlanError("Недостаточно средств");
+      }
+    } else {
+      const url = await createTrainerPayment(planId);
+      if (url) {
+        window.location.href = url;
+      } else {
+        setPlanError("Не удалось создать платёж");
+        setPlanLoading(null);
+      }
+    }
+  };
 
   const trainersWithMeta = useMemo(() => {
     return TRAINER_DEFS.map((def) => ({
@@ -215,6 +263,25 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
         </div>
       )}
 
+      {sub && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+            <Icon name="CheckCircle" className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold text-foreground text-sm">
+              Тариф «{TRAINER_PLANS.find((p) => p.id === sub.planId)?.name}» активен
+            </div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {sub.allTrainers
+                ? "Все тренажёры доступны"
+                : `Тренажёр: ${TRAINER_DEFS.find((d) => d.id === sub.trainerId)?.title || "выбранный"}`}
+              {subExpires && ` · до ${subExpires}`}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Pricing section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2.5">
@@ -224,84 +291,156 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
           </h2>
         </div>
         <p className="text-sm text-muted-foreground -mt-2">
-          Выберите подходящий план для работы с тренажёрами
+          {sub ? "Вы можете обновить тариф" : "Выберите подходящий план для работы с тренажёрами"}
         </p>
 
+        {planError && (
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+            <Icon name="AlertCircle" size={16} className="shrink-0" />
+            {planError}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {PRICING_PLANS.map((plan) => (
-            <div
-              key={plan.id}
-              className={`
-                relative flex flex-col rounded-2xl border p-5 transition-all duration-200
-                ${
-                  plan.accent
-                    ? "border-primary bg-primary/[0.02] shadow-md shadow-primary/5"
-                    : "bg-card hover:shadow-sm"
-                }
-              `}
-            >
-              {plan.accent && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold gradient-brand text-white shadow-sm">
-                    Популярный
+          {PRICING_PLANS.map((plan) => {
+            const isCurrentPlan = sub?.planId === plan.id;
+            const realPlan = TRAINER_PLANS.find((p) => p.id === plan.id);
+            const canAfford = realPlan ? balance >= realPlan.price : false;
+            return (
+              <div
+                key={plan.id}
+                className={`
+                  relative flex flex-col rounded-2xl border p-5 transition-all duration-200
+                  ${
+                    isCurrentPlan
+                      ? "border-emerald-300 bg-emerald-50/30 shadow-sm"
+                      : plan.accent
+                      ? "border-primary bg-primary/[0.02] shadow-md shadow-primary/5"
+                      : "bg-card hover:shadow-sm"
+                  }
+                `}
+              >
+                {plan.accent && !isCurrentPlan && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold gradient-brand text-white shadow-sm">
+                      Популярный
+                    </span>
+                  </div>
+                )}
+                {isCurrentPlan && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-500 text-white shadow-sm">
+                      Ваш тариф
+                    </span>
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <h3 className="font-bold text-lg text-foreground">
+                    {plan.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {plan.description}
+                  </p>
+                  <p className="text-[11px] text-primary/70 mt-1 leading-snug">
+                    {plan.trainers}
+                  </p>
+                </div>
+
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-3xl font-bold text-foreground tabular-nums">
+                    {plan.price.toLocaleString("ru-RU")}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    /{plan.period}
                   </span>
                 </div>
-              )}
 
-              <div className="mb-4">
-                <h3 className="font-bold text-lg text-foreground">
-                  {plan.name}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {plan.description}
-                </p>
-                <p className="text-[11px] text-primary/70 mt-1 leading-snug">
-                  {plan.trainers}
-                </p>
-              </div>
+                <ul className="flex flex-col gap-2 mb-5 flex-1">
+                  {plan.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2 text-sm text-foreground/80"
+                    >
+                      <Icon
+                        name="Check"
+                        className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                          isCurrentPlan
+                            ? "text-emerald-500"
+                            : plan.accent
+                            ? "text-primary"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-3xl font-bold text-foreground tabular-nums">
-                  {plan.price.toLocaleString("ru-RU")}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  /{plan.period}
-                </span>
-              </div>
-
-              <ul className="flex flex-col gap-2 mb-5 flex-1">
-                {plan.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-start gap-2 text-sm text-foreground/80"
+                {isCurrentPlan ? (
+                  <Button
+                    variant="outline"
+                    disabled
+                    className="w-full h-10 rounded-xl text-sm font-medium border-emerald-300 text-emerald-600"
                   >
-                    <Icon
-                      name="Check"
-                      className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
-                        plan.accent
-                          ? "text-primary"
-                          : "text-muted-foreground"
-                      }`}
-                    />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+                    <Icon name="Check" size={16} className="mr-1.5" />
+                    Активен
+                  </Button>
+                ) : (
+                  <Button
+                    variant={plan.accent ? "default" : "outline"}
+                    disabled={!!planLoading}
+                    onClick={() => handleBuyPlan(plan.id as TrainerPlanId)}
+                    className={`w-full h-10 rounded-xl text-sm font-medium ${
+                      plan.accent
+                        ? "gradient-brand text-white border-0 shadow-sm hover:shadow-md"
+                        : ""
+                    } transition-all duration-200`}
+                  >
+                    {planLoading === plan.id ? (
+                      <>
+                        <Icon name="Loader2" size={16} className="animate-spin mr-1.5" />
+                        {canAfford ? "Активируем..." : "Переход к оплате..."}
+                      </>
+                    ) : canAfford ? (
+                      <>
+                        <Icon name="Wallet" size={16} className="mr-1.5" />
+                        Списать {plan.price.toLocaleString("ru-RU")} ₽
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="CreditCard" size={16} className="mr-1.5" />
+                        Оплатить {plan.price.toLocaleString("ru-RU")} ₽
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
-              <Button
-                variant={plan.accent ? "default" : "outline"}
-                className={`w-full h-10 rounded-xl text-sm font-medium ${
-                  plan.accent
-                    ? "gradient-brand text-white border-0 shadow-sm hover:shadow-md"
-                    : ""
-                } transition-all duration-200`}
-              >
-                Выбрать
-              </Button>
-            </div>
-          ))}
+        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Icon name="Wallet" size={12} />
+            Баланс: {balance} ₽
+          </span>
+          <button
+            onClick={() => setShowTopUp(true)}
+            className="text-primary hover:underline flex items-center gap-1"
+          >
+            <Icon name="Plus" size={12} />
+            Пополнить
+          </button>
         </div>
       </div>
+
+      {showTopUp && (
+        <BalanceTopUpModal
+          onClose={() => { setShowTopUp(false); refreshBalance(); }}
+          onSuccess={() => { setShowTopUp(false); refreshBalance(); }}
+        />
+      )}
     </div>
   );
 }

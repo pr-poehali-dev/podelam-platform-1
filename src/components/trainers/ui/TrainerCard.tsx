@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { TrainerDef, TrainerStats } from "../types";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import { hasTrainerAccess } from "@/lib/trainerAccess";
 
 type Props = {
   trainer: TrainerDef;
@@ -59,6 +60,7 @@ export default function TrainerCard({
   animationDelay = 0,
 }: Props) {
   const [visible, setVisible] = useState(false);
+  const hasAccess = hasTrainerAccess(trainer.id);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), animationDelay);
@@ -183,7 +185,7 @@ export default function TrainerCard({
 
         {/* Action button */}
         <div className="pt-1">
-          {hasActiveSession && onContinue ? (
+          {hasActiveSession && onContinue && hasAccess ? (
             <Button
               onClick={onContinue}
               className={`w-full h-10 rounded-xl text-sm font-medium bg-gradient-to-r ${trainer.bgGradient} text-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200`}
@@ -191,7 +193,7 @@ export default function TrainerCard({
               <Icon name="Play" className="w-4 h-4 mr-1.5" />
               Продолжить
             </Button>
-          ) : (
+          ) : hasAccess ? (
             <Button
               onClick={onStart}
               variant="outline"
@@ -199,6 +201,15 @@ export default function TrainerCard({
             >
               <Icon name="Sparkles" className="w-4 h-4 mr-1.5" />
               Начать тренировку
+            </Button>
+          ) : (
+            <Button
+              onClick={onStart}
+              variant="outline"
+              className="w-full h-10 rounded-xl text-sm font-medium hover:bg-primary/5 transition-colors duration-200"
+            >
+              <Icon name="Lock" className="w-4 h-4 mr-1.5" />
+              Оформить доступ
             </Button>
           )}
         </div>

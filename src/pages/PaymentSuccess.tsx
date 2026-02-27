@@ -2,6 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { syncFromServer } from "@/lib/access";
+import {
+  getPendingTrainerPlan,
+  clearPendingTrainerPlan,
+  activateTrainerPlan,
+} from "@/lib/trainerAccess";
 
 const YOOKASSA_URL = "https://functions.poehali.dev/1b07c03c-bee7-4b25-aeee-836e7331e044";
 
@@ -14,6 +19,7 @@ export default function PaymentSuccess() {
 
   const [status, setStatus] = useState<PaymentStatus>("checking");
   const [amount, setAmount] = useState(0);
+  const [isTrainerPayment, setIsTrainerPayment] = useState(false);
   const pollCount = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -37,6 +43,12 @@ export default function PaymentSuccess() {
           setAmount(data.amount || 0);
           window.ym?.(107022183, 'reachGoal', 'payment_success', { amount: data.amount, order_price: data.amount, currency: 'RUB' });
           syncFromServer().catch(() => {});
+          const pending = getPendingTrainerPlan();
+          if (pending) {
+            activateTrainerPlan(pending.planId, pending.trainerId);
+            clearPendingTrainerPlan();
+            setIsTrainerPayment(true);
+          }
           return;
         }
 
@@ -95,20 +107,41 @@ export default function PaymentSuccess() {
               )}
             </div>
             <div className="p-6 space-y-3">
-              <button
-                onClick={() => navigate("/cabinet?tab=tools")}
-                className="w-full gradient-brand text-white font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2"
-              >
-                <Icon name="Compass" size={17} />
-                Перейти к инструментам
-              </button>
-              <button
-                onClick={() => navigate("/cabinet")}
-                className="w-full border-2 border-border text-foreground font-bold py-3.5 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
-              >
-                <Icon name="User" size={17} />
-                В личный кабинет
-              </button>
+              {isTrainerPayment ? (
+                <>
+                  <button
+                    onClick={() => navigate("/trainers")}
+                    className="w-full gradient-brand text-white font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2"
+                  >
+                    <Icon name="Dumbbell" size={17} />
+                    Перейти к тренажёрам
+                  </button>
+                  <button
+                    onClick={() => navigate("/cabinet")}
+                    className="w-full border-2 border-border text-foreground font-bold py-3.5 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
+                  >
+                    <Icon name="User" size={17} />
+                    В личный кабинет
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate("/cabinet?tab=tools")}
+                    className="w-full gradient-brand text-white font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2"
+                  >
+                    <Icon name="Compass" size={17} />
+                    Перейти к инструментам
+                  </button>
+                  <button
+                    onClick={() => navigate("/cabinet")}
+                    className="w-full border-2 border-border text-foreground font-bold py-3.5 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
+                  >
+                    <Icon name="User" size={17} />
+                    В личный кабинет
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

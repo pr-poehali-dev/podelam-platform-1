@@ -3,7 +3,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { TrainerId, TrainerSession } from "@/components/trainers/types";
 import TrainerCatalog from "@/components/trainers/ui/TrainerCatalog";
 import TrainerSessionView from "@/components/trainers/ui/TrainerSessionView";
+import TrainerPaywallModal from "@/components/trainers/ui/TrainerPaywallModal";
 import Icon from "@/components/ui/icon";
+import { hasTrainerAccess } from "@/lib/trainerAccess";
 
 const VALID_IDS: TrainerId[] = [
   "conscious-choice",
@@ -24,8 +26,8 @@ export default function Trainers() {
   const [activeTrainer, setActiveTrainer] = useState<TrainerId | null>(
     isValidTrainerId(paramId) ? paramId : null
   );
+  const [paywallTrainer, setPaywallTrainer] = useState<TrainerId | null>(null);
 
-  /* Auth guard */
   useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) {
@@ -33,7 +35,6 @@ export default function Trainers() {
     }
   }, [navigate]);
 
-  /* Sync URL param -> state */
   useEffect(() => {
     if (isValidTrainerId(paramId)) {
       setActiveTrainer(paramId);
@@ -43,8 +44,21 @@ export default function Trainers() {
   }, [paramId]);
 
   const handleSelectTrainer = (id: TrainerId) => {
-    setActiveTrainer(id);
-    navigate(`/trainers?id=${id}`, { replace: true });
+    if (hasTrainerAccess(id)) {
+      setActiveTrainer(id);
+      navigate(`/trainers?id=${id}`, { replace: true });
+    } else {
+      setPaywallTrainer(id);
+    }
+  };
+
+  const handlePaywallSuccess = () => {
+    const id = paywallTrainer;
+    setPaywallTrainer(null);
+    if (id) {
+      setActiveTrainer(id);
+      navigate(`/trainers?id=${id}`, { replace: true });
+    }
   };
 
   const handleExit = () => {
@@ -52,13 +66,17 @@ export default function Trainers() {
     navigate("/trainers", { replace: true });
   };
 
-  const handleComplete = (_session: TrainerSession) => {
-    /* Session is already persisted by TrainerSessionView.
-       Could show a toast, redirect, etc. For now, stay on result screen. */
-  };
+  const handleComplete = (_session: TrainerSession) => {};
 
-  /* ————— Session mode ————— */
-  if (activeTrainer) {
+  useEffect(() => {
+    if (activeTrainer && !hasTrainerAccess(activeTrainer)) {
+      setPaywallTrainer(activeTrainer);
+      setActiveTrainer(null);
+      navigate("/trainers", { replace: true });
+    }
+  }, [activeTrainer, navigate]);
+
+  if (activeTrainer && hasTrainerAccess(activeTrainer)) {
     return (
       <div
         className="min-h-screen font-golos"
@@ -73,14 +91,12 @@ export default function Trainers() {
     );
   }
 
-  /* ————— Catalog mode ————— */
   return (
     <div
       className="min-h-screen font-golos"
       style={{ background: "hsl(248, 50%, 98%)" }}
     >
       <div className="max-w-6xl mx-auto px-4 py-6 md:py-10">
-        {/* Back to cabinet */}
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => navigate("/cabinet?tab=tools")}
@@ -99,7 +115,6 @@ export default function Trainers() {
 
         <TrainerCatalog onSelectTrainer={handleSelectTrainer} />
 
-        {/* Footer link to stats */}
         <div className="mt-10 text-center">
           <button
             onClick={() => navigate("/trainers/stats")}
@@ -116,6 +131,14 @@ export default function Trainers() {
           </button>
         </div>
       </div>
+
+      {paywallTrainer && (
+        <TrainerPaywallModal
+          trainerId={paywallTrainer}
+          onClose={() => setPaywallTrainer(null)}
+          onSuccess={handlePaywallSuccess}
+        />
+      )}
     </div>
   );
 }
