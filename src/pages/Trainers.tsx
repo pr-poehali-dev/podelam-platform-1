@@ -222,7 +222,7 @@ export default function Trainers() {
               Лимит сессий исчерпан
             </h3>
             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-              На базовом тарифе доступно {sessionLimit.limit} сессии в месяц. Вы уже прошли {sessionLimit.used} из {sessionLimit.limit}.
+              На базовом тарифе доступно {sessionLimit.limit} сессии за период подписки. Вы уже прошли {sessionLimit.used} из {sessionLimit.limit}. Продлите тариф, чтобы получить новые сессии.
             </p>
             <div className="rounded-xl border bg-violet-50/50 p-4 mb-5">
               <p className="text-xs font-semibold text-foreground mb-2">Безлимитный доступ:</p>
