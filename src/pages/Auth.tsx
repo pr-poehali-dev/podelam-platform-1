@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { activatePaidOnce } from "@/lib/access";
 import { syncTrainerSubscription } from "@/lib/trainerAccess";
+import { syncAllSessionsFromServer } from "@/components/trainers/trainerStorage";
 
 type Mode = "login" | "register" | "reset_email" | "reset_code";
 
@@ -96,6 +97,7 @@ export default function Auth() {
 
       const user = data.user;
       localStorage.setItem("pdd_user", JSON.stringify({ id: user.id, name: user.name, email: user.email }));
+      localStorage.setItem("pdd_last_activity", Date.now().toString());
       if (data.ref_code) localStorage.setItem(`pdd_ref_code_${user.email}`, data.ref_code);
       localStorage.removeItem("pdd_pending_ref");
 
@@ -156,6 +158,7 @@ export default function Auth() {
       localStorage.setItem(`pdd_tests_${user.email}`, JSON.stringify(testsArr));
 
       syncTrainerSubscription().catch(() => {});
+      syncAllSessionsFromServer().catch(() => {});
 
       if (mode === "register") {
         window.ym?.(107022183, 'reachGoal', 'registration');

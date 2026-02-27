@@ -31,8 +31,14 @@ import Trainers from "./pages/Trainers";
 import TrainersLanding from "./pages/TrainersLanding";
 import TrainerStats from "./pages/TrainerStats";
 import NotFound from "./pages/NotFoundPage";
+import useAutoLogout from "./hooks/useAutoLogout";
 
 const queryClient = new QueryClient();
+
+function AutoLogoutGuard({ children }: { children: React.ReactNode }) {
+  useAutoLogout();
+  return <>{children}</>;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -40,6 +46,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AutoLogoutGuard>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
@@ -70,6 +77,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </AutoLogoutGuard>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
