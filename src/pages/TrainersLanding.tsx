@@ -11,7 +11,7 @@ const META = {
   description:
     "5 тренажеров: осознанный выбор, эмоции, антипрокрастинация, самооценка, деньги без тревоги. Индексы EMI, AI, IVO, FSI. От 990 ₽/мес.",
   ogImage:
-    "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/og-image-1771939680459.jpg",
+    "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/4bf0e0ce-5476-4b6e-8961-7b514365e980.jpg",
 };
 
 function setMeta(name: string, content: string, property?: boolean) {
