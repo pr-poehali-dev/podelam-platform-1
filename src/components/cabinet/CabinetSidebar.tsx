@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { id: "home" as Tab, icon: "LayoutDashboard", label: "Главная" },
   { id: "tests" as Tab, icon: "ClipboardList", label: "Тесты" },
   { id: "tools" as Tab, icon: "Wrench", label: "Инструменты" },
-  { id: "trainers" as Tab, icon: "Dumbbell", label: "Тренажёры" },
+  { id: "trainers" as Tab, icon: "Dumbbell", label: "Тренажеры" },
   { id: "referral" as Tab, icon: "Gift", label: "Рефералы" },
   { id: "blog" as Tab, icon: "BookOpen", label: "Статьи" },
 ];
