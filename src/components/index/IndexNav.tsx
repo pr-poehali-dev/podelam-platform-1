@@ -23,6 +23,7 @@ export default function IndexNav({ isLoggedIn, scrollTo }: IndexNavProps) {
         <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <button onClick={() => scrollTo("how")} className="hover:text-foreground transition-colors">Как работает</button>
           <button onClick={() => scrollTo("tools")} className="hover:text-foreground transition-colors">Инструменты</button>
+          <button onClick={() => navigate("/trainers-info")} className="hover:text-foreground transition-colors">Тренажёры</button>
           <button onClick={() => scrollTo("faq")} className="hover:text-foreground transition-colors">FAQ</button>
           <button onClick={() => navigate("/blog")} className="hover:text-foreground transition-colors">Статьи</button>
         </div>
@@ -61,6 +62,10 @@ export default function IndexNav({ isLoggedIn, scrollTo }: IndexNavProps) {
             <button onClick={() => { scrollTo("tools"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
               <Icon name="Wrench" size={18} className="text-primary" />
               Инструменты
+            </button>
+            <button onClick={() => { navigate("/trainers-info"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+              <Icon name="Dumbbell" size={18} className="text-primary" />
+              Тренажёры
             </button>
             <button onClick={() => { scrollTo("faq"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
               <Icon name="HelpCircle" size={18} className="text-primary" />
