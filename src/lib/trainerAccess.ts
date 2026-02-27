@@ -73,6 +73,7 @@ export interface TrainerSubscription {
   planId: TrainerPlanId;
   trainerId?: TrainerId;
   expiresAt: string;
+  startedAt?: string;
   allTrainers: boolean;
 }
 
@@ -121,7 +122,12 @@ export function getSessionLimitInfo(trainerId: TrainerId): { limited: boolean; u
     const email = getEmail();
     const raw = localStorage.getItem(`pdd_trainer_${email}_sessions_${trainerId}`);
     const sessions = raw ? JSON.parse(raw) : [];
-    const completed = sessions.filter((s: { completedAt?: string }) => s.completedAt);
+    const subStart = sub.startedAt ? new Date(sub.startedAt) : null;
+    const completed = sessions.filter((s: { completedAt?: string }) => {
+      if (!s.completedAt) return false;
+      if (subStart && new Date(s.completedAt) < subStart) return false;
+      return true;
+    });
     return {
       limited: completed.length >= BASIC_SESSION_LIMIT,
       used: completed.length,
@@ -178,6 +184,7 @@ export async function activateTrainerPlan(
     planId,
     trainerId: plan.allTrainers ? undefined : trainerId,
     expiresAt: expires.toISOString(),
+    startedAt: new Date().toISOString(),
     allTrainers: plan.allTrainers,
   };
   saveSubLocally(sub);
@@ -199,6 +206,7 @@ export async function activateTrainerPlan(
         planId: data.subscription.plan_id,
         trainerId: data.subscription.trainer_id || undefined,
         expiresAt: new Date(data.subscription.expires_at).toISOString(),
+        startedAt: data.subscription.started_at ? new Date(data.subscription.started_at).toISOString() : undefined,
         allTrainers: data.subscription.all_trainers,
       };
       saveSubLocally(serverSub);
@@ -224,6 +232,7 @@ export async function syncTrainerSubscription(): Promise<TrainerSubscription | n
         planId: data.subscription.plan_id,
         trainerId: data.subscription.trainer_id || undefined,
         expiresAt: new Date(data.subscription.expires_at).toISOString(),
+        startedAt: data.subscription.started_at ? new Date(data.subscription.started_at).toISOString() : undefined,
         allTrainers: data.subscription.all_trainers,
       };
       saveSubLocally(sub);

@@ -1,0 +1,1 @@
+ALTER TABLE trainer_subscriptions ADD COLUMN IF NOT EXISTS started_at TIMESTAMP NOT NULL DEFAULT now();

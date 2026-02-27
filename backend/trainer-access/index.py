@@ -56,16 +56,18 @@ def handler(event: dict, context) -> dict:
             if not plan:
                 return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'invalid plan'})}
 
-            expires_at = datetime.now() + timedelta(days=plan['days'])
+            now = datetime.now()
+            expires_at = now + timedelta(days=plan['days'])
             cur.execute(
-                f'''INSERT INTO "{S}".trainer_subscriptions (user_id, plan_id, trainer_id, all_trainers, expires_at)
-                    VALUES (%s, %s, %s, %s, %s)
+                f'''INSERT INTO "{S}".trainer_subscriptions (user_id, plan_id, trainer_id, all_trainers, expires_at, started_at)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     ON CONFLICT (user_id) DO UPDATE SET
                         plan_id = EXCLUDED.plan_id,
                         trainer_id = EXCLUDED.trainer_id,
                         all_trainers = EXCLUDED.all_trainers,
-                        expires_at = EXCLUDED.expires_at''',
-                (user_id, plan_id, trainer_id if not plan['all'] else None, plan['all'], expires_at)
+                        expires_at = EXCLUDED.expires_at,
+                        started_at = EXCLUDED.started_at''',
+                (user_id, plan_id, trainer_id if not plan['all'] else None, plan['all'], expires_at, now)
             )
             conn.commit()
 
@@ -241,11 +243,29 @@ def handler(event: dict, context) -> dict:
             trainer_id = body.get('trainer_id', '')
             if not trainer_id:
                 return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'trainer_id required'})}
+
+            sub_started = None
             cur.execute(
-                f'''SELECT COUNT(*) FROM "{S}".trainer_sessions
-                    WHERE user_id = %s AND trainer_id = %s AND completed_at IS NOT NULL''',
-                (user_id, trainer_id)
+                f'SELECT started_at FROM "{S}".trainer_subscriptions WHERE user_id = %s',
+                (user_id,)
             )
+            sub_row = cur.fetchone()
+            if sub_row and sub_row[0]:
+                sub_started = sub_row[0]
+
+            if sub_started:
+                cur.execute(
+                    f'''SELECT COUNT(*) FROM "{S}".trainer_sessions
+                        WHERE user_id = %s AND trainer_id = %s AND completed_at IS NOT NULL
+                        AND completed_at >= %s''',
+                    (user_id, trainer_id, sub_started)
+                )
+            else:
+                cur.execute(
+                    f'''SELECT COUNT(*) FROM "{S}".trainer_sessions
+                        WHERE user_id = %s AND trainer_id = %s AND completed_at IS NOT NULL''',
+                    (user_id, trainer_id)
+                )
             count = cur.fetchone()[0]
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'count': count, 'trainer_id': trainer_id})}
 
@@ -257,7 +277,7 @@ def handler(event: dict, context) -> dict:
 
 def _get_sub(cur, schema, user_id):
     cur.execute(
-        f'SELECT plan_id, trainer_id, all_trainers, expires_at FROM "{schema}".trainer_subscriptions WHERE user_id = %s',
+        f'SELECT plan_id, trainer_id, all_trainers, expires_at, started_at FROM "{schema}".trainer_subscriptions WHERE user_id = %s',
         (user_id,)
     )
     row = cur.fetchone()
@@ -271,4 +291,5 @@ def _get_sub(cur, schema, user_id):
         'trainer_id': row[1],
         'all_trainers': row[2],
         'expires_at': str(expires) if expires else None,
+        'started_at': str(row[4]) if row[4] else None,
     }
