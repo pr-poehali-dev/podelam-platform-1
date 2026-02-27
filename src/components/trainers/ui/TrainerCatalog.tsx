@@ -17,6 +17,7 @@ const PRICING_PLANS = [
     price: 990,
     period: "мес",
     description: "Один тренажёр на выбор",
+    trainers: "Осознанный выбор, Антипрокрастинация или Деньги без тревоги",
     features: [
       "1 тренажёр на выбор",
       "До 4 сессий в месяц",
@@ -30,13 +31,15 @@ const PRICING_PLANS = [
     name: "Продвинутый",
     price: 2490,
     period: "3 мес",
-    description: "Все тренажёры без ограничений",
+    description: "Все тренажёры · полная аналитика",
+    trainers: "Все 5 тренажёров включены",
     features: [
       "Все 5 тренажёров",
       "Неограниченные сессии",
+      "Индексы EMI, AI, IVO, FSI",
       "Аналитика паттернов",
+      "Трекер прогресса и динамика",
       "Сравнение периодов",
-      "Трекер прогресса",
     ],
     accent: true,
   },
@@ -46,12 +49,14 @@ const PRICING_PLANS = [
     price: 6990,
     period: "год",
     description: "Максимальная глубина проработки",
+    trainers: "Все 5 тренажёров + эксклюзивные функции",
     features: [
       "Все 5 тренажёров",
       "Неограниченные сессии",
-      "Годовая аналитика",
-      "Глубокая проработка",
-      "Все дополнения",
+      "Годовая динамика EMI, AI, IVO, FSI",
+      "Тепловая карта эмоций",
+      "Анализ денежных и поведенческих импульсов",
+      "Глубокая проработка паттернов",
       "Приоритетная поддержка",
     ],
     accent: false,
@@ -249,6 +254,9 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {plan.description}
+                </p>
+                <p className="text-[11px] text-primary/70 mt-1 leading-snug">
+                  {plan.trainers}
                 </p>
               </div>
 
