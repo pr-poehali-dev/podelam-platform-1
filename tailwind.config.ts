@@ -64,7 +64,7 @@ export default {
 				}
 			},
 			fontFamily: {
-				golos: ['"Golos Text"', 'sans-serif'],
+				golos: ['"Golos Text"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
