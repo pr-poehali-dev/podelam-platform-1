@@ -70,9 +70,8 @@ function exportPDF(session: BarrierSession, index: number) {
 <meta charset="UTF-8"/>
 <title>Анализ барьеров — ${session.date}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Inter, sans-serif; color: #111; background: white; padding: 32px; max-width: 720px; margin: 0 auto; }
+  body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #111; background: white; padding: 32px; max-width: 720px; margin: 0 auto; }
   h1 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
   .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
   .section { margin-bottom: 20px; }

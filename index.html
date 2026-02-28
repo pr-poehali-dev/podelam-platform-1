@@ -9,11 +9,17 @@
     <meta property="og:locale" content="ru_RU"/>
     <title>ПоДелам — найди своё дело</title>
     <meta name="description" content="Пройди психологический тест ПоДелам и узнай, какая профессия и направление заработка подходят тебе без выгорания. Анализ мотивации, склонностей ">
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;900&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;900&display=swap" rel="stylesheet"></noscript>
+    <script>
+    (function(){
+      var d=document,l=d.createElement('link');
+      l.rel='stylesheet';
+      l.href='https://fonts.bunny.net/css2?family=golos-text:400,500,600,700,900&display=swap';
+      var t=setTimeout(function(){l.parentNode&&l.parentNode.removeChild(l)},3000);
+      l.onload=function(){clearTimeout(t)};
+      l.onerror=function(){clearTimeout(t);l.parentNode&&l.parentNode.removeChild(l)};
+      d.head.appendChild(l);
+    })();
+    </script>
     <meta name="author" content="poehali.dev"/>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="manifest" href="/manifest.json">
