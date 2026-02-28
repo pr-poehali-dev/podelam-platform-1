@@ -8,6 +8,22 @@ const H = 400;
 const MAX_KB = 120;
 const PROXY_URL = funcUrls["image-proxy"];
 
+function BannerLogo({ light = false }: { light?: boolean }) {
+  const bg = "linear-gradient(135deg, #3b1d8e, #6c3fc7)";
+  const textColor = light ? "#1a0a3e" : "#fff";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
+      <div style={{ width: 20, height: 20, borderRadius: 5, background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="#fff" stroke="#fff" />
+        </svg>
+      </div>
+      <span style={{ fontSize: 10, fontWeight: 700, color: textColor, letterSpacing: 0.3 }}>ПоДелам</span>
+    </div>
+  );
+}
+
 async function imgToBase64(url: string): Promise<string> {
   const proxyRes = await fetch(`${PROXY_URL}?url=${encodeURIComponent(url)}`);
   const json = await proxyRes.json();
@@ -101,6 +117,7 @@ function Banner1() {
       <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,60,200,0.35) 0%, transparent 70%)" }} />
       <div style={{ position: "absolute", top: 18, left: 16, right: 16, bottom: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
+          <BannerLogo />
           <div style={{ display: "inline-block", background: "rgba(255,255,255,0.15)", borderRadius: 20, padding: "4px 10px", marginBottom: 14 }}>
             <span style={{ color: "#e0d4ff", fontSize: 9, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Бесплатный тест</span>
           </div>
@@ -126,6 +143,7 @@ function Banner2() {
   return (
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", background: "#0d0d0d", fontFamily: "'Golos Text', sans-serif" }}>
       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 200, height: 200, borderRadius: "50%", background: "conic-gradient(from 180deg, #6c3fc7, #ff6b6b, #ffd93d, #6c3fc7)", opacity: 0.15, filter: "blur(40px)" }} />
+      <div style={{ position: "absolute", top: 16, left: 16 }}><BannerLogo /></div>
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 16px" }}>
         <div style={{ fontSize: 28, marginBottom: 12 }}>🎯</div>
         <h1 style={{ color: "#fff", fontSize: 20, fontWeight: 800, lineHeight: 1.2, margin: 0, marginBottom: 10 }}>
@@ -149,6 +167,7 @@ function Banner3() {
       <div style={{ position: "absolute", top: -50, right: -30, width: 140, height: 140, borderRadius: "50%", background: "radial-gradient(circle, rgba(108,63,199,0.12) 0%, transparent 70%)" }} />
       <div style={{ position: "absolute", top: 18, left: 16, right: 16, bottom: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
+          <BannerLogo light />
           <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
             {["💼", "🎨", "💻", "📊"].map((e, i) => (
               <div key={i} style={{ width: 28, height: 28, borderRadius: 7, background: "#fff", boxShadow: "0 2px 8px rgba(108,63,199,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{e}</div>
@@ -181,6 +200,7 @@ function Banner4() {
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(108,63,199,0.1) 19px, rgba(108,63,199,0.1) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(108,63,199,0.1) 19px, rgba(108,63,199,0.1) 20px)" }} />
       <div style={{ position: "absolute", top: 18, left: 16, right: 16, bottom: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
+          <BannerLogo />
           <div style={{ display: "flex", gap: 5, marginBottom: 14, flexWrap: "wrap" }}>
             {["Маркетолог", "Дизайнер", "Психолог", "Аналитик"].map((p, i) => (
               <div key={i} style={{ background: "rgba(108,63,199,0.3)", border: "1px solid rgba(155,111,240,0.3)", borderRadius: 5, padding: "3px 7px" }}>
@@ -218,6 +238,7 @@ function Banner5() {
       <div style={{ position: "absolute", bottom: -30, left: -20, width: 100, height: 100, border: "1.5px solid rgba(255,255,255,0.08)", borderRadius: "50%" }} />
       <div style={{ position: "absolute", top: 18, left: 16, right: 16, bottom: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
+          <BannerLogo />
           <div style={{ background: "rgba(255,255,255,0.18)", borderRadius: 6, padding: "4px 10px", display: "inline-block", marginBottom: 14 }}>
             <span style={{ color: "#fff", fontSize: 8, fontWeight: 600 }}>⚡ Бесплатно · 2 мин</span>
           </div>
@@ -263,6 +284,7 @@ function Banner6() {
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
       <img src={IMG1} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(26,10,62,0.3) 0%, rgba(26,10,62,0.6) 50%, rgba(26,10,62,0.95) 80%)" }} />
+      <div style={{ position: "absolute", top: 16, left: 16 }}><BannerLogo /></div>
       <div style={{ position: "absolute", bottom: 18, left: 16, right: 16 }}>
         <div style={{ display: "inline-block", background: "rgba(108,63,199,0.6)", borderRadius: 5, padding: "3px 8px", marginBottom: 10 }}>
           <span style={{ color: "#fff", fontSize: 8, fontWeight: 600 }}>Бесплатный тест</span>
@@ -286,7 +308,8 @@ function Banner7() {
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
       <img src={IMG2} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.92) 85%)" }} />
-      <div style={{ position: "absolute", top: 16, left: 16, right: 16 }}>
+      <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <BannerLogo />
         <div style={{ background: "rgba(255,200,50,0.9)", borderRadius: 5, padding: "3px 8px", display: "inline-block" }}>
           <span style={{ color: "#1a0a3e", fontSize: 8, fontWeight: 700 }}>⚡ 2 минуты</span>
         </div>
@@ -313,6 +336,7 @@ function Banner8() {
       <img src={IMG3} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(59,29,142,0.85) 0%, rgba(59,29,142,0.4) 35%, rgba(59,29,142,0.4) 60%, rgba(26,10,62,0.95) 85%)" }} />
       <div style={{ position: "absolute", top: 16, left: 16, right: 16 }}>
+        <BannerLogo />
         <h1 style={{ color: "#fff", fontSize: 19, fontWeight: 800, lineHeight: 1.2, margin: 0, marginBottom: 6 }}>
           Они нашли своё призвание
         </h1>
@@ -341,6 +365,7 @@ function Banner9() {
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
       <img src={IMG4} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.4) 40%, rgba(255,255,255,0.95) 70%)" }} />
+      <div style={{ position: "absolute", top: 16, left: 16 }}><BannerLogo light /></div>
       <div style={{ position: "absolute", bottom: 18, left: 16, right: 16 }}>
         <div style={{ display: "inline-block", background: "#6c3fc7", borderRadius: 5, padding: "3px 8px", marginBottom: 10 }}>
           <span style={{ color: "#fff", fontSize: 8, fontWeight: 600 }}>Результат сразу</span>
@@ -364,7 +389,8 @@ function Banner10() {
     <div style={{ width: W, height: H, position: "relative", overflow: "hidden", fontFamily: "'Golos Text', sans-serif" }}>
       <img src={IMG5} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.93) 80%)" }} />
-      <div style={{ position: "absolute", top: 16, left: 16 }}>
+      <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <BannerLogo />
         <div style={{ background: "rgba(255,255,255,0.2)", borderRadius: 5, padding: "3px 8px", display: "inline-block" }}>
           <span style={{ color: "#fff", fontSize: 8, fontWeight: 600 }}>🎯 Профориентация</span>
         </div>
