@@ -365,7 +365,7 @@ export default function BlogArticle() {
             />
             <div>
               <p className="font-bold text-foreground text-[15px]">Анна Уварова</p>
-              <p className="text-sm text-muted-foreground">бизнес-психолог</p>
+              <a href="https://annauvarova.ru/" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">бизнес-психолог</a>
             </div>
           </div>
 
