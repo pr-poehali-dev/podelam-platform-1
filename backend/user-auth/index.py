@@ -103,10 +103,8 @@ def handler(event: dict, context) -> dict:
                     referred_by = ref_row[0]
 
             ref_code = generate_ref_code()
-            for _ in range(5):
-                cur.execute(f'SELECT 1 FROM "{S}".users WHERE ref_code = %s', (ref_code,))
-                if not cur.fetchone():
-                    break
+            cur.execute(f'SELECT 1 FROM "{S}".users WHERE ref_code = %s', (ref_code,))
+            if cur.fetchone():
                 ref_code = generate_ref_code()
 
             pw_hash = hash_password(password)
@@ -147,9 +145,9 @@ def handler(event: dict, context) -> dict:
 
             if not user_ref_code:
                 user_ref_code = generate_ref_code()
-                cur.execute(f'UPDATE "{S}".users SET ref_code = %s WHERE id = %s', (user_ref_code, user_id))
-
-            cur.execute(f'UPDATE "{S}".users SET last_login = %s WHERE id = %s', (datetime.now(), user_id))
+                cur.execute(f'UPDATE "{S}".users SET ref_code = %s, last_login = %s WHERE id = %s', (user_ref_code, datetime.now(), user_id))
+            else:
+                cur.execute(f'UPDATE "{S}".users SET last_login = %s WHERE id = %s', (datetime.now(), user_id))
             conn.commit()
 
             cur.execute(
