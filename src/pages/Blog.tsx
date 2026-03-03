@@ -103,6 +103,21 @@ export default function Blog() {
   const activeCategory = searchParams.get("category") || "";
 
   useEffect(() => {
+    document.title = "Статьи ПоДелам — инсайты для карьеры и роста";
+    const setMeta = (attr: string, key: string, content: string) => {
+      let el = document.querySelector(`meta[${attr}="${key}"]`);
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, key); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    setMeta("name", "description", "Идеи и открытия для карьеры, роста и внутренней опоры. Статьи от бизнес-психолога Анны Уваровой.");
+    setMeta("property", "og:title", "Статьи ПоДелам — инсайты для карьеры и роста");
+    setMeta("property", "og:description", "Идеи и открытия для карьеры, роста и внутренней опоры.");
+    setMeta("property", "og:url", "https://podelam.su/blog");
+    setMeta("property", "og:type", "website");
+    return () => { document.title = "ПоДелам"; };
+  }, []);
+
+  useEffect(() => {
     const ref = searchParams.get("ref");
     if (ref) localStorage.setItem("pdd_pending_ref", ref);
   }, [searchParams]);

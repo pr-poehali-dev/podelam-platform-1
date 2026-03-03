@@ -1,0 +1,5 @@
+{"tests": [
+  {"name": "No slug returns redirect page", "method": "GET", "path": "/", "expectedStatus": 200},
+  {"name": "Unknown slug returns redirect page", "method": "GET", "path": "/?slug=nonexistent-article-12345", "expectedStatus": 200},
+  {"name": "OPTIONS preflight", "method": "OPTIONS", "path": "/", "expectedStatus": 200}
+]}

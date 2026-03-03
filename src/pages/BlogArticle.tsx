@@ -135,25 +135,28 @@ function renderInline(text: string): React.ReactNode[] {
   return tokens;
 }
 
+const OG_BASE = "https://functions.poehali.dev/083c6ab9-d8d3-470d-a23b-d6c32decf023";
+
+function getShareUrl(slug: string) {
+  let refParam = "";
+  try {
+    const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
+    if (u.email) {
+      const rulesAccepted = localStorage.getItem(`pdd_rules_accepted_${u.email}`) === "1";
+      if (rulesAccepted) {
+        const stored = localStorage.getItem(`pdd_ref_code_${u.email}`);
+        if (stored) refParam = `&ref=${stored}`;
+      }
+    }
+  } catch { /* ignore */ }
+  return `${OG_BASE}?slug=${slug}${refParam}`;
+}
+
 function ShareButton({ slug }: { slug: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
-    let refCode = "";
-    try {
-      const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
-      if (u.email) {
-        const rulesAccepted = localStorage.getItem(`pdd_rules_accepted_${u.email}`) === "1";
-        if (rulesAccepted) {
-          const stored = localStorage.getItem(`pdd_ref_code_${u.email}`);
-          if (stored) refCode = stored;
-        }
-      }
-    } catch { /* ignore */ }
-
-    const base = `https://podelam.su/blog/${slug}`;
-    const url = refCode ? `${base}?ref=${refCode}` : base;
-
+    const url = getShareUrl(slug);
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -246,17 +249,44 @@ export default function BlogArticle() {
 
     setMeta("property", "article:published_time", article.created_at);
     if (article.updated_at) setMeta("property", "article:modified_time", article.updated_at);
+    setMeta("property", "article:author", "Анна Уварова");
+
+    let ldScript = document.querySelector('script[data-article-ld]') as HTMLScriptElement | null;
+    if (!ldScript) {
+      ldScript = document.createElement("script");
+      ldScript.type = "application/ld+json";
+      ldScript.setAttribute("data-article-ld", "true");
+      document.head.appendChild(ldScript);
+    }
+    const jsonLd: Record<string, unknown> = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": pageTitle,
+      "description": pageDesc,
+      "url": pageUrl,
+      "datePublished": article.created_at,
+      "dateModified": article.updated_at || article.created_at,
+      "author": {"@type": "Person", "name": "Анна Уварова", "url": "https://annauvarova.ru/"},
+      "publisher": {"@type": "Organization", "name": "ПоДелам", "url": "https://podelam.su"},
+      "mainEntityOfPage": {"@type": "WebPage", "@id": pageUrl},
+      "wordCount": article.body ? article.body.split(/\s+/).length : 0,
+      "inLanguage": "ru",
+    };
+    if (article.cover_url) jsonLd["image"] = {"@type": "ImageObject", "url": article.cover_url};
+    if (article.reading_time) jsonLd["timeRequired"] = `PT${article.reading_time}M`;
+    ldScript.textContent = JSON.stringify(jsonLd);
 
     return () => {
       document.title = "ПоДелам";
       ["og:type","og:title","og:description","og:url","og:image","og:site_name",
-       "article:published_time","article:modified_time"].forEach((p) => {
+       "article:published_time","article:modified_time","article:author"].forEach((p) => {
         document.querySelector(`meta[property="${p}"]`)?.remove();
       });
       ["twitter:card","twitter:title","twitter:description","twitter:image","keywords"].forEach((n) => {
         document.querySelector(`meta[name="${n}"]`)?.remove();
       });
       document.querySelector('link[rel="canonical"]')?.remove();
+      document.querySelector('script[data-article-ld]')?.remove();
     };
   }, [article]);
 
