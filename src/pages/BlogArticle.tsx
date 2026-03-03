@@ -135,8 +135,6 @@ function renderInline(text: string): React.ReactNode[] {
   return tokens;
 }
 
-const OG_FUNC = "https://functions.poehali.dev/083c6ab9-d8d3-470d-a23b-d6c32decf023";
-
 function getShareUrl(slug: string) {
   let refParam = "";
   try {
@@ -145,11 +143,11 @@ function getShareUrl(slug: string) {
       const rulesAccepted = localStorage.getItem(`pdd_rules_accepted_${u.email}`) === "1";
       if (rulesAccepted) {
         const stored = localStorage.getItem(`pdd_ref_code_${u.email}`);
-        if (stored) refParam = `&ref=${stored}`;
+        if (stored) refParam = `?ref=${stored}`;
       }
     }
   } catch { /* ignore */ }
-  return `${OG_FUNC}?slug=${slug}${refParam}`;
+  return `https://podelam.su/blog/${slug}${refParam}`;
 }
 
 function ShareButton({ slug }: { slug: string }) {
