@@ -81,16 +81,13 @@ def handler(event: dict, context) -> dict:
 
             if limit > 0:
                 cur.execute(
-                    f'SELECT id FROM "{S}".tool_sessions WHERE user_id = %s AND tool_type = %s ORDER BY created_at DESC OFFSET %s',
+                    f'''DELETE FROM "{S}".tool_sessions WHERE id IN (
+                        SELECT id FROM "{S}".tool_sessions
+                        WHERE user_id = %s AND tool_type = %s
+                        ORDER BY created_at DESC OFFSET %s
+                    )''',
                     (user_id, tool_type, limit)
                 )
-                old_ids = [r[0] for r in cur.fetchall()]
-                if old_ids:
-                    placeholders = ','.join(['%s'] * len(old_ids))
-                    cur.execute(
-                        f'DELETE FROM "{S}".tool_sessions WHERE id IN ({placeholders})',
-                        tuple(old_ids)
-                    )
 
             conn.commit()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True, 'id': new_id})}

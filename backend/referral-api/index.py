@@ -96,16 +96,13 @@ def handler(event: dict, context) -> dict:
 
         if action == 'info':
             cur.execute(
-                f'SELECT COUNT(*) FROM "{S}".users WHERE referred_by = %s',
-                (user_id,)
+                f'''SELECT
+                    (SELECT COUNT(*) FROM "{S}".users WHERE referred_by = %s),
+                    COALESCE((SELECT SUM(amount) FROM "{S}".referral_transactions WHERE referrer_id = %s), 0)
+                ''',
+                (user_id, user_id)
             )
-            referrals_count = cur.fetchone()[0]
-
-            cur.execute(
-                f'SELECT COALESCE(SUM(amount), 0) FROM "{S}".referral_transactions WHERE referrer_id = %s',
-                (user_id,)
-            )
-            total_earned = cur.fetchone()[0]
+            referrals_count, total_earned = cur.fetchone()
 
             cur.execute(
                 f'''SELECT rt.amount, rt.created_at, u.name, p.tariff
