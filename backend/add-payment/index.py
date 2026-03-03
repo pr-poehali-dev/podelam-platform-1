@@ -54,12 +54,13 @@ def handler(event: dict, context) -> dict:
         cur = conn.cursor()
         S = SCHEMA
 
-        cur.execute(f'SELECT id, balance, subscription_expires, paid_tools FROM "{S}".users WHERE email = %s', (user_email,))
+        cur.execute(f'SELECT id, balance, subscription_expires, paid_tools, referred_by FROM "{S}".users WHERE email = %s', (user_email,))
         user_row = cur.fetchone()
         user_id = user_row[0] if user_row else None
         current_balance = user_row[1] or 0 if user_row else 0
         current_sub = user_row[2] if user_row else None
         current_paid = user_row[3] or '' if user_row else ''
+        referred_by = user_row[4] if user_row else None
 
         cur.execute(
             f'INSERT INTO "{S}".payments (user_id, user_email, user_name, amount, tariff, status) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id',
@@ -87,9 +88,7 @@ def handler(event: dict, context) -> dict:
                 cur.execute(f'UPDATE "{S}".users SET balance = %s, subscription_expires = %s WHERE id = %s', (new_balance, new_sub, user_id))
 
         if user_id and action in ('pay_tool', 'pay_sub') and status == 'paid':
-            cur.execute(f'SELECT referred_by FROM "{S}".users WHERE id = %s', (user_id,))
-            ref_row = cur.fetchone()
-            referrer_id = ref_row[0] if ref_row and ref_row[0] else None
+            referrer_id = referred_by
             if referrer_id:
                 bonus = int(amount * 0.2)
                 if bonus > 0:
