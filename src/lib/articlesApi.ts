@@ -29,22 +29,53 @@ export interface Category {
   count: number;
 }
 
+const cache: Record<string, { data: unknown; ts: number }> = {};
+const CACHE_TTL = 5 * 60 * 1000;
+
+function getCached<T>(key: string): T | null {
+  const entry = cache[key];
+  if (entry && Date.now() - entry.ts < CACHE_TTL) return entry.data as T;
+  return null;
+}
+
+function setCache(key: string, data: unknown) {
+  cache[key] = { data, ts: Date.now() };
+}
+
 export async function fetchArticles(page = 1, category = "") {
+  const cacheKey = `list_${page}_${category}`;
+  const cached = getCached<{ articles: ArticlePreview[]; total: number; page: number; pages: number }>(cacheKey);
+  if (cached) return cached;
+
   const params = new URLSearchParams({ action: "list", page: String(page) });
   if (category) params.set("category", category);
   const res = await fetch(`${API}?${params}`);
-  return res.json() as Promise<{ articles: ArticlePreview[]; total: number; page: number; pages: number }>;
+  const data = await res.json() as { articles: ArticlePreview[]; total: number; page: number; pages: number };
+  setCache(cacheKey, data);
+  return data;
 }
 
 export async function fetchArticle(slug: string) {
+  const cacheKey = `detail_${slug}`;
+  const cached = getCached<ArticleFull>(cacheKey);
+  if (cached) return cached;
+
   const res = await fetch(`${API}?action=detail&slug=${encodeURIComponent(slug)}`);
   if (!res.ok) return null;
-  return res.json() as Promise<ArticleFull>;
+  const data = await res.json() as ArticleFull;
+  setCache(cacheKey, data);
+  return data;
 }
 
 export async function fetchCategories() {
+  const cacheKey = "categories";
+  const cached = getCached<{ categories: Category[] }>(cacheKey);
+  if (cached) return cached;
+
   const res = await fetch(`${API}?action=categories`);
-  return res.json() as Promise<{ categories: Category[] }>;
+  const data = await res.json() as { categories: Category[] };
+  setCache(cacheKey, data);
+  return data;
 }
 
 export async function adminFetchArticle(token: string, id: number) {

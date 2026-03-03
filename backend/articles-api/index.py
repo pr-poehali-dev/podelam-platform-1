@@ -25,8 +25,11 @@ def get_conn():
 def hash_pw(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-def ok(data, status=200):
-    return {'statusCode': status, 'headers': CORS, 'body': json.dumps(data, default=str)}
+def ok(data, status=200, cache=0):
+    headers = {**CORS}
+    if cache > 0:
+        headers['Cache-Control'] = f'public, max-age={cache}'
+    return {'statusCode': status, 'headers': headers, 'body': json.dumps(data, default=str)}
 
 def err(msg, status=400):
     return {'statusCode': status, 'headers': CORS, 'body': json.dumps({'error': msg})}
@@ -141,7 +144,7 @@ def handle_list(qs):
         for row in cur.fetchall():
             articles.append({cols[i]: row[i] for i in range(len(cols))})
 
-        return ok({'articles': articles, 'total': total, 'page': page, 'pages': max(1, -(-total // limit))})
+        return ok({'articles': articles, 'total': total, 'page': page, 'pages': max(1, -(-total // limit))}, cache=300)
     finally:
         conn.close()
 
@@ -176,14 +179,14 @@ def handle_detail(qs):
 
         cur.execute(f'UPDATE "{S}".articles SET views_count = views_count + 1 WHERE id = %s', [article['id']])
         conn.commit()
-        return ok(article)
+        return ok(article, cache=120)
     finally:
         conn.close()
 
 def handle_categories():
     now = time.time()
     if _categories_cache['data'] and now - _categories_cache['ts'] < CATEGORIES_TTL:
-        return ok({'categories': _categories_cache['data']})
+        return ok({'categories': _categories_cache['data']}, cache=600)
 
     conn = get_conn()
     try:
@@ -200,7 +203,7 @@ def handle_categories():
         cats = [{'id': row[0], 'slug': row[1], 'name': row[2], 'count': row[3]} for row in cur.fetchall()]
         _categories_cache['data'] = cats
         _categories_cache['ts'] = now
-        return ok({'categories': cats})
+        return ok({'categories': cats}, cache=600)
     finally:
         conn.close()
 

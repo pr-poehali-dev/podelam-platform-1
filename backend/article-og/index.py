@@ -1,10 +1,14 @@
 import json
 import os
 import html
+import time
 import psycopg2
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
 SITE = 'https://podelam.su'
+
+_cache = {}
+CACHE_TTL = 600
 
 def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
@@ -16,8 +20,34 @@ def redirect_html(url):
     return {
         'statusCode': 200,
         'headers': {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'},
-        'body': f'<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url={url}"></head><body><a href="{url}">Перейти</a><script>window.location.replace("{url}")</script></body></html>'
+        'body': f'<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url={url}"></head><body><a href="{url}">Перейти</a></body></html>'
     }
+
+def get_article(slug):
+    now = time.time()
+    if slug in _cache and now - _cache[slug]['ts'] < CACHE_TTL:
+        return _cache[slug]['data']
+
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            f'''SELECT title, summary, cover_url, meta_title, meta_description,
+                       created_at, updated_at, reading_time
+                FROM "{SCHEMA}".articles
+                WHERE slug = %s AND is_published = TRUE''',
+            [slug]
+        )
+        row = cur.fetchone()
+    finally:
+        conn.close()
+
+    _cache[slug] = {'data': row, 'ts': now}
+    if len(_cache) > 100:
+        oldest = min(_cache, key=lambda k: _cache[k]['ts'])
+        del _cache[oldest]
+
+    return row
 
 def handler(event: dict, context) -> dict:
     """Отдаёт HTML с Open Graph мета-тегами для превью статей в мессенджерах"""
@@ -31,50 +61,17 @@ def handler(event: dict, context) -> dict:
     if not slug:
         return redirect_html(f'{SITE}/blog')
 
-    conn = get_conn()
-    try:
-        cur = conn.cursor()
-        cur.execute(
-            f'''SELECT title, summary, cover_url, meta_title, meta_description,
-                       created_at, updated_at, reading_time, body
-                FROM "{SCHEMA}".articles
-                WHERE slug = %s AND is_published = TRUE''',
-            [slug]
-        )
-        row = cur.fetchone()
-    finally:
-        conn.close()
-
+    row = get_article(slug)
     if not row:
         return redirect_html(f'{SITE}/blog')
 
-    title, summary, cover_url, meta_title, meta_description, created_at, updated_at, reading_time, body = row
+    title, summary, cover_url, meta_title, meta_description, created_at, updated_at, reading_time = row
     og_title = esc(meta_title or title)
     og_desc = esc(meta_description or summary)
     og_image = esc(cover_url) if cover_url else ''
     ref_param = f'?ref={esc(ref)}' if ref else ''
     page_url = f'{SITE}/blog/{esc(slug)}{ref_param}'
-    word_count = len((body or '').split())
-
-    json_ld = {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": meta_title or title,
-        "description": meta_description or summary,
-        "url": f'{SITE}/blog/{slug}',
-        "datePublished": str(created_at) if created_at else None,
-        "dateModified": str(updated_at or created_at) if (updated_at or created_at) else None,
-        "author": {"@type": "Person", "name": "Анна Уварова", "url": "https://annauvarova.ru/"},
-        "publisher": {"@type": "Organization", "name": "ПоДелам", "url": SITE},
-        "mainEntityOfPage": {"@type": "WebPage", "@id": f'{SITE}/blog/{slug}'},
-        "wordCount": word_count,
-        "inLanguage": "ru",
-    }
-    if cover_url:
-        json_ld["image"] = {"@type": "ImageObject", "url": cover_url}
-    if reading_time:
-        json_ld["timeRequired"] = f"PT{reading_time}M"
-    json_ld = {k: v for k, v in json_ld.items() if v is not None}
+    canonical = f'{SITE}/blog/{esc(slug)}'
 
     og_image_tags = ''
     if og_image:
@@ -87,33 +84,23 @@ def handler(event: dict, context) -> dict:
 <html lang="ru" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{og_title}</title>
     <meta name="description" content="{og_desc}">
-    <link rel="canonical" href="{SITE}/blog/{esc(slug)}">
-
+    <link rel="canonical" href="{canonical}">
     <meta property="og:type" content="article">
     <meta property="og:title" content="{og_title}">
     <meta property="og:description" content="{og_desc}">
-    <meta property="og:url" content="{page_url}">
+    <meta property="og:url" content="{canonical}">
     <meta property="og:site_name" content="ПоДелам">
     <meta property="og:locale" content="ru_RU">
     {og_image_tags}
-
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{og_title}">
     <meta name="twitter:description" content="{og_desc}">
-
-    <meta property="article:published_time" content="{esc(str(created_at or ''))}">
-    <meta property="article:modified_time" content="{esc(str(updated_at or created_at or ''))}">
-    <meta property="article:author" content="Анна Уварова">
-
-    <script type="application/ld+json">{json.dumps(json_ld, ensure_ascii=False)}</script>
-
     <meta http-equiv="refresh" content="0;url={page_url}">
 </head>
 <body>
-    <p>Перенаправление на <a href="{page_url}">{og_title}</a>...</p>
+    <p><a href="{page_url}">{og_title}</a></p>
     <script>window.location.replace("{page_url}");</script>
 </body>
 </html>'''
@@ -123,7 +110,7 @@ def handler(event: dict, context) -> dict:
         'headers': {
             'Content-Type': 'text/html; charset=utf-8',
             'Access-Control-Allow-Origin': '*',
-            'Cache-Control': 'public, max-age=3600',
+            'Cache-Control': 'public, max-age=86400',
         },
         'body': page_html
     }
