@@ -3,11 +3,15 @@ import os
 import re
 import base64
 import hashlib
+import time
 import boto3
 import psycopg2
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 'public')
 ADMIN_PASSWORD_ENV = os.environ.get('ADMIN_PASSWORD', 'admin2024')
+
+_categories_cache = {'data': None, 'ts': 0}
+CATEGORIES_TTL = 300
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -177,6 +181,10 @@ def handle_detail(qs):
         conn.close()
 
 def handle_categories():
+    now = time.time()
+    if _categories_cache['data'] and now - _categories_cache['ts'] < CATEGORIES_TTL:
+        return ok({'categories': _categories_cache['data']})
+
     conn = get_conn()
     try:
         cur = conn.cursor()
@@ -189,9 +197,9 @@ def handle_categories():
             GROUP BY c.id, c.slug, c.name, c.sort_order
             ORDER BY c.sort_order
         """)
-        cats = []
-        for row in cur.fetchall():
-            cats.append({'id': row[0], 'slug': row[1], 'name': row[2], 'count': row[3]})
+        cats = [{'id': row[0], 'slug': row[1], 'name': row[2], 'count': row[3]} for row in cur.fetchall()]
+        _categories_cache['data'] = cats
+        _categories_cache['ts'] = now
         return ok({'categories': cats})
     finally:
         conn.close()

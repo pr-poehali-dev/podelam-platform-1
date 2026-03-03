@@ -108,7 +108,15 @@ export default function Blog() {
   }, [searchParams]);
 
   useEffect(() => {
-    fetchCategories().then((d) => setCategories(d.categories));
+    const cached = sessionStorage.getItem("blog_categories");
+    if (cached) {
+      setCategories(JSON.parse(cached));
+    } else {
+      fetchCategories().then((d) => {
+        setCategories(d.categories);
+        sessionStorage.setItem("blog_categories", JSON.stringify(d.categories));
+      });
+    }
   }, []);
 
   useEffect(() => {
