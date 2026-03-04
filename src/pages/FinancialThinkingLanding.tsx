@@ -6,6 +6,7 @@ import { PRO_TRAINERS } from "@/lib/proTrainerTypes";
 import type { ProTrainerPricing } from "@/lib/proTrainerTypes";
 import {
   hasProAccess,
+  getProAccess,
   proAccessExpiresFormatted,
   getFinancialSessions,
 } from "@/lib/proTrainerAccess";
