@@ -1,4 +1,5 @@
 import { ProTrainerId, PRO_TRAINERS, StrategicSession } from "./proTrainerTypes";
+import type { FinancialSession } from "./financialTrainerTypes";
 import { calcOSI } from "./proTrainerFormulas";
 import { buildFullInterpretation } from "./proTrainerInterpretation";
 import { chargeBalance, syncFromServer } from "./access";
@@ -186,4 +187,28 @@ export function proAccessExpiresFormatted(trainerId: ProTrainerId): string | nul
   const access = getProAccess(trainerId);
   if (!access) return null;
   return new Date(access.expiresAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+export function getFinancialSessions(trainerId: ProTrainerId): FinancialSession[] {
+  const email = getEmail();
+  try {
+    const raw = localStorage.getItem(sessionsKey(email, trainerId));
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+export function saveFinancialSession(trainerId: ProTrainerId, session: FinancialSession): void {
+  const email = getEmail();
+  const sessions = getFinancialSessions(trainerId);
+  const idx = sessions.findIndex(s => s.id === session.id);
+  if (idx >= 0) sessions[idx] = session;
+  else sessions.unshift(session);
+  if (sessions.length > 20) sessions.pop();
+  localStorage.setItem(sessionsKey(email, trainerId), JSON.stringify(sessions));
+}
+
+export function deleteFinancialSession(trainerId: ProTrainerId, sessionId: string): void {
+  const email = getEmail();
+  const sessions = getFinancialSessions(trainerId).filter(s => s.id !== sessionId);
+  localStorage.setItem(sessionsKey(email, trainerId), JSON.stringify(sessions));
 }

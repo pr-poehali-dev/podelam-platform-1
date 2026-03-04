@@ -1,4 +1,4 @@
-export type ProTrainerId = "strategic-thinking";
+export type ProTrainerId = "strategic-thinking" | "financial-thinking";
 
 export interface ProTrainerDef {
   id: ProTrainerId;
@@ -49,6 +49,36 @@ export const PRO_TRAINERS: ProTrainerDef[] = [
         period: "мес",
         durationDays: 30,
         features: ["Неограниченные сессии", "История решений", "Сравнение стратегий", "PDF-экспорт"],
+        unlimited: true,
+      },
+    ],
+  },
+  {
+    id: "financial-thinking",
+    icon: "TrendingUp",
+    title: "Финансовое мышление PRO",
+    subtitle: "Симулятор финансовых решений",
+    description: "Системный анализ денежных потоков, стресс-тестирование, моделирование целей. Развивает финансовую дисциплину и навык просчёта последствий решений.",
+    color: "bg-emerald-50",
+    iconColor: "text-emerald-700",
+    bgGradient: "from-emerald-800 to-emerald-950",
+    pricing: [
+      {
+        id: "single",
+        name: "Разовый доступ",
+        price: 1490,
+        period: "30 дней",
+        durationDays: 30,
+        features: ["1 финансовая сессия", "Полный отчёт", "PDF-экспорт"],
+        unlimited: false,
+      },
+      {
+        id: "pro",
+        name: "PRO-доступ",
+        price: 2990,
+        period: "мес",
+        durationDays: 30,
+        features: ["Неограниченные сессии", "История решений", "Сравнение динамики", "PDF-экспорт"],
         unlimited: true,
       },
     ],
