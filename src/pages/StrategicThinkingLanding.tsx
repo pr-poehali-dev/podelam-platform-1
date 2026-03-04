@@ -7,6 +7,7 @@ import {
   hasProAccess,
   getProAccess,
   proAccessExpiresFormatted,
+  getSavedSessions,
 } from "@/lib/proTrainerAccess";
 
 const TRAINER_ID = "strategic-thinking" as const;
@@ -33,14 +34,17 @@ export default function StrategicThinkingLanding() {
   const trainer = PRO_TRAINERS.find((t) => t.id === TRAINER_ID)!;
   const [access, setAccess] = useState(false);
   const [expiresLabel, setExpiresLabel] = useState<string | null>(null);
+  const [hasHistory, setHasHistory] = useState(false);
 
   useEffect(() => {
     setAccess(hasProAccess(TRAINER_ID));
     setExpiresLabel(proAccessExpiresFormatted(TRAINER_ID));
+    setHasHistory(getSavedSessions(TRAINER_ID).some((s) => s.completedAt && s.results));
 
     const handler = () => {
       setAccess(hasProAccess(TRAINER_ID));
       setExpiresLabel(proAccessExpiresFormatted(TRAINER_ID));
+      setHasHistory(getSavedSessions(TRAINER_ID).some((s) => s.completedAt && s.results));
     };
     window.addEventListener("pdd_balance_change", handler);
     return () => window.removeEventListener("pdd_balance_change", handler);
@@ -110,7 +114,7 @@ export default function StrategicThinkingLanding() {
             Это не тест. Это симулятор.
           </p>
 
-          <div className="anim-in anim-d5">
+          <div className="anim-in anim-d5 flex flex-col sm:flex-row items-center gap-3 justify-center">
             {access ? (
               <Button
                 onClick={() => navigate("/strategic-thinking")}
@@ -126,6 +130,16 @@ export default function StrategicThinkingLanding() {
               >
                 Получить доступ
                 <Icon name="ArrowDown" size={18} />
+              </Button>
+            )}
+            {hasHistory && !access && (
+              <Button
+                onClick={() => navigate("/strategic-thinking")}
+                variant="outline"
+                className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white h-12 px-6 text-base font-medium rounded-lg"
+              >
+                <Icon name="BarChart3" size={18} />
+                Моя история
               </Button>
             )}
           </div>

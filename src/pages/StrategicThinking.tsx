@@ -103,6 +103,7 @@ export default function StrategicThinking() {
   };
 
   const resumeSession = (s: StrategicSession) => {
+    if (!hasAccess && s.currentStep < 7) return;
     setSession(s);
     setView("active");
   };
@@ -255,7 +256,7 @@ export default function StrategicThinking() {
             className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors text-sm"
           >
             <Icon name="ArrowLeft" size={16} />
-            <span>{session && view === "active" ? "К сессиям" : "Назад"}</span>
+            <span>{session && view === "active" ? (hasAccess ? "К сессиям" : "К истории") : "Назад"}</span>
           </button>
           {hasAccess && (
             <div className="flex items-center gap-3">
@@ -351,20 +352,40 @@ export default function StrategicThinking() {
           </>
         )}
         {!hasAccess && view !== "payment" && (
-          <div className="max-w-lg mx-auto text-center py-16">
-            <div className="w-12 h-12 rounded-xl bg-slate-950 flex items-center justify-center mx-auto mb-4">
-              <Icon name="Lock" size={24} className="text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Доступ ограничен</h2>
-            <p className="text-sm text-slate-500 mb-6">
-              Для использования тренажёра необходимо приобрести доступ
-            </p>
-            <Button
-              onClick={() => setView("payment")}
-              className="bg-slate-950 text-white hover:bg-slate-800 h-11 px-6"
-            >
-              Выбрать тариф
-            </Button>
+          <div className="max-w-3xl mx-auto">
+            {sessions.some((s) => s.completedAt && s.results) ? (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h1 className="text-xl font-bold text-slate-900 mb-1">{trainer.title}</h1>
+                    <p className="text-xs text-slate-500">Доступ истёк</p>
+                  </div>
+                  <Button
+                    onClick={() => setView("payment")}
+                    className="bg-slate-950 text-white hover:bg-slate-800 h-10"
+                  >
+                    Продлить доступ
+                  </Button>
+                </div>
+                <StrategicHistory sessions={sessions} onViewSession={resumeSession} />
+              </>
+            ) : (
+              <div className="max-w-lg mx-auto text-center py-16">
+                <div className="w-12 h-12 rounded-xl bg-slate-950 flex items-center justify-center mx-auto mb-4">
+                  <Icon name="Lock" size={24} className="text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Доступ ограничен</h2>
+                <p className="text-sm text-slate-500 mb-6">
+                  Для использования тренажёра необходимо приобрести доступ
+                </p>
+                <Button
+                  onClick={() => setView("payment")}
+                  className="bg-slate-950 text-white hover:bg-slate-800 h-11 px-6"
+                >
+                  Выбрать тариф
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </main>
