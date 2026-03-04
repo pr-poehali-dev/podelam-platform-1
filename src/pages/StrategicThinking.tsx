@@ -9,6 +9,7 @@ import {
   StrategicSession,
 } from "@/lib/proTrainerTypes";
 import { calcOSI } from "@/lib/proTrainerFormulas";
+import { buildFullInterpretation } from "@/lib/proTrainerInterpretation";
 import {
   hasProAccess,
   getSavedSessions,
@@ -131,6 +132,9 @@ export default function StrategicThinking() {
 
     if (nextStep > 6) {
       const results = calcOSI(cur.data);
+      if (results) {
+        results.interpretation = buildFullInterpretation(cur.data, results);
+      }
       const completed: StrategicSession = {
         ...cur,
         currentStep: 7,

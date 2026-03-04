@@ -1,5 +1,6 @@
 import { ProTrainerId, PRO_TRAINERS, StrategicSession } from "./proTrainerTypes";
 import { calcOSI } from "./proTrainerFormulas";
+import { buildFullInterpretation } from "./proTrainerInterpretation";
 import { chargeBalance, syncFromServer } from "./access";
 
 const ADD_PAYMENT_URL = "https://functions.poehali.dev/55a42126-88c7-4b99-b0b5-831a53a24325";
@@ -147,10 +148,15 @@ export function getSavedSessions(trainerId: ProTrainerId): StrategicSession[] {
       if (s.currentStep >= 7 && !s.results) {
         const results = calcOSI(s.data);
         if (results) {
+          results.interpretation = buildFullInterpretation(s.data, results);
           s.results = results;
           if (!s.completedAt) s.completedAt = s.createdAt;
           changed = true;
         }
+      }
+      if (s.currentStep >= 7 && s.results && !s.results.interpretation) {
+        s.results.interpretation = buildFullInterpretation(s.data, s.results);
+        changed = true;
       }
     }
     if (changed) {

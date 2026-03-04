@@ -176,6 +176,7 @@ export interface StrategicResults {
     ikg: number;
   };
   level: string;
+  interpretation?: import("./proTrainerInterpretation").FullInterpretation;
 }
 
 export const EMPTY_STRATEGIC_DATA: StrategicData = {
