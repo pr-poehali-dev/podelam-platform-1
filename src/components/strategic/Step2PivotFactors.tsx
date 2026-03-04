@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { StrategicData, Step2Data } from "@/lib/proTrainerTypes";
 import { calcStep2 } from "@/lib/proTrainerFormulas";
+import StepHint from "./StepHint";
 
 interface StepProps {
   data: StrategicData;
@@ -59,15 +60,22 @@ export default function Step2PivotFactors({ data, onUpdate, onNext, onBack }: St
     return errs.length === 0;
   };
 
+  const getCurrentData = (): Step2Data => {
+    const result = selected.length >= 3 ? calcStep2(factors, links, selected) : { suf: 0, blindSpots: [], kps: 0 };
+    return { pivotFactorIds: selected, ...result };
+  };
+
   const handleSubmit = () => {
     if (!validate()) return;
-    const result = calcStep2(factors, links, selected);
-    const stepData: Step2Data = {
-      pivotFactorIds: selected,
-      ...result,
-    };
-    onUpdate("step2", stepData);
+    onUpdate("step2", getCurrentData());
     onNext();
+  };
+
+  const handleBack = () => {
+    if (selected.length > 0) {
+      onUpdate("step2", getCurrentData());
+    }
+    onBack();
   };
 
   return (
@@ -83,6 +91,19 @@ export default function Step2PivotFactors({ data, onUpdate, onNext, onBack }: St
           Выберите 3-5 факторов с наибольшим рычагом влияния
         </p>
       </div>
+
+      <StepHint
+        title="Что такое узловые факторы?"
+        description="Узловые (ключевые) факторы — это те, на которые стоит делать ставку. Это самые влиятельные точки в вашей системе. Воздействуя на них, вы получите максимальный результат при минимальных усилиях."
+        hints={[
+          { term: "Узловой фактор", explanation: "фактор, который сильнее всего влияет на ситуацию и связан с другими факторами. Аналогия: это «рычаг», который сдвигает всю систему" },
+          { term: "Рейтинг влияния (#1, #2...)", explanation: "факторы отсортированы по силе влияния. Чем выше в списке — тем больше влияет на результат" },
+          { term: "Количество связей", explanation: "сколько других факторов зависит от этого. Много связей = фактор-«хаб», влияющий на всю систему" },
+          { term: "Слепые зоны", explanation: "это важные факторы (с влиянием 4-5), которые вы НЕ выбрали как узловые. Система предупреждает: возможно, вы что-то упускаете" },
+          { term: "СУФ (Сумма узловых факторов)", explanation: "общее число связей от выбранных факторов. Чем больше — тем шире ваше воздействие на систему" },
+          { term: "КПС (Качество применения стратегии)", explanation: "автоматическая оценка того, насколько удачно вы выбрали ключевые факторы. Учитывает силу влияния и слепые зоны" },
+        ]}
+      />
 
       <div className="flex items-center justify-between mb-6">
         <span className="text-sm text-slate-500">
@@ -198,7 +219,7 @@ export default function Step2PivotFactors({ data, onUpdate, onNext, onBack }: St
       )}
 
       <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-900">
+        <Button variant="ghost" onClick={handleBack} className="text-slate-500 hover:text-slate-900">
           <Icon name="ArrowLeft" size={16} />
           Назад
         </Button>

@@ -152,6 +152,14 @@ export default function StrategicThinking() {
     saveSession(TRAINER_ID, updated);
   };
 
+  const handleStepClick = (step: number) => {
+    if (!session) return;
+    if (step >= session.currentStep) return;
+    const updated: StrategicSession = { ...session, currentStep: step };
+    setSession(updated);
+    saveSession(TRAINER_ID, updated);
+  };
+
   const handleRestart = () => {
     startNewSession();
   };
@@ -274,7 +282,7 @@ export default function StrategicThinking() {
         )}
         {view === "active" && session && (
           <>
-            <StrategicStepIndicator currentStep={session.currentStep} />
+            <StrategicStepIndicator currentStep={session.currentStep} onStepClick={handleStepClick} />
             {renderStep()}
           </>
         )}

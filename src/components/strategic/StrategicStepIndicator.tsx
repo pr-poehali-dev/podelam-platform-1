@@ -13,9 +13,10 @@ const STEP_TITLES = [
 
 type Props = {
   currentStep: number;
+  onStepClick?: (step: number) => void;
 };
 
-export default function StrategicStepIndicator({ currentStep }: Props) {
+export default function StrategicStepIndicator({ currentStep, onStepClick }: Props) {
   return (
     <div className="mb-10">
       <div className="flex items-center justify-center">
@@ -24,6 +25,7 @@ export default function StrategicStepIndicator({ currentStep }: Props) {
             const isActive = i === currentStep;
             const isDone = i < currentStep;
             const isResult = i === 7;
+            const canClick = isDone && onStepClick && i < 7;
 
             return (
               <div key={i} className="flex items-center">
@@ -35,14 +37,16 @@ export default function StrategicStepIndicator({ currentStep }: Props) {
                   />
                 )}
                 <div className="flex flex-col items-center gap-1">
-                  <div
+                  <button
+                    onClick={() => canClick && onStepClick?.(i)}
+                    disabled={!canClick}
                     className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
                       isActive
                         ? "bg-slate-950 text-white ring-4 ring-slate-200"
                         : isDone
-                        ? "bg-slate-900 text-white"
+                        ? "bg-slate-900 text-white hover:ring-2 hover:ring-slate-300 cursor-pointer"
                         : "bg-slate-100 text-slate-400"
-                    }`}
+                    } ${!canClick && !isActive ? "cursor-default" : ""}`}
                   >
                     {isDone ? (
                       <Icon name="Check" size={12} />
@@ -51,10 +55,10 @@ export default function StrategicStepIndicator({ currentStep }: Props) {
                     ) : (
                       i
                     )}
-                  </div>
+                  </button>
                   <span
                     className={`text-[10px] hidden sm:block ${
-                      isActive ? "text-slate-900 font-medium" : "text-slate-400"
+                      isActive ? "text-slate-900 font-medium" : isDone ? "text-slate-700" : "text-slate-400"
                     }`}
                   >
                     {title}

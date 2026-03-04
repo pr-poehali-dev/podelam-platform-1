@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StrategicData, Step6Data } from "@/lib/proTrainerTypes";
 import { calcIKG } from "@/lib/proTrainerFormulas";
+import StepHint from "./StepHint";
 
 interface StepProps {
   data: StrategicData;
@@ -52,18 +53,26 @@ export default function Step6Flexibility({ data, onUpdate, onNext, onBack }: Ste
     return errs.length === 0;
   };
 
+  const getCurrentData = (): Step6Data => ({
+    readyToChange: readyToChange ?? false,
+    wrongAssumptions,
+    underestimatedFactors,
+    ikg,
+    revisedParams,
+    totalParams,
+  });
+
   const handleSubmit = () => {
     if (!validate()) return;
-    const stepData: Step6Data = {
-      readyToChange: readyToChange!,
-      wrongAssumptions,
-      underestimatedFactors,
-      ikg,
-      revisedParams,
-      totalParams,
-    };
-    onUpdate("step6", stepData);
+    onUpdate("step6", { ...getCurrentData(), readyToChange: readyToChange! });
     onNext();
+  };
+
+  const handleBack = () => {
+    if (readyToChange !== null || wrongAssumptions.length > 0 || underestimatedFactors.length > 0) {
+      onUpdate("step6", getCurrentData());
+    }
+    onBack();
   };
 
   return (
@@ -77,6 +86,17 @@ export default function Step6Flexibility({ data, onUpdate, onNext, onBack }: Ste
         </div>
         <p className="text-sm text-slate-500 ml-11">Оцените свою готовность адаптировать решения</p>
       </div>
+
+      <StepHint
+        title="Что такое когнитивная гибкость?"
+        description="Когнитивная гибкость — это ваша способность признавать ошибки и менять решения, когда появляется новая информация. Многие руководители «цепляются» за первоначальный план, даже когда факты говорят обратное. Этот шаг проверяет, насколько вы к этому готовы."
+        hints={[
+          { term: "Готовность изменить решение", explanation: "ключевой вопрос: после всего анализа и стресс-теста, готовы ли вы кардинально изменить стратегию? Честный ответ «да» — признак зрелого мышления" },
+          { term: "Неверные допущения", explanation: "вспомните, какие предположения вы делали в начале. Какие из них оказались неточными? Например: «я думал, что конкуренты не среагируют» или «я переоценил спрос»" },
+          { term: "Недооценённые факторы", explanation: "посмотрите на список факторов из шага 1. Какие из них вы оценили слишком низко? Возможно, после стресс-теста стало ясно, что какие-то факторы важнее, чем казалось" },
+          { term: "ИКГ (Индекс когнитивной гибкости)", explanation: "показывает, какой процент параметров вы готовы пересмотреть. Слишком низкий (< 0.1) = возможная негибкость. Слишком высокий (> 0.5) = возможная неуверенность. Оптимально: 0.1-0.3" },
+        ]}
+      />
 
       <div className="rounded-xl border border-slate-200 p-6 mb-8">
         <h3 className="text-base font-semibold text-slate-900 mb-2">
@@ -220,7 +240,7 @@ export default function Step6Flexibility({ data, onUpdate, onNext, onBack }: Ste
       )}
 
       <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-900">
+        <Button variant="ghost" onClick={handleBack} className="text-slate-500 hover:text-slate-900">
           <Icon name="ArrowLeft" size={16} />
           Назад
         </Button>

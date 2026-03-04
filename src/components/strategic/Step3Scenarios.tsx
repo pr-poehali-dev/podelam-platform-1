@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StrategicData, Step3Data, Scenario } from "@/lib/proTrainerTypes";
 import { calcStep3 } from "@/lib/proTrainerFormulas";
+import StepHint from "./StepHint";
 
 interface StepProps {
   data: StrategicData;
@@ -59,15 +60,21 @@ export default function Step3Scenarios({ data, onUpdate, onNext, onBack }: StepP
     return errs.length === 0;
   };
 
+  const getCurrentData = (): Step3Data => {
+    const allFilled = scenarios.every((s) => s.revenue > 0);
+    const result = allFilled ? calcStep3(scenarios) : { ev: 0, spread: 0, ism: 0 };
+    return { scenarios, ...result };
+  };
+
   const handleSubmit = () => {
     if (!validate()) return;
-    const result = calcStep3(scenarios);
-    const stepData: Step3Data = {
-      scenarios,
-      ...result,
-    };
-    onUpdate("step3", stepData);
+    onUpdate("step3", getCurrentData());
     onNext();
+  };
+
+  const handleBack = () => {
+    onUpdate("step3", getCurrentData());
+    onBack();
   };
 
   return (
@@ -81,6 +88,23 @@ export default function Step3Scenarios({ data, onUpdate, onNext, onBack }: StepP
         </div>
         <p className="text-sm text-slate-500 ml-11">Постройте три сценария развития событий</p>
       </div>
+
+      <StepHint
+        title="Как строить сценарии?"
+        description="Сценарное моделирование — это когда вы представляете три варианта развития событий: лучший, средний и худший. Это помогает подготовиться к любому исходу и не попасть в ловушку «всё будет хорошо»."
+        hints={[
+          { term: "Оптимистичный сценарий", explanation: "лучший реалистичный исход. Всё идёт по плану, рынок благоприятный. Не фантастика, а хороший, но возможный результат" },
+          { term: "Реалистичный сценарий", explanation: "наиболее вероятный исход. Что-то пойдёт не так, но в целом ситуация управляемая. Обычно это ваш базовый план" },
+          { term: "Негативный сценарий", explanation: "худший реалистичный исход. Несколько рисков сработали одновременно. Не катастрофа, но серьёзные трудности" },
+          { term: "Доход / результат", explanation: "сколько денег (в рублях) вы ожидаете получить при этом сценарии. Это может быть выручка, прибыль или другой ключевой финансовый показатель" },
+          { term: "Затраты", explanation: "сколько денег потребуется потратить в этом сценарии. Включайте все расходы: зарплаты, аренда, маркетинг, закупки" },
+          { term: "Срок (мес.)", explanation: "за сколько месяцев реализуется этот сценарий. Оптимистичный обычно быстрее, негативный — дольше" },
+          { term: "Вероятность (%)", explanation: "шанс наступления этого сценария. Сумма всех трёх должна быть ровно 100%. Обычно: оптимистичный 20-30%, реалистичный 40-60%, негативный 20-30%" },
+          { term: "EV (Ожидаемая ценность)", explanation: "средневзвешенный доход по всем сценариям. Показывает, сколько вы «в среднем» заработаете с учётом вероятностей" },
+          { term: "Разброс", explanation: "разница между лучшим и худшим сценарием. Большой разброс = высокая неопределённость" },
+          { term: "ИСМ (Индекс сценарного моделирования)", explanation: "оценка качества ваших сценариев. Учитывает разброс и разницу в сроках" },
+        ]}
+      />
 
       <div className="space-y-6 mb-8">
         {scenarios.map((sc, i) => {
@@ -209,7 +233,7 @@ export default function Step3Scenarios({ data, onUpdate, onNext, onBack }: StepP
       )}
 
       <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-900">
+        <Button variant="ghost" onClick={handleBack} className="text-slate-500 hover:text-slate-900">
           <Icon name="ArrowLeft" size={16} />
           Назад
         </Button>

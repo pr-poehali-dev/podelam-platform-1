@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { StrategicData, Step0Data } from "@/lib/proTrainerTypes";
 import { calcKSZ } from "@/lib/proTrainerFormulas";
+import StepHint from "./StepHint";
 
 interface StepProps {
   data: StrategicData;
@@ -55,20 +56,28 @@ export default function Step0Session({ data, onUpdate, onNext, onBack }: StepPro
     return errs.length === 0;
   };
 
+  const getCurrentData = (): Step0Data => ({
+    name: name.trim(),
+    goal: goal.trim(),
+    horizonMonths,
+    errorCost,
+    budget,
+    resources,
+    importance,
+    ksz,
+  });
+
   const handleSubmit = () => {
     if (!validate()) return;
-    const stepData: Step0Data = {
-      name: name.trim(),
-      goal: goal.trim(),
-      horizonMonths,
-      errorCost,
-      budget,
-      resources,
-      importance,
-      ksz,
-    };
-    onUpdate("step0", stepData);
+    onUpdate("step0", getCurrentData());
     onNext();
+  };
+
+  const handleBack = () => {
+    if (name.trim() || goal.trim() || budget > 0) {
+      onUpdate("step0", getCurrentData());
+    }
+    onBack();
   };
 
   return (
@@ -82,6 +91,21 @@ export default function Step0Session({ data, onUpdate, onNext, onBack }: StepPro
         </div>
         <p className="text-sm text-slate-500 ml-11">Определите параметры вашего стратегического решения</p>
       </div>
+
+      <StepHint
+        title="Как заполнить этот шаг?"
+        description="На этом шаге вы описываете решение, которое хотите проанализировать. Это может быть любое важное решение: запуск нового продукта, выход на рынок, смена поставщика и т.д."
+        hints={[
+          { term: "Название решения", explanation: "короткое описание вашего решения (2-4 слова). Например: «Открытие филиала в Казани» или «Запуск интернет-магазина»" },
+          { term: "Цель", explanation: "чего вы хотите достичь этим решением? Пишите конкретно: не «больше денег», а «увеличить выручку на 30% за год»" },
+          { term: "Горизонт", explanation: "на сколько месяцев вперёд вы планируете. 6 месяцев — короткий план, 12 — средний, 24+ — долгосрочный" },
+          { term: "Цена ошибки", explanation: "насколько серьёзно будет, если решение окажется неверным. 1 — ошибку легко исправить, 5 — потери будут критическими" },
+          { term: "Бюджет", explanation: "сколько денег (в рублях) вы готовы вложить в это решение" },
+          { term: "Доступные ресурсы", explanation: "количество людей, единиц оборудования или других ключевых ресурсов, которые вы можете задействовать" },
+          { term: "Важность решения", explanation: "насколько это решение важно для вашего бизнеса. 1 — рутинное, 5 — определяет будущее компании" },
+          { term: "КСЗ (Коэффициент сложности задачи)", explanation: "автоматический показатель, который учитывает горизонт, цену ошибки и важность. Чем выше — тем сложнее задача и тем тщательнее нужен анализ" },
+        ]}
+      />
 
       <div className="space-y-6">
         <div>
@@ -201,7 +225,7 @@ export default function Step0Session({ data, onUpdate, onNext, onBack }: StepPro
       </div>
 
       <div className="flex items-center justify-between mt-10 pt-6 border-t border-slate-100">
-        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-900">
+        <Button variant="ghost" onClick={handleBack} className="text-slate-500 hover:text-slate-900">
           <Icon name="ArrowLeft" size={16} />
           Назад
         </Button>

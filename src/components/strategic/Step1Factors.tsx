@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { StrategicData, Step1Data, Factor, FactorLink } from "@/lib/proTrainerTypes";
 import { calcStep1 } from "@/lib/proTrainerFormulas";
+import StepHint from "./StepHint";
 
 interface StepProps {
   data: StrategicData;
@@ -88,16 +89,22 @@ export default function Step1Factors({ data, onUpdate, onNext, onBack }: StepPro
     return errs.length === 0;
   };
 
+  const getCurrentData = (): Step1Data => {
+    const result = validFactors.length >= 2 ? calcStep1(validFactors, links) : { avgInfluence: 0, levelsUsed: 0, isg: 0 };
+    return { factors: validFactors, links, ...result };
+  };
+
   const handleSubmit = () => {
     if (!validate()) return;
-    const result = calcStep1(validFactors, links);
-    const stepData: Step1Data = {
-      factors: validFactors,
-      links,
-      ...result,
-    };
-    onUpdate("step1", stepData);
+    onUpdate("step1", getCurrentData());
     onNext();
+  };
+
+  const handleBack = () => {
+    if (validFactors.length > 0) {
+      onUpdate("step1", getCurrentData());
+    }
+    onBack();
   };
 
   const editing = factors.find((f) => f.id === editingId);
@@ -113,6 +120,22 @@ export default function Step1Factors({ data, onUpdate, onNext, onBack }: StepPro
         </div>
         <p className="text-sm text-slate-500 ml-11">Определите факторы влияния на четырёх уровнях (минимум 12)</p>
       </div>
+
+      <StepHint
+        title="Что такое факторы и как их определять?"
+        description="Факторы — это всё, что может повлиять на ваше решение. Представьте, что вы открываете кафе: конкуренты рядом, стоимость аренды, сезонность, законы — всё это факторы. Чем больше факторов вы учтёте, тем точнее будет анализ."
+        hints={[
+          { term: "Микро-факторы", explanation: "то, что касается лично вас и вашей команды. Примеры: опыт команды, финансы компании, качество продукта, мотивация сотрудников" },
+          { term: "Мезо-факторы", explanation: "то, что касается вашей отрасли и рынка. Примеры: действия конкурентов, потребности клиентов, поставщики, партнёры" },
+          { term: "Макро-факторы", explanation: "глобальные внешние условия. Примеры: экономическая ситуация в стране, законы, курс валют, технологические тренды" },
+          { term: "Скрытые факторы", explanation: "неочевидные вещи, которые легко упустить. Примеры: культурные особенности, эмоции руководства, неформальные связи, «чёрные лебеди»" },
+          { term: "Влияние (1-5)", explanation: "насколько сильно этот фактор может повлиять на результат. 1 — слабо, 5 — критически" },
+          { term: "Контролируемость (1-5)", explanation: "насколько вы можете управлять этим фактором. 1 — не можете вообще (например, курс валют), 5 — полностью контролируете" },
+          { term: "Изменчивость (1-5)", explanation: "как часто и быстро этот фактор меняется. 1 — стабильный, 5 — может измениться в любой момент" },
+          { term: "Связи между факторами", explanation: "после добавления факторов нажмите кнопку «Связи» — отметьте, какие факторы влияют друг на друга. Это поможет увидеть системные зависимости" },
+          { term: "ИСГ (Индекс системности)", explanation: "автоматический показатель: чем больше факторов, уровней и связей вы задали, тем выше индекс. Высокий ИСГ = глубокий анализ" },
+        ]}
+      />
 
       <div className="flex items-center gap-3 mb-6">
         <Button onClick={addFactor} className="bg-slate-950 text-white hover:bg-slate-800 h-9 text-sm">
@@ -309,7 +332,7 @@ export default function Step1Factors({ data, onUpdate, onNext, onBack }: StepPro
       )}
 
       <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-900">
+        <Button variant="ghost" onClick={handleBack} className="text-slate-500 hover:text-slate-900">
           <Icon name="ArrowLeft" size={16} />
           Назад
         </Button>

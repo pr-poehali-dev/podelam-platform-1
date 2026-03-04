@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { StrategicData, Step4Data, Risk } from "@/lib/proTrainerTypes";
 import { calcStep4 } from "@/lib/proTrainerFormulas";
+import StepHint from "./StepHint";
 
 interface StepProps {
   data: StrategicData;
@@ -74,15 +75,22 @@ export default function Step4Risks({ data, onUpdate, onNext, onBack }: StepProps
     return errs.length === 0;
   };
 
+  const getCurrentData = (): Step4Data => {
+    const result = validRisks.length > 0 ? calcStep4(validRisks) : { ir: 0, iur: 0 };
+    return { risks: validRisks, ...result };
+  };
+
   const handleSubmit = () => {
     if (!validate()) return;
-    const result = calcStep4(validRisks);
-    const stepData: Step4Data = {
-      risks: validRisks,
-      ...result,
-    };
-    onUpdate("step4", stepData);
+    onUpdate("step4", getCurrentData());
     onNext();
+  };
+
+  const handleBack = () => {
+    if (validRisks.length > 0) {
+      onUpdate("step4", getCurrentData());
+    }
+    onBack();
   };
 
   const editing = risks.find((r) => r.id === editingId);
@@ -98,6 +106,23 @@ export default function Step4Risks({ data, onUpdate, onNext, onBack }: StepProps
         </div>
         <p className="text-sm text-slate-500 ml-11">Определите и оцените минимум 7 рисков</p>
       </div>
+
+      <StepHint
+        title="Как определять и оценивать риски?"
+        description="Риски — это то, что может пойти не так. Не бойтесь их записывать — чем честнее вы с собой, тем лучше подготовитесь. Хороший стратег не тот, кто не видит рисков, а тот, кто знает о них заранее."
+        hints={[
+          { term: "Что записывать как риск", explanation: "любую угрозу вашему плану. Примеры: «уход ключевого сотрудника», «рост цен на сырьё», «появление сильного конкурента», «задержка поставок»" },
+          { term: "Вероятность (1-5)", explanation: "насколько вероятно, что этот риск сработает. 1 — маловероятно, 3 — возможно, 5 — почти наверняка случится" },
+          { term: "Ущерб (1-5)", explanation: "насколько серьёзным будет урон, если риск сработает. 1 — незначительный, 3 — ощутимый, 5 — может разрушить проект" },
+          { term: "Управляемость (1-5)", explanation: "можете ли вы повлиять на этот риск. 1 — никак (например, стихийное бедствие), 5 — полностью контролируете (например, качество своего продукта)" },
+          { term: "Score (оценка риска)", explanation: "вероятность × ущерб. Автоматически вычисляется. Чем выше — тем опаснее риск" },
+          { term: "Критический риск (красный)", explanation: "Score больше 15. Требует немедленного плана реагирования" },
+          { term: "Умеренный риск (жёлтый)", explanation: "Score от 9 до 15. Нужно держать под контролем" },
+          { term: "Низкий риск (зелёный)", explanation: "Score 8 и ниже. Можно мониторить, но не паниковать" },
+          { term: "ИР (Индекс рисков)", explanation: "сумма всех Score. Общий уровень рисковости проекта" },
+          { term: "ИУР (Индекс управления рисками)", explanation: "средняя управляемость ваших рисков. Чем выше — тем больше вы можете влиять на ситуацию" },
+        ]}
+      />
 
       <div className="flex items-center gap-3 mb-6">
         <Button onClick={addRisk} className="bg-slate-950 text-white hover:bg-slate-800 h-9 text-sm">
@@ -229,7 +254,7 @@ export default function Step4Risks({ data, onUpdate, onNext, onBack }: StepProps
       )}
 
       <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-900">
+        <Button variant="ghost" onClick={handleBack} className="text-slate-500 hover:text-slate-900">
           <Icon name="ArrowLeft" size={16} />
           Назад
         </Button>

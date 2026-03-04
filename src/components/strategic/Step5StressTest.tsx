@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { StrategicData, Step5Data, Scenario } from "@/lib/proTrainerTypes";
 import { applyStressTest, calcStep3, calcIA } from "@/lib/proTrainerFormulas";
+import StepHint from "./StepHint";
 
 interface StepProps {
   data: StrategicData;
@@ -66,17 +67,25 @@ export default function Step5StressTest({ data, onUpdate, onNext, onBack }: Step
     return errs.length === 0;
   };
 
+  const getCurrentData = (): Step5Data => ({
+    originalEv: originalCalc.ev,
+    stressedEv: stressedCalc.ev,
+    ia,
+    revisedStrategy: decision ?? false,
+    reactionTimeSec: reactionTime,
+  });
+
   const handleSubmit = () => {
     if (!validate()) return;
-    const stepData: Step5Data = {
-      originalEv: originalCalc.ev,
-      stressedEv: stressedCalc.ev,
-      ia,
-      revisedStrategy: decision!,
-      reactionTimeSec: reactionTime,
-    };
-    onUpdate("step5", stepData);
+    onUpdate("step5", { ...getCurrentData(), revisedStrategy: decision! });
     onNext();
+  };
+
+  const handleBack = () => {
+    if (decision !== null) {
+      onUpdate("step5", getCurrentData());
+    }
+    onBack();
   };
 
   const formatNum = (n: number) => n.toLocaleString("ru-RU");
@@ -92,6 +101,21 @@ export default function Step5StressTest({ data, onUpdate, onNext, onBack }: Step
         </div>
         <p className="text-sm text-slate-500 ml-11">Проверка стратегии в экстремальных условиях</p>
       </div>
+
+      <StepHint
+        title="Что такое стресс-тест и зачем он нужен?"
+        description="Стресс-тест — это проверка вашего плана на прочность. Мы берём ваши сценарии из шага 3 и ухудшаем их: доходы падают, расходы растут, сроки затягиваются. Цель — понять, выживет ли ваша стратегия в плохих условиях."
+        hints={[
+          { term: "Доход -30%", explanation: "что если ваш доход окажется на 30% меньше, чем вы планировали? Клиентов меньше, средний чек ниже" },
+          { term: "Затраты +20%", explanation: "что если расходы вырастут на 20%? Подорожали материалы, выросли зарплаты, непредвиденные траты" },
+          { term: "Сроки x1.5", explanation: "что если всё займёт в 1.5 раза больше времени? Задержки, согласования, технические проблемы" },
+          { term: "Вероятность -15%", explanation: "шанс благоприятного исхода снижается на 15 процентных пунктов" },
+          { term: "Исходная EV", explanation: "ожидаемая ценность вашего проекта ДО стресс-теста (рассчитана на шаге 3)" },
+          { term: "Стресс-EV", explanation: "ожидаемая ценность ПОСЛЕ стресс-теста. Показывает, сколько вы заработаете в плохих условиях" },
+          { term: "ИА (Индекс адаптивности)", explanation: "отношение стресс-EV к исходной EV. Если ≥ 0.7 — ваша стратегия устойчива. Если < 0.4 — нужно серьёзно пересмотреть план" },
+          { term: "Решение о пересмотре", explanation: "после просмотра результатов вам нужно ответить: готовы ли вы менять стратегию? Нет правильного ответа — это проверка вашей гибкости" },
+        ]}
+      />
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 mb-8">
         <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">Применённые стресс-факторы</p>
@@ -230,7 +254,7 @@ export default function Step5StressTest({ data, onUpdate, onNext, onBack }: Step
       )}
 
       <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-900">
+        <Button variant="ghost" onClick={handleBack} className="text-slate-500 hover:text-slate-900">
           <Icon name="ArrowLeft" size={16} />
           Назад
         </Button>
