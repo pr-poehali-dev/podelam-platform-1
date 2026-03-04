@@ -135,8 +135,7 @@ export default function StrategicThinkingLanding() {
             {hasHistory && !access && (
               <Button
                 onClick={() => navigate("/strategic-thinking")}
-                variant="outline"
-                className="border-slate-400 text-white hover:bg-slate-800 hover:text-white h-12 px-6 text-base font-medium rounded-lg"
+                className="bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 h-12 px-6 text-base font-medium rounded-lg"
               >
                 <Icon name="BarChart3" size={18} />
                 Моя история
