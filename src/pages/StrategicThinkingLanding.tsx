@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PRO_TRAINERS } from "@/lib/proTrainerTypes";
 import {
   hasProAccess,
+  getProAccess,
   proAccessExpiresFormatted,
 } from "@/lib/proTrainerAccess";
 
