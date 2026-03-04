@@ -1,4 +1,5 @@
 import { ProTrainerId, PRO_TRAINERS, StrategicSession } from "./proTrainerTypes";
+import { calcOSI } from "./proTrainerFormulas";
 import { chargeBalance, syncFromServer } from "./access";
 
 const ADD_PAYMENT_URL = "https://functions.poehali.dev/55a42126-88c7-4b99-b0b5-831a53a24325";
@@ -140,7 +141,22 @@ export function getSavedSessions(trainerId: ProTrainerId): StrategicSession[] {
   const email = getEmail();
   try {
     const raw = localStorage.getItem(sessionsKey(email, trainerId));
-    return raw ? JSON.parse(raw) : [];
+    const sessions: StrategicSession[] = raw ? JSON.parse(raw) : [];
+    let changed = false;
+    for (const s of sessions) {
+      if (s.currentStep >= 7 && !s.results) {
+        const results = calcOSI(s.data);
+        if (results) {
+          s.results = results;
+          if (!s.completedAt) s.completedAt = s.createdAt;
+          changed = true;
+        }
+      }
+    }
+    if (changed) {
+      localStorage.setItem(sessionsKey(email, trainerId), JSON.stringify(sessions));
+    }
+    return sessions;
   } catch { return []; }
 }
 
