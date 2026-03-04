@@ -228,7 +228,7 @@ export default function StrategicThinking() {
                 setSession(null);
                 setView("sessions");
               } else {
-                navigate("/strategic-thinking-pro");
+                navigate("/strategic-thinking-info");
               }
             }}
             className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors text-sm"
