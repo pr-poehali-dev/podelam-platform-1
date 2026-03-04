@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { TrainerId } from "../types";
 import { TRAINER_DEFS } from "../trainerDefs";
 import { getStats, getCurrentSession } from "../trainerStorage";
@@ -76,6 +77,7 @@ const PRICING_PLANS = [
 ];
 
 export default function TrainerCatalog({ onSelectTrainer }: Props) {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [planLoading, setPlanLoading] = useState<TrainerPlanId | null>(null);
   const [planError, setPlanError] = useState("");
@@ -266,6 +268,59 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
           >
             Сбросить поиск
           </button>
+        </div>
+      )}
+
+      {/* PRO trainers */}
+      {!search.trim() && (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+              <Icon name="Crown" className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground leading-tight">PRO-тренажёры</h2>
+              <p className="text-xs text-muted-foreground">Продвинутые инструменты для глубокой работы</p>
+            </div>
+          </div>
+          <div
+            onClick={() => navigate("/strategic-thinking-info")}
+            className="group relative rounded-2xl border border-amber-200/80 bg-gradient-to-br from-slate-900 to-slate-800 overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/5" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl -translate-y-8 translate-x-8" />
+            <div className="relative p-5 flex flex-col sm:flex-row gap-4 items-start">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+                <Icon name="Brain" className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-bold text-white">Стратегическое мышление</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">PRO</span>
+                </div>
+                <p className="text-sm text-slate-400 leading-relaxed mb-3">
+                  7 этапов глубокого анализа: системные факторы, сценарное моделирование, стресс-тест стратегии. Индекс ОСИ покажет уровень стратегического мышления.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {["стратегия", "сценарии", "риски", "ОСИ", "7 этапов"].map((tag) => (
+                    <span key={tag} className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-slate-300">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-amber-400 font-semibold">от 1 490 ₽</span>
+                  <span className="text-slate-500">·</span>
+                  <span className="text-slate-400 text-xs">отдельно от подписки</span>
+                </div>
+              </div>
+              <div className="self-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                  <Icon name="ArrowRight" className="w-5 h-5 text-slate-400 group-hover:text-amber-400 transition-colors" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
