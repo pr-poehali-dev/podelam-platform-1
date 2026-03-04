@@ -224,6 +224,7 @@ export default function StrategicThinking() {
           results={session.results}
           onRestart={handleRestart}
           onExportPDF={handleExportPDF}
+          readOnly={!hasAccess}
         />
       );
     }

@@ -24,6 +24,7 @@ interface ResultsProps {
   results: StrategicResultsType;
   onRestart: () => void;
   onExportPDF: () => void;
+  readOnly?: boolean;
 }
 
 const INDEX_LABELS: Record<string, string> = {
@@ -51,7 +52,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   hidden: "#8b5cf6",
 };
 
-export default function StrategicResults({ data, results, onRestart, onExportPDF }: ResultsProps) {
+export default function StrategicResults({ data, results, onRestart, onExportPDF, readOnly }: ResultsProps) {
   const [copied, setCopied] = useState(false);
   const gradient = getScoreGradient(results.osi);
 
@@ -322,14 +323,16 @@ export default function StrategicResults({ data, results, onRestart, onExportPDF
       )}
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button
-          onClick={onRestart}
-          variant="outline"
-          className="flex-1 h-12 border-slate-200 text-slate-700 hover:bg-slate-50"
-        >
-          <Icon name="RotateCcw" size={16} />
-          Пройти заново
-        </Button>
+        {!readOnly && (
+          <Button
+            onClick={onRestart}
+            variant="outline"
+            className="flex-1 h-12 border-slate-200 text-slate-700 hover:bg-slate-50"
+          >
+            <Icon name="RotateCcw" size={16} />
+            Пройти заново
+          </Button>
+        )}
         <Button
           onClick={onExportPDF}
           className="flex-1 h-12 bg-slate-950 text-white hover:bg-slate-800"
