@@ -77,7 +77,7 @@ export default function StrategicThinkingLanding() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/95 backdrop-blur-sm border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <button
-            onClick={() => navigate("/trainers-info")}
+            onClick={() => navigate("/trainers")}
             className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm"
           >
             <Icon name="ArrowLeft" size={16} />
