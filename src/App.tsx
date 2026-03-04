@@ -30,6 +30,8 @@ import PaymentFail from "./pages/PaymentFail";
 import Trainers from "./pages/Trainers";
 import TrainersLanding from "./pages/TrainersLanding";
 import TrainerStats from "./pages/TrainerStats";
+import StrategicThinkingLanding from "./pages/StrategicThinkingLanding";
+import StrategicThinking from "./pages/StrategicThinking";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
 
@@ -74,6 +76,8 @@ const App = () => (
           <Route path="/trainers-info" element={<TrainersLanding />} />
           <Route path="/trainers" element={<Trainers />} />
           <Route path="/trainers/stats" element={<TrainerStats />} />
+          <Route path="/strategic-thinking-info" element={<StrategicThinkingLanding />} />
+          <Route path="/strategic-thinking" element={<StrategicThinking />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

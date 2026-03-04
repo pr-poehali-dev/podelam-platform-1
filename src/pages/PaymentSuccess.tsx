@@ -7,6 +7,7 @@ import {
   clearPendingTrainerPlan,
   activateTrainerPlan,
 } from "@/lib/trainerAccess";
+import { activateProAccess } from "@/lib/proTrainerAccess";
 
 const YOOKASSA_URL = "https://functions.poehali.dev/1b07c03c-bee7-4b25-aeee-836e7331e044";
 
@@ -20,6 +21,7 @@ export default function PaymentSuccess() {
   const [status, setStatus] = useState<PaymentStatus>("checking");
   const [amount, setAmount] = useState(0);
   const [isTrainerPayment, setIsTrainerPayment] = useState(false);
+  const [isProTrainerPayment, setIsProTrainerPayment] = useState(false);
   const pollCount = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -43,6 +45,15 @@ export default function PaymentSuccess() {
           setAmount(data.amount || 0);
           window.ym?.(107022183, 'reachGoal', 'payment_success', { amount: data.amount, order_price: data.amount, currency: 'RUB' });
           syncFromServer().catch(() => {});
+          const pendingPro = localStorage.getItem("pdd_pending_pro_plan");
+          if (pendingPro) {
+            try {
+              const pp = JSON.parse(pendingPro);
+              activateProAccess(pp.trainerId, pp.planId);
+              localStorage.removeItem("pdd_pending_pro_plan");
+              setIsProTrainerPayment(true);
+            } catch { /* ignore */ }
+          }
           const pending = getPendingTrainerPlan();
           if (pending) {
             await activateTrainerPlan(pending.planId, pending.trainerId);
@@ -107,7 +118,24 @@ export default function PaymentSuccess() {
               )}
             </div>
             <div className="p-6 space-y-3">
-              {isTrainerPayment ? (
+              {isProTrainerPayment ? (
+                <>
+                  <button
+                    onClick={() => navigate("/strategic-thinking")}
+                    className="w-full bg-slate-950 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-800 transition-colors text-sm flex items-center justify-center gap-2"
+                  >
+                    <Icon name="Brain" size={17} />
+                    Перейти к тренажёру
+                  </button>
+                  <button
+                    onClick={() => navigate("/cabinet")}
+                    className="w-full border-2 border-border text-foreground font-bold py-3.5 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
+                  >
+                    <Icon name="User" size={17} />
+                    В личный кабинет
+                  </button>
+                </>
+              ) : isTrainerPayment ? (
                 <>
                   <button
                     onClick={() => navigate("/trainers")}
