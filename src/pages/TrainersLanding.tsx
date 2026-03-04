@@ -63,6 +63,7 @@ export default function TrainersLanding() {
       <IndexNav isLoggedIn={isLoggedIn} scrollTo={scrollTo} />
       <LandingHero goTrainers={goTrainers} goPricing={goPricing} />
       <LandingTrainersList trainersRef={trainersRef} />
+      <LandingPricing goTrainers={goTrainers} />
       <section className="bg-white border-y border-border">
         <div className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
           <div className="text-center mb-10">
@@ -104,7 +105,6 @@ export default function TrainersLanding() {
           </div>
         </div>
       </section>
-      <LandingPricing goTrainers={goTrainers} />
       <LandingFooter />
     </div>
   );
