@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,13 @@ export default function StrategicThinking() {
   const planParam = searchParams.get("plan");
 
   const [view, setView] = useState<View>("sessions");
-  const [session, setSession] = useState<StrategicSession | null>(null);
+  const [session, _setSession] = useState<StrategicSession | null>(null);
+  const sessionRef = useRef<StrategicSession | null>(null);
+
+  const setSession = (s: StrategicSession | null) => {
+    sessionRef.current = s;
+    _setSession(s);
+  };
   const [sessions, setSessions] = useState<StrategicSession[]>([]);
   const [balance, setBalance] = useState(0);
   const [payLoading, setPayLoading] = useState(false);
@@ -104,23 +110,25 @@ export default function StrategicThinking() {
   };
 
   const handleUpdate = (stepKey: string, stepData: unknown) => {
-    if (!session) return;
+    const cur = sessionRef.current;
+    if (!cur) return;
     const updated: StrategicSession = {
-      ...session,
-      data: { ...session.data, [stepKey]: stepData },
+      ...cur,
+      data: { ...cur.data, [stepKey]: stepData },
     };
     setSession(updated);
     saveSession(TRAINER_ID, updated);
   };
 
   const handleNext = () => {
-    if (!session) return;
-    const nextStep = session.currentStep + 1;
+    const cur = sessionRef.current;
+    if (!cur) return;
+    const nextStep = cur.currentStep + 1;
 
     if (nextStep > 6) {
-      const results = calcOSI(session.data);
+      const results = calcOSI(cur.data);
       const completed: StrategicSession = {
-        ...session,
+        ...cur,
         currentStep: 7,
         completedAt: new Date().toISOString(),
         results: results || undefined,
@@ -132,30 +140,32 @@ export default function StrategicThinking() {
       return;
     }
 
-    const updated: StrategicSession = { ...session, currentStep: nextStep };
+    const updated: StrategicSession = { ...cur, currentStep: nextStep };
     setSession(updated);
     saveSession(TRAINER_ID, updated);
   };
 
   const handleBack = () => {
-    if (!session) return;
-    if (session.currentStep === 0) {
+    const cur = sessionRef.current;
+    if (!cur) return;
+    if (cur.currentStep === 0) {
       setSession(null);
       setView("sessions");
       return;
     }
     const updated: StrategicSession = {
-      ...session,
-      currentStep: session.currentStep - 1,
+      ...cur,
+      currentStep: cur.currentStep - 1,
     };
     setSession(updated);
     saveSession(TRAINER_ID, updated);
   };
 
   const handleStepClick = (step: number) => {
-    if (!session) return;
-    if (step >= session.currentStep) return;
-    const updated: StrategicSession = { ...session, currentStep: step };
+    const cur = sessionRef.current;
+    if (!cur) return;
+    if (step >= cur.currentStep) return;
+    const updated: StrategicSession = { ...cur, currentStep: step };
     setSession(updated);
     saveSession(TRAINER_ID, updated);
   };
