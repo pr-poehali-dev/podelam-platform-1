@@ -30,10 +30,12 @@ import StrategicResults from "@/components/strategic/StrategicResults";
 import StrategicPayment from "@/components/strategic/StrategicPayment";
 import StrategicSessionsList from "@/components/strategic/StrategicSessionsList";
 import StrategicStepIndicator from "@/components/strategic/StrategicStepIndicator";
+import StrategicHistory from "@/components/strategic/StrategicHistory";
 
 const TRAINER_ID = "strategic-thinking" as const;
 
 type View = "sessions" | "payment" | "active";
+type Tab = "sessions" | "history";
 
 export default function StrategicThinking() {
   const navigate = useNavigate();
@@ -48,6 +50,7 @@ export default function StrategicThinking() {
     sessionRef.current = s;
     _setSession(s);
   };
+  const [tab, setTab] = useState<Tab>("sessions");
   const [sessions, setSessions] = useState<StrategicSession[]>([]);
   const [balance, setBalance] = useState(0);
   const [payLoading, setPayLoading] = useState(false);
@@ -281,14 +284,65 @@ export default function StrategicThinking() {
           />
         )}
         {view === "sessions" && hasAccess && (
-          <StrategicSessionsList
-            trainerTitle={trainer.title}
-            expiresLabel={expiresLabel}
-            sessions={sessions}
-            onNewSession={startNewSession}
-            onResumeSession={resumeSession}
-            onDeleteSession={handleDeleteSession}
-          />
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-xl font-bold text-slate-900 mb-1">{trainer.title}</h1>
+                {expiresLabel && (
+                  <p className="text-xs text-slate-500">Доступ до {expiresLabel}</p>
+                )}
+              </div>
+              <Button
+                onClick={startNewSession}
+                className="bg-slate-950 text-white hover:bg-slate-800 h-10"
+              >
+                <Icon name="Plus" size={16} />
+                Новая стратегия
+              </Button>
+            </div>
+
+            {sessions.some((s) => s.completedAt && s.results) && (
+              <div className="flex gap-1 mb-6 bg-slate-100 rounded-lg p-1">
+                <button
+                  onClick={() => setTab("sessions")}
+                  className={`flex-1 text-sm py-2 px-4 rounded-md transition-all ${
+                    tab === "sessions"
+                      ? "bg-white text-slate-900 font-medium shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  <Icon name="List" size={14} className="inline mr-1.5 -mt-0.5" />
+                  Сессии
+                </button>
+                <button
+                  onClick={() => setTab("history")}
+                  className={`flex-1 text-sm py-2 px-4 rounded-md transition-all ${
+                    tab === "history"
+                      ? "bg-white text-slate-900 font-medium shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  <Icon name="BarChart3" size={14} className="inline mr-1.5 -mt-0.5" />
+                  История
+                </button>
+              </div>
+            )}
+
+            {tab === "sessions" && (
+              <StrategicSessionsList
+                trainerTitle={trainer.title}
+                expiresLabel={expiresLabel}
+                sessions={sessions}
+                onNewSession={startNewSession}
+                onResumeSession={resumeSession}
+                onDeleteSession={handleDeleteSession}
+                hideHeader
+              />
+            )}
+            {tab === "history" && (
+              <StrategicHistory sessions={sessions} onViewSession={resumeSession} />
+            )}
+          </div>
         )}
         {view === "active" && session && (
           <>
