@@ -1,4 +1,4 @@
-export type ProTrainerId = "strategic-thinking" | "financial-thinking";
+export type ProTrainerId = "strategic-thinking" | "financial-thinking" | "logic-thinking";
 
 export interface ProTrainerDef {
   id: ProTrainerId;
@@ -79,6 +79,36 @@ export const PRO_TRAINERS: ProTrainerDef[] = [
         period: "мес",
         durationDays: 30,
         features: ["Неограниченные сессии", "История решений", "Сравнение динамики", "PDF-экспорт"],
+        unlimited: true,
+      },
+    ],
+  },
+  {
+    id: "logic-thinking",
+    icon: "Lightbulb",
+    title: "Логика мышления PRO",
+    subtitle: "Тренажёр анализа рассуждений и решений",
+    description: "Структурирование аргументов, причинно-следственные связи, когнитивные искажения. Формульная модель без ИИ — чистая логика.",
+    color: "bg-indigo-50",
+    iconColor: "text-indigo-700",
+    bgGradient: "from-indigo-800 to-indigo-950",
+    pricing: [
+      {
+        id: "single",
+        name: "Разовый доступ",
+        price: 990,
+        period: "30 дней",
+        durationDays: 30,
+        features: ["1 логическая сессия", "Полный отчёт", "PDF-экспорт"],
+        unlimited: false,
+      },
+      {
+        id: "pro",
+        name: "PRO-доступ",
+        price: 1990,
+        period: "мес",
+        durationDays: 30,
+        features: ["Неограниченные сессии", "История кейсов", "Сравнение индексов", "PDF-экспорт"],
         unlimited: true,
       },
     ],

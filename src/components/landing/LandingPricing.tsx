@@ -178,7 +178,7 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
               Продвинутые инструменты для глубокой проработки. Не входят в подписку.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
             <button
               onClick={() => onNavigate?.("/strategic-thinking-info")}
               className="w-full group flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 text-left transition-all hover:border-slate-300 hover:shadow-md"
@@ -212,15 +212,36 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
                   <h3 className="font-bold text-foreground text-sm">
                     Финансовое мышление PRO
                   </h3>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-900 text-white text-[10px] font-semibold">
-                    NEW
-                  </span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Анализ денежных потоков, стресс-тесты, моделирование целей.
                 </p>
                 <span className="text-xs font-medium text-slate-500">
                   от 1 490 ₽ →
+                </span>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigate?.("/logic-thinking-info")}
+              className="w-full group flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 text-left transition-all hover:border-slate-300 hover:shadow-md"
+            >
+              <div className="w-11 h-11 rounded-xl bg-indigo-900 flex items-center justify-center shrink-0">
+                <Icon name="Lightbulb" size={20} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-bold text-foreground text-sm">
+                    Логика мышления PRO
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-900 text-white text-[10px] font-semibold">
+                    NEW
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Анализ аргументов, причинно-следственные связи, когнитивные искажения.
+                </p>
+                <span className="text-xs font-medium text-slate-500">
+                  от 990 ₽ →
                 </span>
               </div>
             </button>

@@ -34,6 +34,8 @@ import StrategicThinkingLanding from "./pages/StrategicThinkingLanding";
 import StrategicThinking from "./pages/StrategicThinking";
 import FinancialThinkingLanding from "./pages/FinancialThinkingLanding";
 import FinancialThinking from "./pages/FinancialThinking";
+import LogicThinkingLanding from "./pages/LogicThinkingLanding";
+import LogicThinking from "./pages/LogicThinking";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
 
@@ -82,6 +84,8 @@ const App = () => (
           <Route path="/strategic-thinking" element={<StrategicThinking />} />
           <Route path="/financial-thinking-info" element={<FinancialThinkingLanding />} />
           <Route path="/financial-thinking" element={<FinancialThinking />} />
+          <Route path="/logic-thinking-info" element={<LogicThinkingLanding />} />
+          <Route path="/logic-thinking" element={<LogicThinking />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
