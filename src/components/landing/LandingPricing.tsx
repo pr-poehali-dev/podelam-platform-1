@@ -196,7 +196,7 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
                   Симулятор стратегических решений. 7 этапов, формулы, PDF-отчёт.
                 </p>
                 <span className="text-xs font-medium text-slate-500">
-                  от 1 490 ₽ →
+                  от 3 590 ₽ →
                 </span>
               </div>
             </button>
@@ -217,7 +217,7 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
                   Анализ денежных потоков, стресс-тесты, моделирование целей.
                 </p>
                 <span className="text-xs font-medium text-slate-500">
-                  от 1 490 ₽ →
+                  от 2 990 ₽ →
                 </span>
               </div>
             </button>
@@ -241,7 +241,7 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
                   Анализ аргументов, причинно-следственные связи, когнитивные искажения.
                 </p>
                 <span className="text-xs font-medium text-slate-500">
-                  от 990 ₽ →
+                  от 2 590 ₽ →
                 </span>
               </div>
             </button>

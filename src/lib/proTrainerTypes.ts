@@ -36,7 +36,7 @@ export const PRO_TRAINERS: ProTrainerDef[] = [
       {
         id: "single",
         name: "Разовый доступ",
-        price: 1490,
+        price: 3590,
         period: "30 дней",
         durationDays: 30,
         features: ["1 стратегическая сессия", "Полный отчёт", "PDF-экспорт"],
@@ -45,7 +45,7 @@ export const PRO_TRAINERS: ProTrainerDef[] = [
       {
         id: "pro",
         name: "PRO-доступ",
-        price: 2990,
+        price: 7590,
         period: "мес",
         durationDays: 30,
         features: ["Неограниченные сессии", "История решений", "Сравнение стратегий", "PDF-экспорт"],
@@ -66,7 +66,7 @@ export const PRO_TRAINERS: ProTrainerDef[] = [
       {
         id: "single",
         name: "Разовый доступ",
-        price: 1490,
+        price: 2990,
         period: "30 дней",
         durationDays: 30,
         features: ["1 финансовая сессия", "Полный отчёт", "PDF-экспорт"],
@@ -75,7 +75,7 @@ export const PRO_TRAINERS: ProTrainerDef[] = [
       {
         id: "pro",
         name: "PRO-доступ",
-        price: 2990,
+        price: 5890,
         period: "мес",
         durationDays: 30,
         features: ["Неограниченные сессии", "История решений", "Сравнение динамики", "PDF-экспорт"],
@@ -96,7 +96,7 @@ export const PRO_TRAINERS: ProTrainerDef[] = [
       {
         id: "single",
         name: "Разовый доступ",
-        price: 990,
+        price: 2590,
         period: "30 дней",
         durationDays: 30,
         features: ["1 логическая сессия", "Полный отчёт", "PDF-экспорт"],
@@ -105,7 +105,7 @@ export const PRO_TRAINERS: ProTrainerDef[] = [
       {
         id: "pro",
         name: "PRO-доступ",
-        price: 1990,
+        price: 5590,
         period: "мес",
         durationDays: 30,
         features: ["Неограниченные сессии", "История кейсов", "Сравнение индексов", "PDF-экспорт"],

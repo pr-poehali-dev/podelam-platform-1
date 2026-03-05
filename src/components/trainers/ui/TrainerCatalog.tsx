@@ -571,7 +571,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                       ))}
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-amber-400 font-semibold">от 1 490 ₽</span>
+                      <span className="text-amber-400 font-semibold">от 3 590 ₽</span>
                       <span className="text-slate-500">·</span>
                       <span className="text-slate-400 text-xs">отдельно от подписки</span>
                     </div>
@@ -607,7 +607,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                       ))}
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-400 font-semibold">от 1 490 ₽</span>
+                      <span className="text-emerald-400 font-semibold">от 2 990 ₽</span>
                       <span className="text-slate-500">·</span>
                       <span className="text-slate-400 text-xs">отдельно от подписки</span>
                     </div>
@@ -644,7 +644,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                       ))}
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-indigo-400 font-semibold">от 990 ₽</span>
+                      <span className="text-indigo-400 font-semibold">от 2 590 ₽</span>
                       <span className="text-slate-500">·</span>
                       <span className="text-slate-400 text-xs">отдельно от подписки</span>
                     </div>
