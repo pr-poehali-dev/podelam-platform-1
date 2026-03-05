@@ -356,7 +356,7 @@ export default function StrategicThinking() {
             {renderStep()}
           </>
         )}
-        {!hasAccess && view !== "payment" && (
+        {!hasAccess && view !== "payment" && view !== "active" && (
           <div className="max-w-3xl mx-auto">
             {sessions.some((s) => s.completedAt && s.results) ? (
               <>
