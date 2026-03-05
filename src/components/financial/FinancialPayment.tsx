@@ -111,7 +111,7 @@ export default function FinancialPayment({
                   disabled={loading || balance < plan.price}
                   className={`w-full h-11 text-sm font-medium rounded-lg ${
                     isPro
-                      ? "bg-white text-slate-950 hover:bg-slate-100"
+                      ? "bg-white text-slate-950 hover:bg-slate-100 disabled:bg-white/70 disabled:text-slate-950/50"
                       : "bg-slate-950 text-white hover:bg-slate-800"
                   }`}
                 >
@@ -130,7 +130,7 @@ export default function FinancialPayment({
                   variant="outline"
                   className={`w-full h-11 text-sm font-medium rounded-lg ${
                     isPro
-                      ? "border-slate-700 text-slate-300 hover:bg-slate-800"
+                      ? "border-slate-500 text-slate-200 hover:bg-slate-800 disabled:border-slate-700 disabled:text-slate-400 disabled:opacity-100"
                       : "border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >

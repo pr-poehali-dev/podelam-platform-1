@@ -86,7 +86,7 @@ export default function LogicPayment({
                     <Button
                       onClick={() => onPayCard(plan.id)}
                       disabled={loading}
-                      className="w-full h-11 text-sm font-medium bg-white text-indigo-950 hover:bg-indigo-100"
+                      className="w-full h-11 text-sm font-medium bg-white text-indigo-950 hover:bg-indigo-100 disabled:bg-white/70 disabled:text-indigo-950/50"
                     >
                       {loading ? (
                         <Icon name="Loader2" size={16} className="animate-spin" />
@@ -101,7 +101,7 @@ export default function LogicPayment({
                       onClick={() => onPayBalance(plan.id)}
                       disabled={loading || balance < plan.price}
                       variant="outline"
-                      className="w-full h-11 text-sm font-medium border-indigo-700 text-white hover:bg-indigo-800"
+                      className="w-full h-11 text-sm font-medium border-indigo-500 text-white hover:bg-indigo-800 disabled:border-indigo-700 disabled:text-indigo-400 disabled:opacity-100"
                     >
                       <Icon name="Wallet" size={16} className="mr-1.5" />
                       С баланса
