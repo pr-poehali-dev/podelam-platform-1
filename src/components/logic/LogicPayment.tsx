@@ -97,15 +97,14 @@ export default function LogicPayment({
                         </>
                       )}
                     </Button>
-                    <Button
+                    <button
                       onClick={() => onPayBalance(plan.id)}
                       disabled={loading || balance < plan.price}
-                      variant="outline"
-                      className="w-full h-11 text-sm font-medium border-indigo-500 text-white hover:bg-indigo-800 disabled:border-indigo-700 disabled:text-indigo-400 disabled:opacity-100"
+                      className="w-full h-11 text-sm font-medium rounded-md border border-indigo-500 bg-transparent text-indigo-200 hover:bg-indigo-800 disabled:border-indigo-700 disabled:text-indigo-500 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-colors"
                     >
                       <Icon name="Wallet" size={16} className="mr-1.5" />
                       С баланса
-                    </Button>
+                    </button>
                   </>
                 ) : (
                   <>

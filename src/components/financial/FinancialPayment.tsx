@@ -124,19 +124,18 @@ export default function FinancialPayment({
                     </>
                   )}
                 </Button>
-                <Button
+                <button
                   onClick={() => onPayCard(plan.id)}
                   disabled={loading}
-                  variant="outline"
-                  className={`w-full h-11 text-sm font-medium rounded-lg ${
+                  className={`w-full h-11 text-sm font-medium rounded-lg border flex items-center justify-center gap-1.5 transition-colors ${
                     isPro
-                      ? "border-slate-500 text-slate-200 hover:bg-slate-800 disabled:border-slate-700 disabled:text-slate-400 disabled:opacity-100"
-                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                      ? "border-slate-500 bg-transparent text-slate-200 hover:bg-slate-800 disabled:border-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
+                      : "border-slate-200 bg-transparent text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   <Icon name="CreditCard" size={16} />
                   Оплатить картой
-                </Button>
+                </button>
               </div>
             </div>
           );
