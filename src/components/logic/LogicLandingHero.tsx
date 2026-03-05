@@ -113,6 +113,15 @@ export default function LogicLandingHero({
                 </Button>
               </>
             )}
+            {hasHistory && !access && (
+              <Button
+                onClick={onNavigateTrainer}
+                className="bg-indigo-800 text-white border border-indigo-600 hover:bg-indigo-700 h-12 px-6 text-base font-medium rounded-lg"
+              >
+                <Icon name="BarChart3" size={18} />
+                Моя история
+              </Button>
+            )}
           </div>
 
           {access && expiresLabel && (
