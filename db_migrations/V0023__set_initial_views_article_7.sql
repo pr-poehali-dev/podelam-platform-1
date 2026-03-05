@@ -1,0 +1,1 @@
+UPDATE articles SET views_count = 1347 WHERE id = 7;

@@ -4,6 +4,7 @@ import re
 import base64
 import hashlib
 import time
+import random
 import boto3
 import psycopg2
 
@@ -299,13 +300,14 @@ def handle_save(body):
             """, [title, summary, article_body, slug, category_id, cover_url, video_url,
                   meta_title, meta_description, meta_keywords, reading_time, is_published, article_id])
         else:
+            initial_views = random.randint(950, 2500)
             cur.execute(f"""
                 INSERT INTO "{S}".articles
                     (title, summary, body, slug, category_id, cover_url, video_url,
-                     meta_title, meta_description, meta_keywords, reading_time, is_published)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
+                     meta_title, meta_description, meta_keywords, reading_time, is_published, views_count)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
             """, [title, summary, article_body, slug, category_id, cover_url, video_url,
-                  meta_title, meta_description, meta_keywords, reading_time, is_published])
+                  meta_title, meta_description, meta_keywords, reading_time, is_published, initial_views])
 
         row = cur.fetchone()
         conn.commit()
