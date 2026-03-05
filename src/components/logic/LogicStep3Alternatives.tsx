@@ -104,6 +104,16 @@ export default function LogicStep3Alternatives({ data, onUpdate, onNext, onBack 
         </p>
       </div>
 
+      <div className="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4 mb-8">
+        <div className="flex items-start gap-3">
+          <Icon name="Info" size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+          <div className="text-sm text-indigo-700 space-y-1">
+            <p className="font-medium">Как пользоваться этим шагом</p>
+            <p className="text-xs text-indigo-600/80">Придумайте минимум 3 альтернативных объяснения ситуации. Для каждого укажите вероятность. Сумма вероятностей должна быть около 100% — система скорректирует пропорционально. Чем больше альтернатив и равномернее распределение — тем выше индекс.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-8">
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -203,11 +213,23 @@ export default function LogicStep3Alternatives({ data, onUpdate, onNext, onBack 
                 )}
               </div>
 
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center">
+              <div className={`rounded-lg border p-4 text-center ${
+                ial >= 2 ? "bg-emerald-50 border-emerald-100" : ial >= 1 ? "bg-amber-50 border-amber-100" : "bg-red-50 border-red-100"
+              }`}>
                 <p className="text-[11px] text-slate-500 mb-1">Индекс альтернативности</p>
-                <p className="text-2xl font-bold text-slate-900">{ial.toFixed(2)}</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">IAL</p>
+                <p className={`text-2xl font-bold ${
+                  ial >= 2 ? "text-emerald-600" : ial >= 1 ? "text-amber-600" : "text-red-600"
+                }`}>{ial.toFixed(2)}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">IAL (норма: 2+)</p>
               </div>
+              {ial < 1 && hypotheses.length > 0 && (
+                <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 mt-4">
+                  <div className="flex items-start gap-2">
+                    <Icon name="Info" size={14} className="text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-700">Мало альтернатив или одна гипотеза доминирует — добавьте ещё объяснений.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}

@@ -146,6 +146,45 @@ function RadarChart({ values }: { values: number[] }) {
   );
 }
 
+function getIndexInterpretation(key: string, raw: number, normalized: number): string {
+  switch (key) {
+    case "ia":
+      if (raw >= 20) return "Отличная аргументированность. Ваши доводы хорошо подкреплены фактами и имеют высокую проверяемость.";
+      if (raw >= 12) return "Средняя аргументированность. Часть аргументов основана на предположениях — попробуйте найти больше фактов.";
+      return "Слабая аргументированность. Многие доводы не подкреплены фактами или имеют низкую проверяемость.";
+    case "ba":
+      if (raw >= 0.3 && raw <= 0.8) return "Хороший баланс аргументов «за» и «против». Вы рассматриваете вопрос объективно с разных сторон.";
+      if (raw > 0.8) return "Аргументация смещена в одну сторону. Это может указывать на предвзятость — добавьте противоположные доводы.";
+      return "Дисбаланс аргументов. Одна из сторон существенно перевешивает — проверьте, не упускаете ли вы важные контраргументы.";
+    case "icl":
+      if (raw >= 3) return "Сильная причинная логика. Вы выстроили качественные цепочки с подтверждёнными данными и альтернативными объяснениями.";
+      if (raw >= 1.5) return "Причинные связи выстроены, но часть цепочек линейная или не подкреплена данными. Ищите альтернативные объяснения.";
+      return "Причинная логика слабая. Цепочки линейные, данных мало, альтернативы не рассматриваются.";
+    case "ial":
+      if (raw >= 2) return "Вы рассматриваете достаточно альтернативных объяснений с адекватным распределением вероятностей.";
+      if (raw >= 1) return "Альтернатив мало или одна гипотеза доминирует. Попробуйте рассмотреть больше вариантов.";
+      return "Альтернативные объяснения практически не рассматриваются. Это признак туннельного мышления.";
+    case "kf":
+      if (raw >= 0.5) return "Более половины вашей аргументации основано на фактах. Это хорошая доказательная база для выводов.";
+      if (raw >= 0.3) return "Доля фактов невысока — значительная часть рассуждений строится на предположениях.";
+      return "Очень мало подтверждённых фактов. Рекомендуется собрать больше данных перед принятием решения.";
+    case "inu":
+      if (raw <= 0.3) return "Низкий уровень неопределённости. Вы хорошо понимаете факторы, влияющие на ситуацию.";
+      if (raw <= 0.5) return "Умеренная неопределённость. Часть факторов остаётся неизвестной — будьте осторожны с выводами.";
+      return "Высокая неопределённость. Слишком много неизвестных — выводы могут быть ненадёжными.";
+    case "iki":
+      if (raw <= 0.17) return "Минимум когнитивных искажений. Ваше мышление объективно и критично.";
+      if (raw <= 0.5) return "Обнаружены некоторые когнитивные ошибки. Осознание их — первый шаг к более точному мышлению.";
+      return "Много когнитивных искажений. Рекомендуется пересмотреть аргументацию, устранив выявленные ошибки мышления.";
+    case "ilc":
+      if (raw >= 0.3) return "Высокая гибкость мышления. Вы способны менять позицию на основе анализа — признак зрелого мышления.";
+      if (raw > 0) return "Умеренная гибкость. Позиция немного изменилась, но есть потенциал для более глубокой корректировки.";
+      return "Позиция не изменилась после анализа. Возможна ригидность мышления или изначально верное решение.";
+    default:
+      return "";
+  }
+}
+
 export default function LogicResultsView({
   data,
   results,
@@ -286,25 +325,52 @@ export default function LogicResultsView({
         <p className="text-xs text-slate-500 uppercase tracking-wider mb-5">
           Детализация индексов
         </p>
-        <div className="space-y-3">
+        <div className="space-y-5">
           {INDEX_ROWS.map((row) => {
-            const value = indices[row.key as keyof typeof indices];
-            const barPct = Math.min(row.normalize(value) * 100, 100);
-            const barColor = row.inverted ? "bg-red-400" : "bg-indigo-500";
+            const raw = indices[row.key as keyof typeof indices] as number;
+            const norm = row.normalize(raw);
+            const display = row.inverted ? 1 - norm : norm;
+            const barW = `${(display * 100).toFixed(0)}%`;
+            const color =
+              display >= 0.7
+                ? "bg-emerald-500"
+                : display >= 0.4
+                  ? "bg-amber-400"
+                  : "bg-red-400";
+            const textColor =
+              display >= 0.7
+                ? "text-emerald-700"
+                : display >= 0.4
+                  ? "text-amber-700"
+                  : "text-red-700";
+            const bgColor =
+              display >= 0.7
+                ? "bg-emerald-50"
+                : display >= 0.4
+                  ? "bg-amber-50"
+                  : "bg-red-50";
+
+            const interpretation = getIndexInterpretation(row.key, raw, display);
+
             return (
-              <div key={row.key}>
+              <div key={row.key} className="space-y-2">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-slate-600">{row.label}</span>
-                  <span className="text-xs font-semibold text-slate-900">
-                    {row.format(value)}
+                  <span className="text-sm font-medium text-slate-700">{row.label}</span>
+                  <span className="text-sm font-bold text-slate-900">
+                    {row.format(raw)}
                   </span>
                 </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${barColor}`}
-                    style={{ width: `${barPct}%` }}
+                    className={`h-full rounded-full transition-all ${color}`}
+                    style={{ width: barW }}
                   />
                 </div>
+                {interpretation && (
+                  <div className={`rounded-lg ${bgColor} px-3 py-2`}>
+                    <p className={`text-xs ${textColor}`}>{interpretation}</p>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -342,6 +408,56 @@ export default function LogicResultsView({
           </div>
         </div>
       )}
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6 mb-8">
+        <p className="text-xs text-slate-500 uppercase tracking-wider mb-5">
+          Рекомендации
+        </p>
+        <div className="space-y-3">
+          {ilmp < 30 && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-red-50">
+              <Icon name="Target" size={16} className="text-red-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-red-700">Начните с фундамента: научитесь разделять факты от мнений и строить простые причинно-следственные цепочки.</p>
+            </div>
+          )}
+          {indices.kf < 0.3 && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50">
+              <Icon name="Database" size={16} className="text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-amber-700">Соберите больше фактов. Многие ваши выводы основаны на предположениях — найдите подтверждающие данные.</p>
+            </div>
+          )}
+          {indices.iki > 0.5 && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50">
+              <Icon name="Brain" size={16} className="text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-amber-700">Работайте над когнитивными искажениями. Перед принятием решений проверяйте себя на типичные ошибки мышления.</p>
+            </div>
+          )}
+          {indices.ial < 1 && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50">
+              <Icon name="GitBranch" size={16} className="text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-amber-700">Рассматривайте больше альтернатив. Привычка видеть только одно объяснение ограничивает качество решений.</p>
+            </div>
+          )}
+          {indices.ilc === 0 && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50">
+              <Icon name="RefreshCw" size={16} className="text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-amber-700">Развивайте гибкость мышления. Готовность менять позицию на основе новых данных — ключевой навык аналитика.</p>
+            </div>
+          )}
+          {ilmp >= 70 && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50">
+              <Icon name="Award" size={16} className="text-emerald-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-emerald-700">Отличный уровень! Продолжайте практиковать для закрепления навыков системного анализа.</p>
+            </div>
+          )}
+          {ilmp >= 30 && ilmp < 70 && indices.kf >= 0.3 && indices.iki <= 0.5 && indices.ial >= 1 && indices.ilc > 0 && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-indigo-50">
+              <Icon name="TrendingUp" size={16} className="text-indigo-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-indigo-700">Хорошая база! Углубляйте анализ причинных связей и расширяйте набор альтернативных гипотез.</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       {!readOnly && (
         <div className="flex items-center justify-between pt-4">

@@ -101,6 +101,16 @@ export default function LogicStep2Causation({ data, onUpdate, onNext, onBack }: 
         </p>
       </div>
 
+      <div className="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4 mb-8">
+        <div className="flex items-start gap-3">
+          <Icon name="Info" size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+          <div className="text-sm text-indigo-700 space-y-1">
+            <p className="font-medium">Как пользоваться этим шагом</p>
+            <p className="text-xs text-indigo-600/80">Постройте минимум 4 причинно-следственные цепочки. Для каждой укажите: причину (A), следствие (B) и результат (C). Оцените вероятность связи, отметьте наличие данных и альтернативных объяснений. Линейные цепочки без альтернатив снижают индекс.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-8">
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -274,31 +284,26 @@ export default function LogicStep2Causation({ data, onUpdate, onNext, onBack }: 
           </Button>
         </div>
 
-        {chains.length > 0 && (
+        {chains.length > 0 && chains.some(c => c.factorA.trim()) && (
           <>
             <div className="border-t border-slate-100" />
-
             <div className="rounded-xl border border-slate-200 bg-white p-5">
-              <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">
-                Индекс причинно-следственной логики
-              </p>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center">
-                <p className="text-[11px] text-slate-500 mb-1">ICL</p>
-                <p className="text-3xl font-bold text-slate-900">{icl.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">Показатель причинной логики</p>
+              <div className={`rounded-lg border p-4 text-center ${
+                icl >= 3 ? "bg-emerald-50 border-emerald-100" : icl >= 1.5 ? "bg-amber-50 border-amber-100" : "bg-red-50 border-red-100"
+              }`}>
+                <p className="text-[11px] text-slate-500 mb-1">Индекс причинной логики</p>
+                <p className={`text-2xl font-bold ${
+                  icl >= 3 ? "text-emerald-600" : icl >= 1.5 ? "text-amber-600" : "text-red-600"
+                }`}>{icl.toFixed(2)}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">ICL (норма: 3+)</p>
               </div>
 
               {allLinear && (
                 <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 mt-4">
                   <div className="flex items-start gap-2">
-                    <Icon
-                      name="AlertTriangle"
-                      size={14}
-                      className="text-amber-600 mt-0.5 shrink-0"
-                    />
-                    <p className="text-xs text-amber-700">
-                      Все цепочки линейные — штраф -20% к ICL. Рассмотрите альтернативные
-                      причины хотя бы для части цепочек.
-                    </p>
+                    <Icon name="AlertTriangle" size={14} className="text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-700">Все цепочки линейные — рассмотрите альтернативные связи для повышения индекса.</p>
                   </div>
                 </div>
               )}

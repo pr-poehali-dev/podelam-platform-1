@@ -283,7 +283,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
               <p className="text-xs text-muted-foreground">Продвинутые инструменты для глубокой работы</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div
               onClick={() => navigate("/strategic-thinking-info")}
               className="group relative rounded-2xl border border-amber-200/80 bg-gradient-to-br from-slate-900 to-slate-800 overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300"
@@ -348,6 +348,43 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-emerald-400 font-semibold">от 1 490 ₽</span>
+                      <span className="text-slate-500">·</span>
+                      <span className="text-slate-400 text-xs">отдельно от подписки</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              onClick={() => navigate("/logic-thinking-info")}
+              className="group relative rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-900 to-indigo-950 overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-violet-500/5" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -translate-y-8 translate-x-8" />
+              <div className="relative p-5 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+                    <Icon name="Lightbulb" className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-white">Логика мышления</h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">PRO</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">NEW</span>
+                    </div>
+                    <p className="text-sm text-slate-400 leading-relaxed mb-3">
+                      Анализ аргументов, причинно-следственные связи, когнитивные искажения. Индекс логики мышления ILMP.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {["логика", "аргументы", "искажения", "ILMP", "7 этапов"].map((tag) => (
+                        <span key={tag} className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-slate-300">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-indigo-400 font-semibold">от 990 ₽</span>
                       <span className="text-slate-500">·</span>
                       <span className="text-slate-400 text-xs">отдельно от подписки</span>
                     </div>

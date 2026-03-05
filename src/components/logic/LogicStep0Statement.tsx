@@ -79,6 +79,16 @@ export default function LogicStep0Statement({ data, onUpdate, onNext, onBack }: 
         </p>
       </div>
 
+      <div className="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4 mb-8">
+        <div className="flex items-start gap-3">
+          <Icon name="Info" size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+          <div className="text-sm text-indigo-700 space-y-1">
+            <p className="font-medium">Как пользоваться этим шагом</p>
+            <p className="text-xs text-indigo-600/80">Сформулируйте задачу как утверждение (не вопрос). Укажите ваше текущее решение и оцените уверенность в нём от 0 до 100%. В конце тренажёра вы сравните, как изменилось ваше мнение после анализа.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-8">
         <div>
           <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">Выберите кейс</p>
@@ -144,6 +154,29 @@ export default function LogicStep0Statement({ data, onUpdate, onNext, onBack }: 
             <span className="text-[11px] text-slate-400">0%</span>
             <span className="text-[11px] text-slate-400">100%</span>
           </div>
+          {initialConfidence > 0 && (
+            <div className={`mt-3 rounded-lg border p-3 text-center ${
+              initialConfidence >= 80 ? "bg-indigo-50 border-indigo-100" :
+              initialConfidence >= 50 ? "bg-amber-50 border-amber-100" :
+              "bg-slate-50 border-slate-200"
+            }`}>
+              <p className="text-[11px] text-slate-500 mb-0.5">Уровень уверенности</p>
+              <p className={`text-sm font-semibold ${
+                initialConfidence >= 80 ? "text-indigo-600" :
+                initialConfidence >= 50 ? "text-amber-600" :
+                "text-slate-600"
+              }`}>
+                {initialConfidence >= 80 ? "Высокая уверенность" :
+                 initialConfidence >= 50 ? "Умеренная уверенность" :
+                 "Низкая уверенность"}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                {initialConfidence >= 80 ? "Проверьте, не упускаете ли вы что-то важное" :
+                 initialConfidence >= 50 ? "Хорошая отправная точка для анализа" :
+                 "Анализ поможет укрепить или изменить позицию"}
+              </p>
+            </div>
+          )}
         </div>
 
         {errors.length > 0 && (

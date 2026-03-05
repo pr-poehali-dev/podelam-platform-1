@@ -198,6 +198,16 @@ export default function LogicStep1Arguments({ data, onUpdate, onNext, onBack }: 
         </p>
       </div>
 
+      <div className="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4 mb-8">
+        <div className="flex items-start gap-3">
+          <Icon name="Info" size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+          <div className="text-sm text-indigo-700 space-y-1">
+            <p className="font-medium">Как пользоваться этим шагом</p>
+            <p className="text-xs text-indigo-600/80">Добавьте минимум 5 аргументов «за» и 3 «против». Для каждого укажите тип (факт, предположение, мнение), силу и проверяемость. Чем больше фактов и выше проверяемость — тем лучше индекс аргументированности.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-8">
         <div>
           <Label className="text-slate-700 mb-2 block">Тезис (T)</Label>
@@ -263,58 +273,40 @@ export default function LogicStep1Arguments({ data, onUpdate, onNext, onBack }: 
           </Button>
         </div>
 
-        {args.length > 0 && (
+        {args.length > 0 && args.some(a => a.text.trim()) && (
           <>
             <div className="border-t border-slate-100" />
-
             <div className="rounded-xl border border-slate-200 bg-white p-5">
-              <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">
-                Показатели аргументации
-              </p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">Текущие показатели</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center">
-                  <p className="text-[11px] text-slate-500 mb-1">
-                    Индекс аргументированности
-                  </p>
-                  <p className="text-2xl font-bold text-slate-900">{ia.toFixed(2)}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">IA</p>
+                <div className={`rounded-lg border p-4 text-center ${
+                  ia >= 15 ? "bg-emerald-50 border-emerald-100" : ia >= 8 ? "bg-amber-50 border-amber-100" : "bg-red-50 border-red-100"
+                }`}>
+                  <p className="text-[11px] text-slate-500 mb-1">Аргументированность</p>
+                  <p className={`text-2xl font-bold ${
+                    ia >= 15 ? "text-emerald-600" : ia >= 8 ? "text-amber-600" : "text-red-600"
+                  }`}>{ia.toFixed(1)}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">IA (норма: 15+)</p>
                 </div>
                 <div className={`rounded-lg border p-4 text-center ${baBg}`}>
                   <p className="text-[11px] text-slate-500 mb-1">Баланс аргументов</p>
-                  <p className={`text-2xl font-bold ${baColor}`}>{ba.toFixed(2)}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">BA</p>
+                  <p className={`text-2xl font-bold ${baColor}`}>{(ba * 100).toFixed(0)}%</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">BA (30-80% — хорошо)</p>
                 </div>
               </div>
-
-              {ba < 0.3 && forArgs.length > 0 && (
-                <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 mt-4">
-                  <div className="flex items-start gap-2">
-                    <Icon
-                      name="AlertTriangle"
-                      size={14}
-                      className="text-amber-600 mt-0.5 shrink-0"
-                    />
-                    <p className="text-xs text-amber-700">
-                      Перекос подтверждения. Слишком мало контраргументов относительно
-                      аргументов «за». Добавьте аргументы «против» для объективного
-                      анализа.
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {ba > 0.8 && (
                 <div className="rounded-lg bg-red-50 border border-red-100 p-3 mt-4">
                   <div className="flex items-start gap-2">
-                    <Icon
-                      name="AlertTriangle"
-                      size={14}
-                      className="text-red-600 mt-0.5 shrink-0"
-                    />
-                    <p className="text-xs text-red-700">
-                      Гиперкритичность. Контраргументы значительно преобладают. Убедитесь,
-                      что вы не игнорируете аргументы «за».
-                    </p>
+                    <Icon name="AlertTriangle" size={14} className="text-red-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-red-700">Слишком много аргументов одной стороны. Добавьте противоположные аргументы для баланса.</p>
+                  </div>
+                </div>
+              )}
+              {ba < 0.3 && ba > 0 && (
+                <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 mt-4">
+                  <div className="flex items-start gap-2">
+                    <Icon name="Info" size={14} className="text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-700">Аргументация однобокая — попробуйте усилить менее представленную сторону.</p>
                   </div>
                 </div>
               )}

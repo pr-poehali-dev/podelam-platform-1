@@ -103,6 +103,16 @@ export default function LogicStep4DataCheck({ data, onUpdate, onNext, onBack }: 
         </p>
       </div>
 
+      <div className="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4 mb-8">
+        <div className="flex items-start gap-3">
+          <Icon name="Info" size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+          <div className="text-sm text-indigo-700 space-y-1">
+            <p className="font-medium">Как пользоваться этим шагом</p>
+            <p className="text-xs text-indigo-600/80">Посчитайте, сколько в вашей аргументации подтверждённых фактов, предположений и неизвестных. Чем выше доля фактов — тем выше коэффициент фактичности (KF). Много неизвестных повышают индекс неопределённости (INU).</p>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-8">
         <div className="space-y-5">
           <div>
