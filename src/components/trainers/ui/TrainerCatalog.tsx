@@ -352,6 +352,13 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                 </div>
               ))}
           </div>
+          <button
+            onClick={() => navigate("/trainers/stats")}
+            className="mt-3 w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-muted-foreground border border-border/60 bg-white/60 hover:bg-white hover:border-border hover:text-foreground transition-all duration-200"
+          >
+            <Icon name="BarChart3" size={16} />
+            Посмотреть статистику
+          </button>
         </div>
       )}
 
