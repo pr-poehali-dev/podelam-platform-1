@@ -257,7 +257,7 @@ export default function FinancialThinking() {
             className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors text-sm"
           >
             <Icon name="ArrowLeft" size={16} />
-            <span className="hidden sm:inline">Финансовое мышление PRO</span>
+            <span>{session && view === "active" ? (hasAccess ? "К сессиям" : "К истории") : "Финансовое мышление PRO"}</span>
           </button>
           {hasAccess && (
             <div className="flex items-center gap-3">

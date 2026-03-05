@@ -18,6 +18,11 @@ import {
 } from "@/lib/trainerAccess";
 import { getBalance } from "@/lib/access";
 import BalanceTopUpModal from "@/components/BalanceTopUpModal";
+import {
+  getSavedSessions,
+  getFinancialSessions,
+  getLogicSessions,
+} from "@/lib/proTrainerAccess";
 
 type Props = {
   onSelectTrainer: (trainerId: TrainerId) => void;
@@ -395,6 +400,76 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
           </div>
         </div>
       )}
+
+      {/* PRO history */}
+      {!search.trim() && (() => {
+        const strategicCompleted = getSavedSessions("strategic-thinking").filter(s => s.completedAt && s.results);
+        const financialCompleted = getFinancialSessions("financial-thinking").filter(s => s.completedAt && s.results);
+        const logicCompleted = getLogicSessions("logic-thinking").filter(s => s.completedAt && s.results);
+        const allCompleted = [
+          ...strategicCompleted.map(s => ({ ...s, trainerId: "strategic-thinking" as const, trainerName: "Стратегическое мышление", indexName: "ОСИ", indexValue: s.results!.osi, color: "amber" })),
+          ...financialCompleted.map(s => ({ ...s, trainerId: "financial-thinking" as const, trainerName: "Финансовое мышление", indexName: "IFMP", indexValue: (s.results as unknown as { ifmp: number })?.ifmp ?? 0, color: "emerald" })),
+          ...logicCompleted.map(s => ({ ...s, trainerId: "logic-thinking" as const, trainerName: "Логика мышления", indexName: "ILMP", indexValue: (s.results as unknown as { ilmp: number })?.ilmp ?? 0, color: "indigo" })),
+        ].sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime());
+
+        if (allCompleted.length === 0) return null;
+
+        const colorMap: Record<string, { bg: string; text: string; border: string; icon: string }> = {
+          amber: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "Brain" },
+          emerald: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: "TrendingUp" },
+          indigo: { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200", icon: "Lightbulb" },
+        };
+
+        const fmtDate = (d: string) => new Date(d).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+        return (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <Icon name="History" className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground leading-tight">Мои PRO-результаты</h2>
+                <p className="text-xs text-muted-foreground">Завершённые сессии PRO-тренажёров</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {allCompleted.slice(0, 10).map((s) => {
+                const c = colorMap[s.color];
+                const d = s.data as Record<string, Record<string, string> | null>;
+                const title = s.trainerId === "logic-thinking"
+                  ? (d?.step0?.statement || "Без названия")
+                  : (d?.step0?.situation || "Без названия");
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => navigate(`/${s.trainerId}`)}
+                    className={`flex items-center gap-3 p-3 rounded-xl border ${c.border} ${c.bg} cursor-pointer hover:shadow-sm transition-all`}
+                  >
+                    <div className={`w-9 h-9 rounded-lg ${c.bg} flex items-center justify-center shrink-0`}>
+                      <Icon name={c.icon} size={18} className={c.text} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground truncate">{title}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[11px] text-muted-foreground">{s.trainerName}</span>
+                        <span className="text-[11px] text-muted-foreground">·</span>
+                        <span className="text-[11px] text-muted-foreground">{fmtDate(s.completedAt!)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-sm font-bold ${c.text}`}>{s.indexName} {s.indexValue}</span>
+                      <Icon name="ChevronRight" size={16} className="text-muted-foreground" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Stats teaser */}
       {trainersWithMeta.some((t) => t.stats.completedSessions > 0) && (
