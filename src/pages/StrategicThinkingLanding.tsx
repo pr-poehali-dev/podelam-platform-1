@@ -43,6 +43,7 @@ export default function StrategicThinkingLanding() {
   const [hasHistory, setHasHistory] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const prevTitle = document.title;
     document.title = META.title;
     setMeta("description", META.description);
