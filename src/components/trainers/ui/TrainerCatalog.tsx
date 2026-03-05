@@ -318,6 +318,43 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
         );
       })()}
 
+      {trainersWithMeta.some((t) => t.stats.completedSessions > 0) && (
+        <div className="rounded-2xl border bg-card p-5">
+          <div className="flex items-center gap-2.5 mb-3">
+            <Icon
+              name="BarChart3"
+              className="w-5 h-5 text-primary"
+            />
+            <h2 className="font-semibold text-foreground">
+              Ваша статистика
+            </h2>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {trainersWithMeta
+              .filter((t) => t.stats.completedSessions > 0)
+              .map(({ def, stats }) => (
+                <div
+                  key={def.id}
+                  className="flex flex-col items-center text-center p-3 rounded-xl bg-muted/50"
+                >
+                  <Icon
+                    name={def.icon}
+                    className={`w-5 h-5 ${def.iconColor} mb-1.5`}
+                  />
+                  <span className="text-lg font-bold text-foreground tabular-nums">
+                    {stats.completedSessions}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground leading-tight mt-0.5">
+                    {def.title.length > 16
+                      ? def.title.slice(0, 14) + "..."
+                      : def.title}
+                  </span>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* Pricing section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2.5">
@@ -681,44 +718,6 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
           </div>
         );
       })()}
-
-      {/* Stats teaser */}
-      {trainersWithMeta.some((t) => t.stats.completedSessions > 0) && (
-        <div className="rounded-2xl border bg-card p-5">
-          <div className="flex items-center gap-2.5 mb-3">
-            <Icon
-              name="BarChart3"
-              className="w-5 h-5 text-primary"
-            />
-            <h2 className="font-semibold text-foreground">
-              Ваша статистика
-            </h2>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {trainersWithMeta
-              .filter((t) => t.stats.completedSessions > 0)
-              .map(({ def, stats }) => (
-                <div
-                  key={def.id}
-                  className="flex flex-col items-center text-center p-3 rounded-xl bg-muted/50"
-                >
-                  <Icon
-                    name={def.icon}
-                    className={`w-5 h-5 ${def.iconColor} mb-1.5`}
-                  />
-                  <span className="text-lg font-bold text-foreground tabular-nums">
-                    {stats.completedSessions}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-                    {def.title.length > 16
-                      ? def.title.slice(0, 14) + "..."
-                      : def.title}
-                  </span>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
 
       {showTopUp && (
         <BalanceTopUpModal
