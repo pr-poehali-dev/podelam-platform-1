@@ -82,7 +82,8 @@ export default function LogicThinking() {
   }, [navigate, refreshState]);
 
   useEffect(() => {
-    if (!hasAccess && planParam) {
+    const isViewingResults = session && session.currentStep >= 7 && session.results;
+    if (!hasAccess && planParam && !isViewingResults) {
       setView("payment");
     } else if (hasAccess && !session) {
       setView("sessions");
