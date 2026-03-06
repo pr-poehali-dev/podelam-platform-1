@@ -50,7 +50,7 @@ export default function LogicLandingHero({
                 variant="outline"
                 className="border-slate-200 text-slate-700 hover:bg-slate-50 h-9"
               >
-                Войти
+                Получить доступ
               </Button>
             )}
           </div>
