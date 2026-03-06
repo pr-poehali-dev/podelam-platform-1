@@ -65,7 +65,7 @@ export default function LogicLandingHero({
             </span>
           </div>
 
-          <h1 className="anim-in anim-d2 text-3xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight mb-6">
+          <h1 className="anim-in anim-d2 text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight mb-6">
             Тренажёр логического мышления
           </h1>
 
@@ -143,8 +143,8 @@ export default function LogicLandingHero({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-2xl bg-indigo-50 p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="rounded-2xl bg-indigo-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center mb-4">
                 <Icon name="Brain" size={20} className="text-indigo-600" />
               </div>
@@ -156,7 +156,7 @@ export default function LogicLandingHero({
                 выводов
               </p>
             </div>
-            <div className="rounded-2xl bg-amber-50 p-6">
+            <div className="rounded-2xl bg-amber-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-4">
                 <Icon name="Scale" size={20} className="text-amber-600" />
               </div>
@@ -168,7 +168,7 @@ export default function LogicLandingHero({
                 взвешивать «за» и «против»
               </p>
             </div>
-            <div className="rounded-2xl bg-emerald-50 p-6">
+            <div className="rounded-2xl bg-emerald-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-4">
                 <Icon name="Shield" size={20} className="text-emerald-600" />
               </div>
@@ -195,8 +195,8 @@ export default function LogicLandingHero({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-slate-900 mb-2">
                 Структурировать аргументы
               </h3>
@@ -205,7 +205,7 @@ export default function LogicLandingHero({
                 аргумента
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-slate-900 mb-2">
                 Строить причинные цепочки
               </h3>
@@ -213,7 +213,7 @@ export default function LogicLandingHero({
                 Выявлять связи между факторами, следствиями и результатами
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-slate-900 mb-2">
                 Видеть альтернативы
               </h3>
@@ -221,7 +221,7 @@ export default function LogicLandingHero({
                 Генерировать альтернативные гипотезы и оценивать их вероятность
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-slate-900 mb-2">
                 Пересматривать решения
               </h3>

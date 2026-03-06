@@ -22,7 +22,7 @@ export default function FinancialLandingContent() {
     <>
       <section className="py-20 md:py-28">
         <div className="max-w-3xl mx-auto px-4">
-          <h2 className="anim-in text-2xl md:text-3xl font-bold text-slate-900 mb-4 text-center">
+          <h2 className="anim-in text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 text-center">
             Как это работает
           </h2>
           <p className="anim-in anim-d1 text-sm text-slate-500 text-center mb-14 max-w-md mx-auto">
@@ -33,7 +33,7 @@ export default function FinancialLandingContent() {
             {HOW_STEPS.map((step, i) => (
               <div
                 key={i}
-                className="anim-in group flex items-start gap-5 py-6 border-b border-slate-100 last:border-0"
+                className="anim-in group flex items-start gap-3 sm:gap-5 py-6 border-b border-slate-100 last:border-0"
                 style={{ animationDelay: `${0.1 + i * 0.08}s` }}
               >
                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center">
@@ -58,18 +58,18 @@ export default function FinancialLandingContent() {
 
       <section className="py-20 md:py-28 bg-emerald-950">
         <div className="max-w-3xl mx-auto px-4">
-          <h2 className="anim-in text-2xl md:text-3xl font-bold text-white mb-4 text-center">
+          <h2 className="anim-in text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4 text-center">
             Что вы получите
           </h2>
           <p className="anim-in anim-d1 text-sm text-emerald-400/60 text-center mb-14 max-w-md mx-auto">
             Детальный анализ вашего финансового мышления
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {RESULTS_LIST.map((item, i) => (
               <div
                 key={i}
-                className="anim-in border border-emerald-800 rounded-xl p-6"
+                className="anim-in border border-emerald-800 rounded-xl p-4 sm:p-6"
                 style={{ animationDelay: `${0.15 + i * 0.1}s` }}
               >
                 <div className="w-10 h-10 rounded-lg bg-emerald-800 flex items-center justify-center mb-4">

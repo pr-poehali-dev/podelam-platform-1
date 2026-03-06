@@ -44,7 +44,7 @@ export default function LandingHero({
             <span className="text-xs text-slate-400 uppercase tracking-widest">PRO-тренажёр</span>
           </div>
 
-          <h1 className="anim-in anim-d2 text-3xl md:text-5xl font-bold text-white tracking-tight leading-tight mb-6">
+          <h1 className="anim-in anim-d2 text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight mb-6">
             Стратегическое мышление PRO
           </h1>
 
@@ -60,7 +60,7 @@ export default function LandingHero({
             {access ? (
               <Button
                 onClick={onNavigateTrainer}
-                className="bg-white text-slate-950 hover:bg-slate-100 h-12 px-8 text-base font-medium rounded-lg"
+                className="bg-white text-slate-950 hover:bg-slate-100 h-10 sm:h-12 px-6 sm:px-8 text-base font-medium rounded-lg"
               >
                 Перейти к тренажёру
                 <Icon name="ArrowRight" size={18} />
@@ -68,7 +68,7 @@ export default function LandingHero({
             ) : (
               <Button
                 onClick={onScrollToPricing}
-                className="bg-white text-slate-950 hover:bg-slate-100 h-12 px-8 text-base font-medium rounded-lg"
+                className="bg-white text-slate-950 hover:bg-slate-100 h-10 sm:h-12 px-6 sm:px-8 text-base font-medium rounded-lg"
               >
                 Получить доступ
                 <Icon name="ArrowDown" size={18} />

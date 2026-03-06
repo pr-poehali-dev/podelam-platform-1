@@ -23,7 +23,7 @@ export default function LogicLandingPricing({ pricing, access, onPlanClick, onNa
           Не входит в общую подписку — отдельный PRO-инструмент
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {pricing.map((plan, i) => {
             const activeAccess = getProAccess(TRAINER_ID);
             const isActive = access && activeAccess?.planId === plan.id;
@@ -32,7 +32,7 @@ export default function LogicLandingPricing({ pricing, access, onPlanClick, onNa
             return (
               <div
                 key={plan.id}
-                className={`anim-in relative rounded-xl border p-6 md:p-8 transition-all ${
+                className={`anim-in relative rounded-xl border p-5 sm:p-6 md:p-8 transition-all ${
                   isPro ? "border-indigo-800 bg-indigo-950" : "border-slate-200 bg-white"
                 }`}
                 style={{ animationDelay: `${0.2 + i * 0.15}s` }}
@@ -48,7 +48,7 @@ export default function LogicLandingPricing({ pricing, access, onPlanClick, onNa
                 </h3>
 
                 <div className="flex items-baseline gap-1 mb-6">
-                  <span className={`text-3xl font-bold ${isPro ? "text-white" : "text-slate-900"}`}>
+                  <span className={`text-2xl sm:text-3xl font-bold ${isPro ? "text-white" : "text-slate-900"}`}>
                     {plan.price.toLocaleString("ru-RU")} &#8381;
                   </span>
                   <span className={`text-sm ${isPro ? "text-indigo-300" : "text-slate-400"}`}>
@@ -73,13 +73,13 @@ export default function LogicLandingPricing({ pricing, access, onPlanClick, onNa
 
                 {isActive ? (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-center gap-2 h-12 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                    <div className="flex items-center justify-center gap-2 h-10 sm:h-12 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
                       <Icon name="Check" size={16} className="text-indigo-500" />
                       <span className="text-sm font-medium text-indigo-500">Доступ активен</span>
                     </div>
                     <Button
                       onClick={onNavigate}
-                      className={`w-full h-12 rounded-lg text-base font-medium ${
+                      className={`w-full h-10 sm:h-12 rounded-lg text-sm sm:text-base font-medium ${
                         isPro
                           ? "bg-white text-indigo-950 hover:bg-indigo-50"
                           : "bg-indigo-600 text-white hover:bg-indigo-700"
@@ -92,7 +92,7 @@ export default function LogicLandingPricing({ pricing, access, onPlanClick, onNa
                 ) : (
                   <Button
                     onClick={() => onPlanClick(plan.id)}
-                    className={`w-full h-12 rounded-lg text-base font-medium ${
+                    className={`w-full h-10 sm:h-12 rounded-lg text-sm sm:text-base font-medium ${
                       isPro
                         ? "bg-white text-indigo-950 hover:bg-indigo-50"
                         : "bg-indigo-600 text-white hover:bg-indigo-700"

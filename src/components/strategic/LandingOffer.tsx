@@ -6,7 +6,7 @@ export default function LandingOffer() {
       <section className="py-20 md:py-28 border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4">
               Почему 80% стратегий проваливаются?
             </h2>
             <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -14,8 +14,8 @@ export default function LandingOffer() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-            <div className="rounded-2xl bg-red-50 p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-16">
+            <div className="rounded-2xl bg-red-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-4">
                 <Icon name="Eye" size={20} className="text-red-500" />
               </div>
@@ -24,7 +24,7 @@ export default function LandingOffer() {
                 Вы видите 5 факторов, а на решение влияют 15. Скрытые зависимости ломают даже идеальные планы.
               </p>
             </div>
-            <div className="rounded-2xl bg-amber-50 p-6">
+            <div className="rounded-2xl bg-amber-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-4">
                 <Icon name="Dice5" size={20} className="text-amber-600" />
               </div>
@@ -33,7 +33,7 @@ export default function LandingOffer() {
                 Большинство планируют только «как должно быть». Когда реальность отклоняется — нет плана Б. И&nbsp;паника.
               </p>
             </div>
-            <div className="rounded-2xl bg-blue-50 p-6">
+            <div className="rounded-2xl bg-blue-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
                 <Icon name="Anchor" size={20} className="text-blue-500" />
               </div>
@@ -76,7 +76,7 @@ export default function LandingOffer() {
       <section className="py-20 md:py-28 border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-14">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4">
               Для кого это
             </h2>
             <p className="text-sm text-slate-500 max-w-lg mx-auto">
@@ -108,7 +108,7 @@ export default function LandingOffer() {
       <section className="py-20 md:py-28 bg-slate-50 border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-14">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4">
               Что вы узнаете о себе
             </h2>
             <p className="text-sm text-slate-500 max-w-lg mx-auto">
@@ -135,7 +135,7 @@ export default function LandingOffer() {
             ))}
           </div>
 
-          <div className="mt-10 rounded-xl bg-white border border-slate-200 p-6 flex flex-col sm:flex-row items-center gap-5">
+          <div className="mt-10 rounded-xl bg-white border border-slate-200 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-5">
             <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
               <Icon name="TrendingUp" size={24} className="text-emerald-600" />
             </div>
@@ -151,7 +151,7 @@ export default function LandingOffer() {
 
       <section className="py-20 md:py-28 border-b border-slate-100">
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4">
             Чем это отличается от тестов
           </h2>
           <p className="text-sm text-slate-500 max-w-lg mx-auto mb-12">

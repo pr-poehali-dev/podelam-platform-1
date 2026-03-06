@@ -22,14 +22,14 @@ export default function LandingPricing({
     <>
       <section id="pricing" className="py-20 md:py-28">
         <div className="max-w-3xl mx-auto px-4">
-          <h2 className="anim-in text-2xl md:text-3xl font-bold text-slate-900 mb-4 text-center">
+          <h2 className="anim-in text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4 text-center">
             Тарифы
           </h2>
           <p className="anim-in anim-d1 text-sm text-slate-500 text-center mb-14 max-w-md mx-auto">
             Выберите подходящий формат доступа
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {pricing.map((plan, i) => {
               const isActive = access && activeAccess?.planId === plan.id;
               const isPro = plan.id === "pro";
@@ -37,7 +37,7 @@ export default function LandingPricing({
               return (
                 <div
                   key={plan.id}
-                  className={`anim-in relative rounded-xl border p-6 md:p-8 transition-all ${
+                  className={`anim-in relative rounded-xl border p-5 sm:p-6 md:p-8 transition-all ${
                     isPro
                       ? "border-slate-900 bg-slate-950"
                       : "border-slate-200 bg-white"
@@ -60,7 +60,7 @@ export default function LandingPricing({
 
                   <div className="flex items-baseline gap-1 mb-6">
                     <span
-                      className={`text-3xl font-bold ${
+                      className={`text-2xl sm:text-3xl font-bold ${
                         isPro ? "text-white" : "text-slate-900"
                       }`}
                     >
@@ -96,7 +96,7 @@ export default function LandingPricing({
 
                   {isActive ? (
                     <div className="space-y-3">
-                      <div className="flex items-center justify-center gap-2 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="flex items-center justify-center gap-2 h-10 sm:h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                         <Icon name="Check" size={16} className="text-emerald-500" />
                         <span className="text-sm font-medium text-emerald-500">
                           Доступ активен
@@ -104,7 +104,7 @@ export default function LandingPricing({
                       </div>
                       <Button
                         onClick={onNavigateTrainer}
-                        className={`w-full h-12 rounded-lg text-base font-medium ${
+                        className={`w-full h-10 sm:h-12 rounded-lg text-sm sm:text-base font-medium ${
                           isPro
                             ? "bg-white text-slate-950 hover:bg-slate-100"
                             : "bg-slate-950 text-white hover:bg-slate-800"
@@ -117,7 +117,7 @@ export default function LandingPricing({
                   ) : (
                     <Button
                       onClick={() => onPlanClick(plan.id)}
-                      className={`w-full h-12 rounded-lg text-base font-medium ${
+                      className={`w-full h-10 sm:h-12 rounded-lg text-sm sm:text-base font-medium ${
                         isPro
                           ? "bg-white text-slate-950 hover:bg-slate-100"
                           : "bg-slate-950 text-white hover:bg-slate-800"

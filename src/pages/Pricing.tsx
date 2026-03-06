@@ -276,11 +276,11 @@ export default function Pricing() {
               Углублённые инструменты на формулах — без ИИ. Прохождение 30–50 минут, результат можно скачать в PDF
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
             {PRO_TRAINERS.map((trainer) => {
               const infoRoute = `/${trainer.id}-info`;
               return (
-                <div key={trainer.id} className="bg-white rounded-3xl border border-border p-6 flex flex-col">
+                <div key={trainer.id} className="bg-white rounded-3xl border border-border p-4 sm:p-6 flex flex-col">
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`w-11 h-11 rounded-2xl ${trainer.color} flex items-center justify-center`}>
                       <Icon name={trainer.icon} size={20} className={trainer.iconColor} />
@@ -294,16 +294,16 @@ export default function Pricing() {
                   <div className="space-y-3 mb-5">
                     {trainer.pricing.map((plan) => (
                       <div key={plan.id} className="rounded-xl border border-border/80 p-3.5">
-                        <div className="flex items-baseline justify-between mb-2">
-                          <span className="text-sm font-bold text-foreground">{plan.name}</span>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-lg font-black text-foreground">{plan.price.toLocaleString("ru-RU")}</span>
-                            <span className="text-xs text-muted-foreground">₽/{plan.period}</span>
+                        <div className="flex items-baseline justify-between mb-2 gap-2">
+                          <span className="text-xs sm:text-sm font-bold text-foreground">{plan.name}</span>
+                          <div className="flex items-baseline gap-1 shrink-0">
+                            <span className="text-base sm:text-lg font-black text-foreground">{plan.price.toLocaleString("ru-RU")}</span>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground">₽/{plan.period}</span>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {plan.features.map((f) => (
-                            <span key={f} className="flex items-center gap-1 text-[11px] text-muted-foreground bg-slate-50 px-2 py-1 rounded-md">
+                            <span key={f} className="flex items-center gap-1 text-[10px] sm:text-[11px] text-muted-foreground bg-slate-50 px-1.5 sm:px-2 py-1 rounded-md">
                               <Icon name="Check" size={10} className="text-green-500 shrink-0" />
                               {f}
                             </span>

@@ -52,7 +52,7 @@ export default function FinancialLandingHero({
             <span className="text-xs text-emerald-300 uppercase tracking-widest">PRO-тренажёр</span>
           </div>
 
-          <h1 className="anim-in anim-d2 text-3xl md:text-5xl font-bold text-white tracking-tight leading-tight mb-6">
+          <h1 className="anim-in anim-d2 text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight mb-6">
             Финансовое мышление PRO
           </h1>
 
@@ -68,7 +68,7 @@ export default function FinancialLandingHero({
             {access ? (
               <Button
                 onClick={onNavigateTrainer}
-                className="bg-white text-emerald-950 hover:bg-emerald-50 h-12 px-8 text-base font-medium rounded-lg"
+                className="bg-white text-emerald-950 hover:bg-emerald-50 h-10 sm:h-12 px-6 sm:px-8 text-base font-medium rounded-lg"
               >
                 Перейти к тренажёру
                 <Icon name="ArrowRight" size={18} />
@@ -76,7 +76,7 @@ export default function FinancialLandingHero({
             ) : (
               <Button
                 onClick={onScrollPricing}
-                className="bg-white text-emerald-950 hover:bg-emerald-50 h-12 px-8 text-base font-medium rounded-lg"
+                className="bg-white text-emerald-950 hover:bg-emerald-50 h-10 sm:h-12 px-6 sm:px-8 text-base font-medium rounded-lg"
               >
                 Получить доступ
                 <Icon name="ArrowDown" size={18} />
@@ -104,7 +104,7 @@ export default function FinancialLandingHero({
       <section className="py-20 md:py-28 border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4">
               Зачем считать, если можно чувствовать?
             </h2>
             <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -112,8 +112,8 @@ export default function FinancialLandingHero({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-            <div className="rounded-2xl bg-red-50 p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-16">
+            <div className="rounded-2xl bg-red-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-4">
                 <Icon name="EyeOff" size={20} className="text-red-500" />
               </div>
@@ -122,7 +122,7 @@ export default function FinancialLandingHero({
                 Вы знаете сколько зарабатываете, но не знаете куда уходят деньги. Импульсные траты съедают до 20% бюджета незаметно.
               </p>
             </div>
-            <div className="rounded-2xl bg-amber-50 p-6">
+            <div className="rounded-2xl bg-amber-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-4">
                 <Icon name="TrendingDown" size={20} className="text-amber-600" />
               </div>
@@ -131,7 +131,7 @@ export default function FinancialLandingHero({
                 Пока всё хорошо — кажется, что так будет всегда. Но стресс-тест показывает: одно увольнение — и финансовая подушка тает за месяц.
               </p>
             </div>
-            <div className="rounded-2xl bg-blue-50 p-6">
+            <div className="rounded-2xl bg-blue-50 p-4 sm:p-6">
               <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
                 <Icon name="Target" size={20} className="text-blue-500" />
               </div>
@@ -174,7 +174,7 @@ export default function FinancialLandingHero({
       <section className="py-20 md:py-28 bg-slate-50 border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-14">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-4">
               Чему вы научитесь
             </h2>
             <p className="text-sm text-slate-500 max-w-lg mx-auto">
@@ -196,7 +196,7 @@ export default function FinancialLandingHero({
             ))}
           </div>
 
-          <div className="rounded-xl bg-white border border-slate-200 p-6 flex flex-col sm:flex-row items-center gap-5 max-w-2xl mx-auto">
+          <div className="rounded-xl bg-white border border-slate-200 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-5 max-w-2xl mx-auto">
             <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
               <Icon name="TrendingUp" size={24} className="text-emerald-600" />
             </div>
