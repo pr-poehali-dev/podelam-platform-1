@@ -459,8 +459,8 @@ export default function LogicResultsView({
         </div>
       </div>
 
-      {!readOnly && (
-        <div className="flex items-center justify-between pt-4">
+      <div className="flex items-center justify-between pt-4">
+        {!readOnly ? (
           <Button
             onClick={onRestart}
             className="bg-indigo-600 text-white hover:bg-indigo-700"
@@ -468,16 +468,16 @@ export default function LogicResultsView({
             <Icon name="RotateCcw" size={16} className="mr-2" />
             Новая сессия
           </Button>
-          <Button
-            variant="outline"
-            onClick={onExportPDF}
-            className="border-slate-200 text-slate-600 hover:bg-slate-50"
-          >
-            <Icon name="Download" size={16} className="mr-2" />
-            Экспорт PDF
-          </Button>
-        </div>
-      )}
+        ) : <div />}
+        <Button
+          variant="outline"
+          onClick={onExportPDF}
+          className="border-slate-200 text-slate-600 hover:bg-slate-50"
+        >
+          <Icon name="Download" size={16} className="mr-2" />
+          Скачать PDF
+        </Button>
+      </div>
     </div>
   );
 }

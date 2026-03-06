@@ -31,6 +31,7 @@ import LogicPayment from "@/components/logic/LogicPayment";
 import LogicSessionsList from "@/components/logic/LogicSessionsList";
 import LogicStepIndicator from "@/components/logic/LogicStepIndicator";
 import LogicHistory from "@/components/logic/LogicHistory";
+import { exportLogicPDF } from "@/lib/logicExportPDF";
 
 const TRAINER_ID = "logic-thinking" as const;
 
@@ -180,7 +181,9 @@ export default function LogicThinking() {
   };
 
   const handleExportPDF = () => {
-    window.print();
+    if (session?.results) {
+      exportLogicPDF(session.data, session.results);
+    }
   };
 
   const handlePayBalance = async (planId: string) => {
