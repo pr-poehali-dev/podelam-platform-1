@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import InstallPWA from "@/components/InstallPWA";
+import { PRO_TRAINERS } from "@/lib/proTrainerTypes";
 
 const TOOLS = [
   { icon: "Brain", color: "text-indigo-600", bg: "bg-indigo-50", name: "Психологический анализ" },
@@ -260,6 +261,66 @@ export default function Pricing() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* PRO Trainers */}
+        <div className="mb-12 md:mb-16">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-2 mb-4 text-sm text-indigo-600 font-medium shadow-sm">
+              <Icon name="Zap" size={14} />
+              Продвинутый уровень
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-2">PRO-тренажёры мышления</h2>
+            <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed">
+              Углублённые инструменты на формулах — без ИИ. Прохождение 30–50 минут, результат можно скачать в PDF
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-5">
+            {PRO_TRAINERS.map((trainer) => {
+              const infoRoute = `/${trainer.id}-info`;
+              return (
+                <div key={trainer.id} className="bg-white rounded-3xl border border-border p-6 flex flex-col">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-11 h-11 rounded-2xl ${trainer.color} flex items-center justify-center`}>
+                      <Icon name={trainer.icon} size={20} className={trainer.iconColor} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-foreground text-sm leading-tight">{trainer.title}</h3>
+                      <p className="text-xs text-muted-foreground truncate">{trainer.subtitle}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-5 flex-1">{trainer.description}</p>
+                  <div className="space-y-3 mb-5">
+                    {trainer.pricing.map((plan) => (
+                      <div key={plan.id} className="rounded-xl border border-border/80 p-3.5">
+                        <div className="flex items-baseline justify-between mb-2">
+                          <span className="text-sm font-bold text-foreground">{plan.name}</span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-lg font-black text-foreground">{plan.price.toLocaleString("ru-RU")}</span>
+                            <span className="text-xs text-muted-foreground">₽/{plan.period}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {plan.features.map((f) => (
+                            <span key={f} className="flex items-center gap-1 text-[11px] text-muted-foreground bg-slate-50 px-2 py-1 rounded-md">
+                              <Icon name="Check" size={10} className="text-green-500 shrink-0" />
+                              {f}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => navigate(infoRoute)}
+                    className="w-full bg-white border-2 border-indigo-200 text-indigo-600 font-bold px-5 py-3 rounded-xl hover:bg-indigo-50 transition-colors text-sm"
+                  >
+                    Подробнее
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 
