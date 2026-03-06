@@ -218,7 +218,7 @@ export default function BarrierBotHistory({ sessions, onNewSession }: Props) {
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
               >
                 <Icon name="MessageCircle" size={13} />
-                Поговорить с коучем
+                Поговорить с бизнес-психологом
               </a>
             </div>
           </div>
