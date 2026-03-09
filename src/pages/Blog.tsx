@@ -43,10 +43,6 @@ function ArticleCard({ article, onClick }: { article: ArticlePreview; onClick: (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
             <span className="flex items-center gap-1">
-              <Icon name="Clock" size={12} />
-              {article.reading_time} мин
-            </span>
-            <span className="flex items-center gap-1">
               <Icon name="Eye" size={12} />
               {article.views_count}
             </span>
