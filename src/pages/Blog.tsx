@@ -46,7 +46,7 @@ function ArticleCard({ article, onClick }: { article: ArticlePreview; onClick: (
               <Icon name="Eye" size={12} />
               {article.views_count}
             </span>
-            <span>{formatDate(article.created_at)}</span>
+            <span>{formatDate(article.published_at || article.created_at)}</span>
           </div>
           <span className="text-xs font-semibold text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             Читать

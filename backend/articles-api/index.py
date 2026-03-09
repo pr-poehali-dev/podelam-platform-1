@@ -132,15 +132,16 @@ def handle_list(qs):
 
         cur.execute(f"""
             SELECT a.id, a.slug, a.title, a.summary, a.cover_url, a.reading_time,
-                   a.views_count, a.created_at, c.name as category_name, c.slug as category_slug
+                   a.views_count, a.created_at, c.name as category_name, c.slug as category_slug,
+                   a.published_at
             FROM "{S}".articles a
             LEFT JOIN "{S}".categories c ON c.id = a.category_id
             {where}
-            ORDER BY a.created_at DESC
+            ORDER BY COALESCE(a.published_at, a.created_at) DESC
             LIMIT %s OFFSET %s
         """, params + [limit, offset])
 
-        cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'reading_time', 'views_count', 'created_at', 'category_name', 'category_slug']
+        cols = ['id', 'slug', 'title', 'summary', 'cover_url', 'reading_time', 'views_count', 'created_at', 'category_name', 'category_slug', 'published_at']
         articles = []
         for row in cur.fetchall():
             articles.append({cols[i]: row[i] for i in range(len(cols))})
@@ -324,7 +325,13 @@ def handle_toggle_publish(body):
     try:
         cur = conn.cursor()
         S = SCHEMA
-        cur.execute(f'UPDATE "{S}".articles SET is_published = NOT is_published, updated_at = NOW() WHERE id = %s RETURNING is_published', [article_id])
+        cur.execute(f"""
+            UPDATE "{S}".articles
+            SET is_published = NOT is_published,
+                updated_at = NOW(),
+                published_at = CASE WHEN NOT is_published THEN NOW() ELSE published_at END
+            WHERE id = %s RETURNING is_published
+        """, [article_id])
         row = cur.fetchone()
         conn.commit()
         return ok({'id': article_id, 'is_published': row[0]})
