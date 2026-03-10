@@ -234,7 +234,6 @@ export async function payForSimulator(): Promise<boolean> {
 export function checkAccess(toolId: ToolId): AccessStatus {
   if (toolId === "career-test") return "free";
   if (toolId === "simulator") {
-    if (hasSubscription()) return "subscribed";
     if (hasSimulatorAccess()) return "paid_once";
     return "locked";
   }
