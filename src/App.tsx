@@ -39,6 +39,10 @@ import LogicThinking from "./pages/LogicThinking";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
 import CookieBanner from "./components/CookieBanner";
+import SimulatorDashboard from "./pages/SimulatorDashboard";
+import SimulatorCreate from "./pages/SimulatorCreate";
+import SimulatorEdit from "./pages/SimulatorEdit";
+import SimulatorResult from "./pages/SimulatorResult";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +92,10 @@ const App = () => (
           <Route path="/financial-thinking" element={<FinancialThinking />} />
           <Route path="/logic-thinking-info" element={<LogicThinkingLanding />} />
           <Route path="/logic-thinking" element={<LogicThinking />} />
+          <Route path="/pro/simulator" element={<SimulatorDashboard />} />
+          <Route path="/pro/simulator/create" element={<SimulatorCreate />} />
+          <Route path="/pro/simulator/edit" element={<SimulatorEdit />} />
+          <Route path="/pro/simulator/result" element={<SimulatorResult />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
