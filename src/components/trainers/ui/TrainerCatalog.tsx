@@ -543,7 +543,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
               <p className="text-xs text-muted-foreground">Продвинутые инструменты для глубокой работы</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
             <div
               onClick={() => navigate("/strategic-thinking-info")}
               className="group relative rounded-2xl border border-amber-200/80 bg-gradient-to-br from-slate-900 to-slate-800 overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300"
@@ -645,6 +645,42 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-indigo-400 font-semibold">от 2 590 ₽</span>
+                      <span className="text-slate-500">·</span>
+                      <span className="text-slate-400 text-xs">отдельно от подписки</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              onClick={() => navigate("/simulator")}
+              className="group relative rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-900 to-purple-950 overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-2xl -translate-y-8 translate-x-8" />
+              <div className="relative p-5 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/20">
+                    <Icon name="Zap" className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-white">Симулятор сценариев</h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">PRO</span>
+                    </div>
+                    <p className="text-sm text-slate-400 leading-relaxed mb-3">
+                      ИИ-симулятор жизненных ситуаций. Практикуйте сложные разговоры и решения в безопасной среде.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {["симуляция", "ИИ", "диалоги", "решения", "сценарии"].map((tag) => (
+                        <span key={tag} className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-slate-300">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-violet-400 font-semibold">490 ₽ / 7 дней</span>
                       <span className="text-slate-500">·</span>
                       <span className="text-slate-400 text-xs">отдельно от подписки</span>
                     </div>
