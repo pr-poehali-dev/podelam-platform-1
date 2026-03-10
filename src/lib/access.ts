@@ -25,11 +25,14 @@ export type ToolId =
   | "income-bot"     // Подбор дохода — 290₽ / подписка
   | "plan-bot"       // Шаги развития — 290₽ / подписка
   | "progress"       // Прогресс развития — 290₽ / подписка
-  | "diary";         // Дневник самоанализа — ТОЛЬКО подписка 990₽
+  | "diary"          // Дневник самоанализа — ТОЛЬКО подписка 990₽
+  | "simulator";     // Симулятор жизненных решений — 490₽ / 7 дней
 
 export const TOOL_PRICE = 290; // руб за разовый доступ
 export const SUB_PRICE = 990;  // руб за 30 дней
 export const SUB_DAYS = 30;
+export const SIMULATOR_PRICE = 490;
+export const SIMULATOR_DAYS = 7;
 
 export type AccessStatus = "free" | "paid_once" | "subscribed" | "locked";
 
@@ -120,6 +123,7 @@ const TOOL_NAMES: Record<string, string> = {
   "plan-bot": "Шаги развития",
   "progress": "Прогресс развития",
   "diary": "Дневник самоанализа",
+  "simulator": "Симулятор жизненных решений",
 };
 
 /** Списать с баланса и активировать разовый доступ к инструменту (с проверкой серверного баланса) */
@@ -186,11 +190,56 @@ export function hasPaidOnce(toolId: ToolId): boolean {
   return localStorage.getItem(onceKey(email, toolId)) === "1";
 }
 
+/** Ключ доступа к симулятору */
+function simulatorKey(email: string) { return `pdd_simulator_${email}`; }
+
+/** Есть ли активный доступ к симулятору (7 дней) */
+export function hasSimulatorAccess(): boolean {
+  const email = getEmail();
+  const val = localStorage.getItem(simulatorKey(email));
+  if (!val) return false;
+  return new Date(val) > new Date();
+}
+
+/** Дата истечения доступа к симулятору */
+export function simulatorAccessExpires(): Date | null {
+  const email = getEmail();
+  const val = localStorage.getItem(simulatorKey(email));
+  if (!val) return null;
+  const d = new Date(val);
+  return d > new Date() ? d : null;
+}
+
+/** Активировать доступ к симулятору на 7 дней */
+export function activateSimulatorAccess(): void {
+  const email = getEmail();
+  const expires = new Date();
+  expires.setDate(expires.getDate() + SIMULATOR_DAYS);
+  localStorage.setItem(simulatorKey(email), expires.toISOString());
+}
+
+/** Оплатить симулятор (490₽ / 7 дней) с баланса */
+export async function payForSimulator(): Promise<boolean> {
+  await syncFromServer().catch(() => {});
+  const ok = chargeBalance(SIMULATOR_PRICE);
+  if (ok) {
+    activateSimulatorAccess();
+    window.ym?.(107022183, 'reachGoal', 'simulator_purchase', { amount: SIMULATOR_PRICE });
+    sendPayment(SIMULATOR_PRICE, "Симулятор решений 7 дней", "pay_simulator", "simulator");
+  }
+  return ok;
+}
+
 /** Проверить общий доступ к инструменту */
 export function checkAccess(toolId: ToolId): AccessStatus {
   if (toolId === "career-test") return "free";
+  if (toolId === "simulator") {
+    if (hasSubscription()) return "subscribed";
+    if (hasSimulatorAccess()) return "paid_once";
+    return "locked";
+  }
   if (hasSubscription()) return "subscribed";
-  if (toolId === "diary") return "locked"; // дневник только по подписке
+  if (toolId === "diary") return "locked";
   if (hasPaidOnce(toolId)) return "paid_once";
   return "locked";
 }

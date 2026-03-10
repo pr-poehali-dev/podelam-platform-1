@@ -1,12 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SCENARIO_TYPES, SIMULATOR_TEMPLATES, type ScenarioType, simulatorApi } from '@/lib/simulatorApi';
+import { checkAccess } from '@/lib/access';
 import Icon from '@/components/ui/icon';
 
 export default function SimulatorCreate() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<ScenarioType | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    const a = checkAccess('simulator');
+    if (a === 'locked') navigate('/pro/simulator');
+  }, []);
 
   async function handleTemplate(templateId: string) {
     const tpl = SIMULATOR_TEMPLATES.find(t => t.id === templateId);

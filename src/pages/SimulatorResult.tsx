@@ -102,6 +102,39 @@ export default function SimulatorResult() {
     if (autoRun) runSimulation(); else loadResult();
   }, [scenarioId]);
 
+  function handleDownloadPdf() {
+    if (!results) return;
+    const rows = COMPARE_ROWS.map(r => {
+      const cells = results.variants.map(v => r.fmt(v.final[r.key] as number));
+      return `<tr><td style="padding:6px 10px;border-bottom:1px solid #e5e7eb">${r.label}</td>${cells.map(c => `<td style="padding:6px 10px;text-align:center;border-bottom:1px solid #e5e7eb">${c}</td>`).join('')}</tr>`;
+    }).join('');
+    const detailTables = results.variants.map(v => {
+      const headerRow = `<tr><th>Год</th><th>Доход</th><th>Расходы</th><th>Капитал</th><th>Инвестиции</th><th>Жизнь</th><th>Риск</th></tr>`;
+      const bodyRows = v.yearly.map(y => `<tr><td>${y.year}</td><td>${fmtR(y.income)}</td><td>${fmtR(y.expenses)}</td><td>${fmtR(y.net_worth)}</td><td>${fmtR(y.invest_portfolio)}</td><td>${y.life_index.toFixed(1)}</td><td>${y.risk_index.toFixed(1)}</td></tr>`).join('');
+      return `<h3 style="margin:20px 0 8px">${v.name} (рейтинг: ${v.final.scenario_score.toFixed(1)}/10)</h3><table style="width:100%;border-collapse:collapse;font-size:12px" border="1" cellpadding="5">${headerRow}${bodyRows}</table>`;
+    }).join('');
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Симулятор — результаты</title><style>body{font-family:sans-serif;padding:30px;font-size:13px;color:#1a1a2e}table{width:100%;border-collapse:collapse}th{background:#f3f4f6;padding:6px 10px;text-align:center;border-bottom:2px solid #d1d5db}td{padding:6px 10px}h1{font-size:20px;margin-bottom:4px}h2{font-size:16px;margin:18px 0 8px;color:#6366f1}h3{font-size:14px;color:#333}p{margin:4px 0;color:#555}.rec{background:#eff6ff;border:1px solid #bfdbfe;padding:10px 14px;border-radius:8px;margin:14px 0}@media print{body{padding:10px}}</style></head><body>
+    <h1>Симулятор жизненных решений — ПоДелам</h1>
+    <p>Горизонт анализа: ${results.period} лет</p>
+    ${results.recommendation ? `<div class="rec">${results.recommendation}</div>` : ''}
+    <h2>Сравнение сценариев</h2>
+    <table><thead><tr><th style="text-align:left">Показатель</th>${results.variants.map(v => `<th>${v.name}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
+    <h2>Детальный анализ по годам</h2>
+    ${detailTables}
+    <p style="margin-top:30px;font-size:11px;color:#999">Сгенерировано на podelam.online · ${new Date().toLocaleDateString('ru')}</p>
+    </body></html>`;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if (w) setTimeout(() => { w.print(); }, 500);
+    else {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'simulator-results.html';
+      a.click();
+    }
+  }
+
   async function runSimulation() {
     setRunning(true);
     setLoading(true);
@@ -438,6 +471,9 @@ export default function SimulatorResult() {
 
         {/* Нижние кнопки */}
         <div className="mt-8 flex flex-col sm:flex-row gap-3">
+          <button onClick={handleDownloadPdf} className="flex items-center justify-center gap-2 bg-primary text-white rounded-xl px-5 py-3 text-sm font-medium hover:opacity-90 transition-opacity">
+            <Icon name="FileDown" size={16} /> Скачать PDF
+          </button>
           <button onClick={() => navigate(`/pro/simulator/edit?id=${scenarioId}`)} className="flex items-center justify-center gap-2 border border-border rounded-xl px-5 py-3 text-sm hover:bg-muted">
             <Icon name="Pencil" size={16} /> Изменить параметры
           </button>

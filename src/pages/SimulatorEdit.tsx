@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { simulatorApi, SCENARIO_TYPES, FIELDS_BY_TYPE, type ParamFieldDef } from '@/lib/simulatorApi';
+import { checkAccess } from '@/lib/access';
 import Icon from '@/components/ui/icon';
 
 const PERIODS = [5, 10, 20, 30];
@@ -90,6 +91,8 @@ export default function SimulatorEdit() {
   const [showAdv, setShowAdv] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
+    const a = checkAccess('simulator');
+    if (a === 'locked') { navigate('/pro/simulator'); return; }
     if (editId) {
       simulatorApi.list().then(data => {
         const sc = (data.scenarios || []).find((s: { id: number }) => s.id === Number(editId));
