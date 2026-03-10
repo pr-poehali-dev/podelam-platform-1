@@ -670,10 +670,10 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">PRO</span>
                     </div>
                     <p className="text-sm text-slate-400 leading-relaxed mb-3">
-                      ИИ-симулятор жизненных ситуаций. Практикуйте сложные разговоры и решения в безопасной среде.
+                      Просчитай любой жизненный сценарий: ипотека, бизнес, переезд, работа, авто. Универсальное ядро для принятия взвешенных решений.
                     </p>
                     <div className="flex flex-wrap gap-1.5 mb-3">
-                      {["симуляция", "ИИ", "диалоги", "решения", "сценарии"].map((tag) => (
+                      {["ипотека", "бизнес", "переезд", "работа", "авто"].map((tag) => (
                         <span key={tag} className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-slate-300">
                           {tag}
                         </span>
