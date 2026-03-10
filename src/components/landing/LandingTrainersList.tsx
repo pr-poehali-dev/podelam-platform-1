@@ -172,6 +172,41 @@ export default function LandingTrainersList({ trainersRef }: LandingTrainersList
         </div>
       </section>
 
+      {/* Simulator PRO */}
+      <section className="max-w-5xl mx-auto px-4 pb-4">
+        <div className="relative rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-900 to-purple-950 overflow-hidden p-6 sm:p-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5" />
+          <div className="absolute top-0 right-0 w-48 h-48 bg-violet-500/10 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+          <div className="relative flex flex-col sm:flex-row items-start gap-6">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/20">
+              <Icon name="GitBranch" className="w-8 h-8 text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-xl sm:text-2xl font-black text-white">Симулятор решений</h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">PRO</span>
+              </div>
+              <p className="text-slate-400 mb-5 max-w-xl">
+                Универсальное ядро для просчёта любых жизненных сценариев — без ИИ, на чистой логике и данных. Введи параметры — получи расчёт и сравнение вариантов.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-5">
+                {["Ипотека и недвижимость", "Смена работы", "Открытие бизнеса", "Переезд в другой город", "Покупка авто", "Любой другой сценарий"].map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-sm text-slate-300">
+                    <Icon name="Check" size={14} className="text-violet-400 shrink-0" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-violet-300 font-semibold">490 ₽ / 7 дней</span>
+                <span className="text-slate-600">·</span>
+                <span className="text-slate-400">отдельно от подписки</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="bg-white border-y border-border">
         <div className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
