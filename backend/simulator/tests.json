@@ -1,20 +1,12 @@
 {
   "tests": [
     {
-      "name": "List scenarios",
-      "method": "GET",
-      "path": "/?action=list&user_id=1",
-      "expectedStatus": 200,
-      "expectedBody": {"scenarios": []},
-      "bodyMatcher": "partial"
-    },
-    {
-      "name": "Create scenario",
+      "name": "Run simulation scenario 1",
       "method": "POST",
-      "path": "/?action=create",
-      "body": {"user_id": 1, "title": "Тест сценарий", "type": "real_estate", "period": 10, "variants": [{"name": "Сценарий A", "parameters": {"income": 150000, "expenses": 80000}}, {"name": "Сценарий B", "parameters": {"income": 150000, "expenses": 80000, "credit": 30000}}]},
-      "expectedStatus": 201,
-      "expectedBody": {"id": 1},
+      "path": "/?action=run",
+      "body": {"user_id": 1, "scenario_id": 1},
+      "expectedStatus": 200,
+      "expectedBody": {"results": {"period": 10}},
       "bodyMatcher": "partial"
     }
   ]

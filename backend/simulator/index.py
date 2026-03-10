@@ -5,6 +5,7 @@ API симулятора жизненных решений.
 import json
 import os
 import psycopg2
+from engine import simulate_variant, build_recommendation
 
 
 CORS_HEADERS = {
@@ -118,7 +119,7 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return ok({'message': 'Сценарий обновлён'})
 
-        # Запустить симуляцию (заглушка — алгоритмы подключатся позже)
+        # Запустить симуляцию
         if action == 'run' and method == 'POST':
             sc_id = int(body.get('scenario_id', 0))
             cur.execute("SELECT id, title, period FROM simulator_scenarios WHERE id = %s AND user_id = %s", (sc_id, user_id))
@@ -126,42 +127,26 @@ def handler(event: dict, context) -> dict:
             if not sc:
                 return err('Сценарий не найден', 404)
             cur.execute("SELECT id, name, parameters_json FROM simulator_variants WHERE scenario_id = %s ORDER BY id", (sc_id,))
-            variants = cur.fetchall()
+            db_variants = cur.fetchall()
             period = sc[2]
-            results = []
-            for v in variants:
-                params_v = v[2] or {}
-                income = float(params_v.get('income', 100000))
-                expenses = float(params_v.get('expenses', 70000))
-                asset_cost = float(params_v.get('asset_cost', 0))
-                credit = float(params_v.get('credit', 0))
-                monthly_save = income - expenses
-                yearly_capital = []
-                capital = -asset_cost
-                for y in range(1, period + 1):
-                    capital += monthly_save * 12 - credit * 12
-                    yearly_capital.append(round(capital))
-                total_expenses = (expenses + credit) * 12 * period
-                final_capital = yearly_capital[-1] if yearly_capital else 0
-                risk = 'высокий' if credit > income * 0.4 else ('средний' if credit > 0 else 'низкий')
-                quality_index = min(10, max(1, round((monthly_save / income) * 10)))
-                results.append({
+
+            variants_results = []
+            for v in db_variants:
+                sim = simulate_variant(v[2] or {}, period)
+                variants_results.append({
                     'variant_id': v[0],
                     'name': v[1],
-                    'final_capital': final_capital,
-                    'total_expenses': round(total_expenses),
-                    'total_income': round(income * 12 * period),
-                    'assets': round(asset_cost),
-                    'quality_index': quality_index,
-                    'risk': risk,
-                    'yearly_capital': yearly_capital,
+                    'final': sim['final'],
+                    'yearly': sim['yearly'],
                 })
-            best = max(results, key=lambda x: x['quality_index']) if results else None
+
+            recommendation = build_recommendation(variants_results)
             results_data = {
                 'period': period,
-                'variants': results,
-                'recommendation': f"Сценарий «{best['name']}» показывает лучший баланс дохода и риска." if best else '',
+                'variants': variants_results,
+                'recommendation': recommendation,
             }
+
             cur.execute(
                 "INSERT INTO simulator_results (scenario_id, results_json) VALUES (%s, %s) RETURNING id",
                 (sc_id, json.dumps(results_data, ensure_ascii=False))
