@@ -654,7 +654,7 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
             </div>
 
             <div
-              onClick={() => navigate("/simulator")}
+              onClick={() => navigate("/pro/simulator")}
               className="group relative rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-900 to-purple-950 overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5" />
