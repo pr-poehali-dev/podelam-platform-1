@@ -95,18 +95,18 @@ export default function SimulatorDashboard() {
                       <span className="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1 rounded-lg shrink-0">Есть результат</span>
                     )}
                   </div>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex flex-wrap gap-2 mt-4">
                     {sc.last_result ? (
                       <button
                         onClick={() => navigate(`/pro/simulator/result?scenario_id=${sc.id}`)}
-                        className="flex-1 bg-primary text-white rounded-xl py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                        className="flex-1 min-w-[120px] bg-primary text-white rounded-xl py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                       >
                         Открыть результат
                       </button>
                     ) : (
                       <button
                         onClick={() => navigate(`/pro/simulator/edit?id=${sc.id}`)}
-                        className="flex-1 bg-primary text-white rounded-xl py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                        className="flex-1 min-w-[120px] bg-primary text-white rounded-xl py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                       >
                         Открыть
                       </button>

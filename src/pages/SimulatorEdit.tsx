@@ -214,7 +214,7 @@ export default function SimulatorEdit() {
 
               {/* BASE: Доходы и расходы */}
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Доходы и расходы</p>
-              <div className="grid sm:grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 {BASE_FIELDS.map(f => (
                   <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
                 ))}
@@ -224,7 +224,7 @@ export default function SimulatorEdit() {
               {typeGroups.map((group, gi) => (
                 <div key={gi}>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">{group.title}</p>
-                  <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     {group.fields.map(f => (
                       <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} step={f.step} />
                     ))}
@@ -232,11 +232,11 @@ export default function SimulatorEdit() {
                 </div>
               ))}
 
-              {/* Generic credit — only if type does not already include credit fields */}
+              {/* Generic credit */}
               {showGenericCredit && (
                 <>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Кредит / ипотека</p>
-                  <div className="grid sm:grid-cols-3 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                     {CREDIT_FIELDS.map(f => (
                       <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
                     ))}
@@ -246,7 +246,7 @@ export default function SimulatorEdit() {
 
               {/* Инвестиции */}
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Инвестиции</p>
-              <div className="grid sm:grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 {INVEST_FIELDS.map(f => (
                   <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
                 ))}
@@ -262,7 +262,7 @@ export default function SimulatorEdit() {
               </button>
 
               {showAdv[vi] && (
-                <div className="mt-3 grid sm:grid-cols-2 gap-3">
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {ADV_FIELDS.map(f => (
                     <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
                   ))}
