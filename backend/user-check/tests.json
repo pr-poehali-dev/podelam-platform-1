@@ -1,0 +1,26 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Check non-existent user",
+      "method": "GET",
+      "path": "/?user_id=non-existent-user-999",
+      "expectedStatus": 404,
+      "expectedBody": {"exists": false},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Missing user_id",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400,
+      "expectedBody": {"error": "user_id required"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

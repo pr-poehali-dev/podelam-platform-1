@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Finish game - win",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "user_id": "test-user-fin-001",
+        "username": "TestPlayer",
+        "result": "win",
+        "opponent_name": "Bot",
+        "opponent_type": "bot",
+        "user_color": "white",
+        "time_control": "10+0",
+        "difficulty": "medium",
+        "moves_count": 25,
+        "move_history": "e2-e4,e7-e5",
+        "end_reason": "checkmate"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "Finish game - missing result",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "user_id": "test-user-fin-002"
+      },
+      "expectedStatus": 400
+    }
+  ]
+}

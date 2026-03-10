@@ -1,0 +1,70 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Search for opponent with city",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "search",
+        "user_id": "test-match-002",
+        "username": "TestMatchPlayer",
+        "rating": 1200,
+        "opponent_type": "city",
+        "time_control": "rapid",
+        "city": "Москва",
+        "region": "Москва",
+        "search_stage": "city"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"status": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Search with any stage",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "search",
+        "user_id": "test-match-003",
+        "username": "TestAnyPlayer",
+        "rating": 1200,
+        "opponent_type": "country",
+        "time_control": "rapid",
+        "search_stage": "any"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"status": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Check active game for user",
+      "method": "GET",
+      "path": "/?user_id=test-match-002",
+      "expectedStatus": 200,
+      "expectedBody": {"in_queue": false},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Play with bot",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "play_bot",
+        "user_id": "test-match-002",
+        "username": "TestMatchPlayer",
+        "rating": 1200,
+        "opponent_type": "country",
+        "time_control": "rapid"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"status": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

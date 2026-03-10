@@ -1,0 +1,1 @@
+UPDATE online_games SET status = 'finished', end_reason = 'abandoned' WHERE status = 'playing' AND created_at < NOW() - INTERVAL '1 hour';

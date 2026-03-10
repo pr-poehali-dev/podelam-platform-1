@@ -1,0 +1,35 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Poll without user_id",
+      "method": "GET",
+      "path": "/?action=poll",
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Poll with user_id returns no invite",
+      "method": "GET",
+      "path": "/?action=poll&user_id=test_user_123",
+      "expectedStatus": 200,
+      "expectedBody": {"invite": null},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Send without required fields",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "send", "from_user_id": ""},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

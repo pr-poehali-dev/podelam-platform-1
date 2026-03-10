@@ -1,0 +1,1 @@
+{"tests": [{"name": "Get leaderboard", "method": "GET", "path": "/?city=Москва&region=Москва", "expectedStatus": 200}]}

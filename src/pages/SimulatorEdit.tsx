@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { simulatorApi, SCENARIO_TYPES, FIELDS_BY_TYPE, type ParamFieldDef } from '@/lib/simulatorApi';
-import { checkAccess } from '@/lib/access';
+import {
+  checkAccess, getBalance, syncFromServer, payForSimulator,
+  SIMULATOR_PRICE, SIMULATOR_DAYS,
+} from '@/lib/access';
+import BalanceTopUpModal from '@/components/BalanceTopUpModal';
 import Icon from '@/components/ui/icon';
 
 const PERIODS = [5, 10, 20, 30];
@@ -89,10 +93,20 @@ export default function SimulatorEdit() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editId);
   const [showAdv, setShowAdv] = useState<Record<number, boolean>>({});
+  const [showPayment, setShowPayment] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [balance, setBalance] = useState(getBalance());
+  const [showTopUp, setShowTopUp] = useState(false);
+
+  function hasAccess() {
+    return checkAccess('simulator') !== 'locked';
+  }
+
+  function refreshBalance() {
+    setBalance(getBalance());
+  }
 
   useEffect(() => {
-    const a = checkAccess('simulator');
-    if (a === 'locked') { navigate('/pro/simulator'); return; }
     if (editId) {
       simulatorApi.list().then(data => {
         const sc = (data.scenarios || []).find((s: { id: number }) => s.id === Number(editId));
@@ -132,7 +146,7 @@ export default function SimulatorEdit() {
     setVariants(prev => prev.map((v, i) => i === vi ? { ...v, name } : v));
   }
 
-  async function handleSave() {
+  async function doSave() {
     setSaving(true);
     const payload = { title: title || 'Без названия', type: scenarioType, period, variants };
     let id: number;
@@ -145,6 +159,34 @@ export default function SimulatorEdit() {
     }
     setSaving(false);
     navigate(`/pro/simulator/result?scenario_id=${id}&run=1`);
+  }
+
+  function handleSave() {
+    if (hasAccess()) {
+      doSave();
+    } else {
+      refreshBalance();
+      setShowPayment(true);
+    }
+  }
+
+  async function handlePaymentConfirm() {
+    setPaying(true);
+    await syncFromServer().catch(() => {});
+    refreshBalance();
+    if (getBalance() < SIMULATOR_PRICE) {
+      setPaying(false);
+      setShowPayment(false);
+      setShowTopUp(true);
+      return;
+    }
+    const ok = await payForSimulator();
+    setPaying(false);
+    if (ok) {
+      refreshBalance();
+      setShowPayment(false);
+      doSave();
+    }
   }
 
   if (loading) {
@@ -282,10 +324,63 @@ export default function SimulatorEdit() {
         >
           {saving
             ? <span className="flex items-center justify-center gap-2"><Icon name="Loader2" size={18} className="animate-spin" />Сохранение...</span>
-            : 'Просчитать сценарии'
+            : hasAccess()
+              ? 'Просчитать сценарии'
+              : <span className="flex items-center justify-center gap-2"><Icon name="Lock" size={16} /> Просчитать сценарии</span>
           }
         </button>
       </div>
+
+      {showPayment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPayment(false)}>
+          <div className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-5">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <Icon name="Sparkles" size={28} className="text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Доступ к симулятору</h3>
+              <p className="text-sm text-muted-foreground mt-1">Создание и редактирование сценариев</p>
+            </div>
+            <div className="bg-muted/50 rounded-xl p-4 mb-5">
+              <div className="text-center">
+                <span className="text-3xl font-black text-foreground">{SIMULATOR_PRICE} ₽</span>
+                <span className="text-sm text-muted-foreground ml-1">/ {SIMULATOR_DAYS} дней</span>
+              </div>
+              <div className="text-xs text-muted-foreground text-center mt-2">
+                <p>До 20 сценариев · До 3 вариантов · PDF-экспорт</p>
+              </div>
+            </div>
+            <button
+              onClick={handlePaymentConfirm}
+              disabled={paying}
+              className="w-full bg-primary text-white rounded-xl py-3.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+            >
+              {paying
+                ? <span className="flex items-center justify-center gap-2"><Icon name="Loader2" size={16} className="animate-spin" />Оплачиваем...</span>
+                : balance >= SIMULATOR_PRICE
+                  ? `Списать ${SIMULATOR_PRICE} ₽ с баланса`
+                  : 'Пополнить баланс'
+              }
+            </button>
+            {balance > 0 && balance < SIMULATOR_PRICE && (
+              <p className="text-center text-xs text-muted-foreground mt-2">На балансе: {balance} ₽ — не хватает {SIMULATOR_PRICE - balance} ₽</p>
+            )}
+            {balance === 0 && (
+              <p className="text-center text-xs text-muted-foreground mt-2">Баланс: 0 ₽</p>
+            )}
+            <button onClick={() => setShowPayment(false)} className="w-full text-center text-sm text-muted-foreground mt-3 hover:text-foreground transition-colors">
+              Отмена
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showTopUp && (
+        <BalanceTopUpModal
+          onClose={() => setShowTopUp(false)}
+          onSuccess={() => { setShowTopUp(false); refreshBalance(); }}
+        />
+      )}
     </div>
   );
 }

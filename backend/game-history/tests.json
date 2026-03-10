@@ -1,0 +1,16 @@
+{
+  "tests": [
+    {
+      "name": "Get game history for existing user",
+      "method": "GET",
+      "path": "/?user_id=test-user-fin-001",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Get history - missing user_id",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400
+    }
+  ]
+}

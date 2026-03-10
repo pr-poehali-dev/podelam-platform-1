@@ -1,0 +1,25 @@
+// Replace src/config/api.ts with this file before building for VPS deployment
+// All URLs point to /api/{function-name} which Nginx proxies to FastAPI backend
+
+const BASE = '/api';
+
+export const API = {
+  chat: `${BASE}/chat`,
+  inviteGame: `${BASE}/invite-game`,
+  userCheck: `${BASE}/user-check`,
+  friends: `${BASE}/friends`,
+  adminAuth: `${BASE}/admin-auth`,
+  geoDetect: `${BASE}/geo-detect`,
+  sendOtp: `${BASE}/send-otp`,
+  verifyOtp: `${BASE}/verify-otp`,
+  siteSettings: `${BASE}/site-settings`,
+  matchmaking: `${BASE}/matchmaking`,
+  onlineMove: `${BASE}/online-move`,
+  applyDailyDecay: `${BASE}/apply-daily-decay`,
+  gameHistory: `${BASE}/game-history`,
+  finishGame: `${BASE}/finish-game`,
+  ratingSettings: `${BASE}/rating-settings`,
+  adminStats: `${BASE}/admin-stats`,
+} as const;
+
+export default API;

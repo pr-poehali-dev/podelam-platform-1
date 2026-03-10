@@ -1,18 +1,68 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SCENARIO_TYPES, SIMULATOR_TEMPLATES, type ScenarioType, simulatorApi } from '@/lib/simulatorApi';
-import { checkAccess } from '@/lib/access';
+import {
+  checkAccess, getBalance, syncFromServer, payForSimulator,
+  SIMULATOR_PRICE, SIMULATOR_DAYS,
+} from '@/lib/access';
+import BalanceTopUpModal from '@/components/BalanceTopUpModal';
 import Icon from '@/components/ui/icon';
 
 export default function SimulatorCreate() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<ScenarioType | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [balance, setBalance] = useState(getBalance());
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{ type: 'template'; id: string } | { type: 'manual'; scenarioType: ScenarioType } | null>(null);
 
-  useEffect(() => {
-    const a = checkAccess('simulator');
-    if (a === 'locked') navigate('/pro/simulator');
-  }, []);
+  function hasAccess() {
+    return checkAccess('simulator') !== 'locked';
+  }
+
+  function refreshBalance() {
+    setBalance(getBalance());
+  }
+
+  function requireAccessFor(action: typeof pendingAction) {
+    if (hasAccess()) {
+      executeAction(action!);
+    } else {
+      setPendingAction(action);
+      setShowPayment(true);
+      refreshBalance();
+    }
+  }
+
+  async function executeAction(action: NonNullable<typeof pendingAction>) {
+    if (action.type === 'template') {
+      await handleTemplate(action.id);
+    } else {
+      navigate(`/pro/simulator/edit?type=${action.scenarioType}`);
+    }
+  }
+
+  async function handlePaymentConfirm() {
+    setPaying(true);
+    await syncFromServer().catch(() => {});
+    refreshBalance();
+    if (getBalance() < SIMULATOR_PRICE) {
+      setPaying(false);
+      setShowPayment(false);
+      setShowTopUp(true);
+      return;
+    }
+    const ok = await payForSimulator();
+    setPaying(false);
+    if (ok) {
+      refreshBalance();
+      setShowPayment(false);
+      if (pendingAction) executeAction(pendingAction);
+      setPendingAction(null);
+    }
+  }
 
   async function handleTemplate(templateId: string) {
     const tpl = SIMULATOR_TEMPLATES.find(t => t.id === templateId);
@@ -28,9 +78,13 @@ export default function SimulatorCreate() {
     if (res.id) navigate(`/pro/simulator/result?scenario_id=${res.id}&run=1`);
   }
 
+  function handleTemplateClick(templateId: string) {
+    requireAccessFor({ type: 'template', id: templateId });
+  }
+
   function handleNext() {
     if (!selected) return;
-    navigate(`/pro/simulator/edit?type=${selected}`);
+    requireAccessFor({ type: 'manual', scenarioType: selected });
   }
 
   return (
@@ -42,7 +96,6 @@ export default function SimulatorCreate() {
         <h1 className="text-2xl font-bold text-foreground">Создать сценарий</h1>
         <p className="text-muted-foreground mt-1 mb-8">Выберите готовый шаблон или настройте всё вручную</p>
 
-        {/* Шаблоны */}
         <div className="mb-8">
           <h2 className="text-base font-semibold text-foreground mb-1">Готовые шаблоны</h2>
           <p className="text-sm text-muted-foreground mb-4">Нажмите — сценарий заполнится автоматически, сразу увидите результат</p>
@@ -50,7 +103,7 @@ export default function SimulatorCreate() {
             {SIMULATOR_TEMPLATES.map(tpl => (
               <button
                 key={tpl.id}
-                onClick={() => handleTemplate(tpl.id)}
+                onClick={() => handleTemplateClick(tpl.id)}
                 disabled={loading === tpl.id}
                 className="flex items-start gap-3 p-4 bg-card border border-border rounded-2xl text-left hover:border-primary/50 hover:shadow-sm transition-all disabled:opacity-60 group"
               >
@@ -76,14 +129,12 @@ export default function SimulatorCreate() {
           </div>
         </div>
 
-        {/* Разделитель */}
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 border-t border-border" />
           <span className="text-xs text-muted-foreground">или создайте с нуля</span>
           <div className="flex-1 border-t border-border" />
         </div>
 
-        {/* Выбор типа вручную */}
         <h2 className="text-base font-semibold text-foreground mb-4">Выберите тип решения</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {SCENARIO_TYPES.map(t => (
@@ -110,6 +161,57 @@ export default function SimulatorCreate() {
           Настроить параметры
         </button>
       </div>
+
+      {showPayment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => { setShowPayment(false); setPendingAction(null); }}>
+          <div className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-5">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <Icon name="Sparkles" size={28} className="text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Доступ к симулятору</h3>
+              <p className="text-sm text-muted-foreground mt-1">Создание и редактирование сценариев</p>
+            </div>
+            <div className="bg-muted/50 rounded-xl p-4 mb-5">
+              <div className="text-center">
+                <span className="text-3xl font-black text-foreground">{SIMULATOR_PRICE} ₽</span>
+                <span className="text-sm text-muted-foreground ml-1">/ {SIMULATOR_DAYS} дней</span>
+              </div>
+              <div className="text-xs text-muted-foreground text-center mt-2">
+                <p>До 20 сценариев · До 3 вариантов · PDF-экспорт</p>
+              </div>
+            </div>
+            <button
+              onClick={handlePaymentConfirm}
+              disabled={paying}
+              className="w-full bg-primary text-white rounded-xl py-3.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+            >
+              {paying
+                ? <span className="flex items-center justify-center gap-2"><Icon name="Loader2" size={16} className="animate-spin" />Оплачиваем...</span>
+                : balance >= SIMULATOR_PRICE
+                  ? `Списать ${SIMULATOR_PRICE} ₽ с баланса`
+                  : 'Пополнить баланс'
+              }
+            </button>
+            {balance > 0 && balance < SIMULATOR_PRICE && (
+              <p className="text-center text-xs text-muted-foreground mt-2">На балансе: {balance} ₽ — не хватает {SIMULATOR_PRICE - balance} ₽</p>
+            )}
+            {balance === 0 && (
+              <p className="text-center text-xs text-muted-foreground mt-2">Баланс: 0 ₽</p>
+            )}
+            <button onClick={() => { setShowPayment(false); setPendingAction(null); }} className="w-full text-center text-sm text-muted-foreground mt-3 hover:text-foreground transition-colors">
+              Отмена
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showTopUp && (
+        <BalanceTopUpModal
+          onClose={() => setShowTopUp(false)}
+          onSuccess={() => { setShowTopUp(false); refreshBalance(); }}
+        />
+      )}
     </div>
   );
 }

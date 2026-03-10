@@ -1,0 +1,1 @@
+ALTER TABLE online_games ADD COLUMN IF NOT EXISTS draw_offered_by VARCHAR(100) DEFAULT NULL;

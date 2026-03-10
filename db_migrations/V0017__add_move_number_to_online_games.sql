@@ -1,0 +1,1 @@
+ALTER TABLE online_games ADD COLUMN IF NOT EXISTS move_number integer NOT NULL DEFAULT 0;

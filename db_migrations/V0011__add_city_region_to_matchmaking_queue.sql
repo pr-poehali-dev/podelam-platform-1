@@ -1,0 +1,2 @@
+ALTER TABLE t_p52389855_chess_online_platfor.matchmaking_queue ADD COLUMN IF NOT EXISTS city VARCHAR(200) DEFAULT '';
+ALTER TABLE t_p52389855_chess_online_platfor.matchmaking_queue ADD COLUMN IF NOT EXISTS region VARCHAR(200) DEFAULT '';

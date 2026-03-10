@@ -1,0 +1,42 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Get my code",
+      "method": "GET",
+      "path": "/?action=my_code&user_id=test-user-001",
+      "expectedStatus": 200,
+      "expectedBody": {"code": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "List friends",
+      "method": "GET",
+      "path": "/?action=list&user_id=test-user-001",
+      "expectedStatus": 200,
+      "expectedBody": {"friends": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Heartbeat",
+      "method": "GET",
+      "path": "/?action=heartbeat&user_id=test-user-001",
+      "expectedStatus": 200,
+      "expectedBody": {"ok": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Init combined action",
+      "method": "GET",
+      "path": "/?action=init&user_id=test-user-001",
+      "expectedStatus": 200,
+      "expectedBody": {"code": "string", "friends": [], "pending": []},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
