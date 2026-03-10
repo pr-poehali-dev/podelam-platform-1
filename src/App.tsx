@@ -38,6 +38,7 @@ import LogicThinkingLanding from "./pages/LogicThinkingLanding";
 import LogicThinking from "./pages/LogicThinking";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
+import CookieBanner from "./components/CookieBanner";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <CookieBanner />
         <AutoLogoutGuard>
         <Routes>
           <Route path="/" element={<Index />} />
