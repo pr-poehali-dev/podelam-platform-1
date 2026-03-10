@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { simulatorApi, SCENARIO_TYPES } from '@/lib/simulatorApi';
+import { simulatorApi, SCENARIO_TYPES, FIELDS_BY_TYPE, type ParamFieldDef } from '@/lib/simulatorApi';
 import Icon from '@/components/ui/icon';
 
 const PERIODS = [5, 10, 20, 30];
@@ -26,11 +26,6 @@ const CREDIT_FIELDS: ParamField[] = [
   { key: 'credit_months', label: 'Срок кредита', placeholder: '120', hint: 'месяцев' },
 ];
 
-const ASSET_FIELDS: ParamField[] = [
-  { key: 'asset_cost', label: 'Стоимость актива', placeholder: '5 000 000', hint: '₽ (квартира, авто…)' },
-  { key: 'asset_growth', label: 'Рост актива в год', placeholder: '0.04', hint: 'доля/год, напр. 0.04 = 4%', type: 'percent' },
-];
-
 const INVEST_FIELDS: ParamField[] = [
   { key: 'investments', label: 'Инвестиции', placeholder: '20 000', hint: '₽ в месяц' },
   { key: 'invest_return', label: 'Доходность инвестиций', placeholder: '0.12', hint: 'доля/год, напр. 0.12 = 12%', type: 'percent' },
@@ -54,7 +49,8 @@ function emptyVariant(label: string): Variant {
   return { name: label, parameters: {} };
 }
 
-function FieldInput({ field, value, onChange }: { field: ParamField; value: string; onChange: (v: string) => void }) {
+function FieldInput({ field, value, onChange, step }: { field: ParamField | ParamFieldDef; value: string; onChange: (v: string) => void; step?: string }) {
+  const resolvedStep = step || ('step' in field && field.step) || ('type' in field && (field as ParamField).type === 'percent' ? '0.01' : '1');
   return (
     <div>
       <label className="text-xs font-medium text-foreground block mb-1">
@@ -63,7 +59,7 @@ function FieldInput({ field, value, onChange }: { field: ParamField; value: stri
       </label>
       <input
         type="number"
-        step={field.type === 'percent' ? '0.01' : '1'}
+        step={resolvedStep as string}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={field.placeholder}
@@ -73,6 +69,12 @@ function FieldInput({ field, value, onChange }: { field: ParamField; value: stri
   );
 }
 
+/** Check if type-specific groups already include a credit section */
+function typeHasCreditFields(scenarioType: string): boolean {
+  const groups = FIELDS_BY_TYPE[scenarioType] || [];
+  return groups.some(g => g.fields.some(f => f.key === 'credit_principal'));
+}
+
 export default function SimulatorEdit() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -80,6 +82,7 @@ export default function SimulatorEdit() {
   const initType = params.get('type') || 'free';
 
   const [title, setTitle] = useState('');
+  const [scenarioType, setScenarioType] = useState(initType);
   const [period, setPeriod] = useState(10);
   const [variants, setVariants] = useState<Variant[]>([emptyVariant('Сценарий A'), emptyVariant('Сценарий B')]);
   const [saving, setSaving] = useState(false);
@@ -93,6 +96,7 @@ export default function SimulatorEdit() {
         if (sc) {
           setTitle(sc.title);
           setPeriod(sc.period);
+          if (sc.type) setScenarioType(sc.type);
           if (sc.variants?.length) {
             setVariants(sc.variants.map((v: { name: string; parameters: Record<string, string> }) => ({ name: v.name, parameters: v.parameters || {} })));
           }
@@ -104,6 +108,9 @@ export default function SimulatorEdit() {
       setTitle(typeLabel || '');
     }
   }, [editId, initType]);
+
+  const typeGroups = FIELDS_BY_TYPE[scenarioType] || [];
+  const showGenericCredit = !typeHasCreditFields(scenarioType);
 
   function addVariant() {
     if (variants.length >= 3) return;
@@ -124,7 +131,7 @@ export default function SimulatorEdit() {
 
   async function handleSave() {
     setSaving(true);
-    const payload = { title: title || 'Без названия', type: initType, period, variants };
+    const payload = { title: title || 'Без названия', type: scenarioType, period, variants };
     let id: number;
     if (editId) {
       await simulatorApi.update({ scenario_id: Number(editId), ...payload });
@@ -205,7 +212,7 @@ export default function SimulatorEdit() {
                 )}
               </div>
 
-              {/* Основные поля */}
+              {/* BASE: Доходы и расходы */}
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Доходы и расходы</p>
               <div className="grid sm:grid-cols-2 gap-3 mb-4">
                 {BASE_FIELDS.map(f => (
@@ -213,21 +220,29 @@ export default function SimulatorEdit() {
                 ))}
               </div>
 
-              {/* Кредит */}
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Кредит / ипотека</p>
-              <div className="grid sm:grid-cols-3 gap-3 mb-4">
-                {CREDIT_FIELDS.map(f => (
-                  <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
-                ))}
-              </div>
+              {/* TYPE-SPECIFIC field groups */}
+              {typeGroups.map((group, gi) => (
+                <div key={gi}>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">{group.title}</p>
+                  <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                    {group.fields.map(f => (
+                      <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} step={f.step} />
+                    ))}
+                  </div>
+                </div>
+              ))}
 
-              {/* Актив */}
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Актив (недвижимость, авто…)</p>
-              <div className="grid sm:grid-cols-2 gap-3 mb-4">
-                {ASSET_FIELDS.map(f => (
-                  <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
-                ))}
-              </div>
+              {/* Generic credit — only if type does not already include credit fields */}
+              {showGenericCredit && (
+                <>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Кредит / ипотека</p>
+                  <div className="grid sm:grid-cols-3 gap-3 mb-4">
+                    {CREDIT_FIELDS.map(f => (
+                      <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
+                    ))}
+                  </div>
+                </>
+              )}
 
               {/* Инвестиции */}
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Инвестиции</p>

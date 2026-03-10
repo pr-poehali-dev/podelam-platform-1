@@ -130,6 +130,37 @@ export default function SimulatorDashboard() {
             </div>
           )}
         </div>
+
+        {/* История расчётов */}
+        {!loading && scenarios.filter(s => s.title !== '[удалён]' && s.last_result).length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-lg font-semibold text-foreground mb-4">История расчётов</h2>
+            <div className="grid gap-3">
+              {scenarios
+                .filter(s => s.title !== '[удалён]' && s.last_result)
+                .map(sc => (
+                  <div
+                    key={`history-${sc.id}`}
+                    onClick={() => navigate(`/pro/simulator/result?scenario_id=${sc.id}`)}
+                    className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between gap-3 cursor-pointer hover:border-primary/40 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-green-50 border border-green-200 flex items-center justify-center shrink-0">
+                        <Icon name="CheckCircle2" size={18} className="text-green-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground text-sm truncate">{sc.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {sc.period} лет · {sc.variants.length} вариант{sc.variants.length > 1 ? (sc.variants.length < 5 ? 'а' : 'ов') : ''} · {new Date(sc.created_at).toLocaleDateString('ru')}
+                        </p>
+                      </div>
+                    </div>
+                    <Icon name="ChevronRight" size={18} className="text-muted-foreground shrink-0" />
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

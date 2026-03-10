@@ -1,22 +1,15 @@
 """
-Математическое ядро PRO-симулятора жизненных решений.
-Реализует полную модель: капитал, доход, расходы, активы, кредит, инвестиции, риски, время, качество жизни.
+Универсальное ядро PRO-симулятора жизненных решений.
+Один движок считает любые типы: недвижимость, работа, бизнес, кредит, авто, переезд, инвестиции, образование.
 """
-import math
 
-
-AVERAGE_INCOME = 80_000          # ₽/мес — средний доход по РФ для нормализации
-STANDARD_WORK_HOURS_YEAR = 1980  # 45 ч/нед × 44 нед
+AVERAGE_INCOME = 80_000
+STANDARD_WORK_HOURS_YEAR = 2000
 TOTAL_HOURS_YEAR = 8760
-MAX_FREE_TIME = 4380             # ~12 ч/день свободного времени потолок
+MAX_FREE_TIME = 4380
 
 
-# ─────────────────────────────────────────────
-# Вспомогательные формулы
-# ─────────────────────────────────────────────
-
-def annuity_payment(principal: float, annual_rate: float, months: int) -> float:
-    """Аннуитетный ежемесячный платёж по кредиту."""
+def annuity_payment(principal, annual_rate, months):
     if principal <= 0 or months <= 0:
         return 0.0
     if annual_rate <= 0:
@@ -25,157 +18,287 @@ def annuity_payment(principal: float, annual_rate: float, months: int) -> float:
     return principal * r * (1 + r) ** months / ((1 + r) ** months - 1)
 
 
-def future_value_lump(p: float, r: float, n: int) -> float:
-    """Будущая стоимость единовременного вложения: P × (1+r)^n"""
-    if r <= 0:
-        return p
-    return p * (1 + r) ** n
-
-
-def future_value_annuity(pmt: float, r: float, n: int) -> float:
-    """Будущая стоимость регулярных пополнений: PMT × ((1+r)^n - 1) / r"""
-    if pmt <= 0 or n <= 0:
+def annuity_remaining_debt(principal, annual_rate, total_months, months_paid):
+    if months_paid >= total_months:
         return 0.0
-    if r <= 0:
-        return pmt * n
-    return pmt * ((1 + r) ** n - 1) / r
+    if annual_rate <= 0:
+        return max(0, principal * (1 - months_paid / total_months))
+    r = annual_rate / 12
+    payment = principal * r * (1 + r) ** total_months / ((1 + r) ** total_months - 1)
+    remaining = principal * (1 + r) ** months_paid - payment * ((1 + r) ** months_paid - 1) / r
+    return max(0.0, remaining)
 
 
-# ─────────────────────────────────────────────
-# Основная симуляция одного варианта
-# ─────────────────────────────────────────────
+def p(params, key, default=0):
+    v = params.get(key)
+    if v is None or v == '' or v == 'null':
+        return default
+    return float(v)
 
-def simulate_variant(params: dict, period: int) -> dict:
-    """
-    Симулирует один вариант сценария по годам.
-    Возвращает словарь с погодовой динамикой и итоговыми показателями.
-    """
-    # --- Входные параметры ---
-    income_start      = float(params.get('income', 100_000))          # ₽/мес
-    expenses_start    = float(params.get('expenses', 70_000))         # ₽/мес
-    start_capital     = float(params.get('start_capital', 0))         # стартовый капитал ₽
-    asset_cost        = float(params.get('asset_cost', 0))            # стоимость актива ₽
-    asset_growth      = float(params.get('asset_growth', 0.04))       # рост актива/год (доля)
-    credit_principal  = float(params.get('credit_principal', 0))      # сумма кредита ₽
-    credit_rate       = float(params.get('credit_rate', 0.18))        # ставка кредита/год
-    credit_months     = int(params.get('credit_months', 120))         # срок кредита в месяцах
-    investments_pmt   = float(params.get('investments', 0))           # ежемесячные инвестиции ₽
-    invest_return     = float(params.get('invest_return', 0.12))      # доходность инвестиций/год
-    income_growth     = float(params.get('income_growth', 0.05))      # рост дохода/год
-    inflation         = float(params.get('inflation', 0.07))          # инфляция/год
-    work_hours_week   = float(params.get('work_hours_week', 40))      # рабочих часов в неделю
-    commute_hours_week= float(params.get('commute_hours_week', 0))    # дорога на работу ч/нед
-    stress_coeff      = float(params.get('stress_coeff', 1.0))        # коэффициент стресса 0.5–2.0
-    risk_probability  = float(params.get('risk_probability', 0.05))   # вероятность потери дохода/год
 
-    # Аннуитет (считается один раз)
-    monthly_payment = annuity_payment(credit_principal, credit_rate, credit_months)
-    annual_debt_payment = monthly_payment * 12
+def calculate_income(params, year):
+    monthly = p(params, 'monthly_income', 0) or p(params, 'income', 100000)
+    growth = p(params, 'income_growth_rate', 0) or p(params, 'income_growth', 0.05)
+    return monthly * 12 * (1 + growth) ** year
 
-    # Начальный актив
-    current_asset_value = asset_cost
 
-    # Инвестиционный портфель (накопленная стоимость, отдельно от капитала)
-    invest_portfolio = 0.0
+def calculate_expenses(params, year, extra_annual=0):
+    monthly = p(params, 'monthly_expenses', 0) or p(params, 'expenses', 70000)
+    inflation = p(params, 'inflation_rate', 0) or p(params, 'inflation', 0.07)
+    return monthly * 12 * (1 + inflation) ** year + extra_annual
 
-    capital = start_capital - asset_cost + credit_principal  # если актив куплен в кредит
 
+def calculate_risk_probability(params):
+    return p(params, 'risk_coefficient', 0) or p(params, 'risk_probability', 0.05)
+
+
+def calculate_time(params):
+    work = p(params, 'work_hours_week', 40) * 52
+    commute = p(params, 'commute_hours_week', 0) * 52
+    free = TOTAL_HOURS_YEAR - work - commute
+    stress_coeff = p(params, 'stress_coefficient', 0) or p(params, 'stress_coeff', 1.0)
+    workload = work / STANDARD_WORK_HOURS_YEAR
+    stress_index = min(10, workload * stress_coeff * 5)
+    return work, commute, free, stress_index
+
+
+def calculate_life_index(expected_income_monthly, free_time, stress_index):
+    income_score = min(3.0, expected_income_monthly / AVERAGE_INCOME)
+    free_time_score = min(3.0, free_time / MAX_FREE_TIME * 3)
+    stress_score = stress_index / 10 * 3
+    return max(0, min(10, (income_score + free_time_score - stress_score) * 10 / 3))
+
+
+# ──────────── Типоспецифичные расширения ────────────
+
+def prep_real_estate(params):
+    price = p(params, 'property_price', 0) or p(params, 'asset_cost', 0)
+    down = p(params, 'down_payment', 0)
+    rate = p(params, 'mortgage_rate', 0) or p(params, 'credit_rate', 0.12)
+    years = p(params, 'mortgage_years', 0)
+    months = int(years * 12) if years > 0 else int(p(params, 'credit_months', 240))
+    principal = p(params, 'credit_principal', 0) or max(0, price - down)
+    growth = p(params, 'property_growth_rate', 0) or p(params, 'asset_growth', 0.05)
+    maint = p(params, 'maintenance_rate', 0.01)
+    tax = p(params, 'tax_rate', 0.001)
+    rent = p(params, 'rent_cost', 0)
+    return {
+        'asset_cost': price, 'credit_principal': principal,
+        'credit_rate': rate, 'credit_months': months,
+        'asset_growth': growth, 'maintenance_rate': maint, 'tax_rate': tax,
+        'rent_cost': rent,
+    }
+
+
+def prep_car(params):
+    price = p(params, 'car_price', 0) or p(params, 'asset_cost', 0)
+    fuel = p(params, 'fuel_cost_month', 0)
+    insurance = p(params, 'insurance_year', 0)
+    maint = p(params, 'maintenance_year', 0)
+    depr = p(params, 'depreciation_rate', 0.10)
+    principal = p(params, 'credit_principal', 0)
+    rate = p(params, 'credit_rate', 0.20)
+    months = int(p(params, 'credit_months', 60))
+    return {
+        'asset_cost': price, 'asset_growth': -depr,
+        'extra_annual': fuel * 12 + insurance + maint,
+        'credit_principal': principal, 'credit_rate': rate, 'credit_months': months,
+    }
+
+
+def prep_business(params):
+    startup = p(params, 'startup_investment', 0)
+    revenue = p(params, 'monthly_revenue', 0)
+    biz_exp = p(params, 'monthly_business_expenses', 0)
+    rev_growth = p(params, 'revenue_growth_rate', 0.15)
+    success = p(params, 'success_probability', 0.7)
+    return {
+        'startup_investment': startup,
+        'monthly_revenue': revenue, 'monthly_business_expenses': biz_exp,
+        'revenue_growth_rate': rev_growth, 'success_probability': success,
+    }
+
+
+def prep_relocation(params):
+    cur_salary = p(params, 'current_salary', 0) or p(params, 'income', 100000)
+    new_salary = p(params, 'new_city_salary', 0)
+    cur_cost = p(params, 'current_cost_living', 0) or p(params, 'expenses', 70000)
+    new_cost = p(params, 'new_cost_living', 0)
+    reloc_cost = p(params, 'relocation_cost', 0)
+    return {
+        'current_salary': cur_salary, 'new_city_salary': new_salary,
+        'current_cost_living': cur_cost, 'new_cost_living': new_cost,
+        'relocation_cost': reloc_cost,
+    }
+
+
+def prep_career(params):
+    cur = p(params, 'current_salary', 0) or p(params, 'income', 100000)
+    new = p(params, 'new_salary', 0)
+    g_cur = p(params, 'salary_growth_current', 0.04)
+    g_new = p(params, 'salary_growth_new', 0.10)
+    loss = p(params, 'job_loss_probability', 0.05)
+    return {
+        'current_salary': cur, 'new_salary': new,
+        'salary_growth_current': g_cur, 'salary_growth_new': g_new,
+        'job_loss_probability': loss,
+    }
+
+
+def prep_investments(params):
+    initial = p(params, 'initial_investment', 0) or p(params, 'start_capital', 0)
+    monthly = p(params, 'monthly_investment', 0) or p(params, 'investments', 0)
+    ret = p(params, 'investment_return_rate', 0) or p(params, 'invest_return', 0.12)
+    vol = p(params, 'volatility', 0)
+    return {
+        'initial_investment': initial, 'monthly_investment': monthly,
+        'invest_return': ret, 'volatility': vol,
+    }
+
+
+# ──────────── Универсальная симуляция ────────────
+
+def simulate_variant(params, period, scenario_type='free'):
+    sc = scenario_type or 'free'
+
+    start_capital = p(params, 'start_capital', 0)
+    risk_prob = calculate_risk_probability(params)
+    _, _, free_time, stress_index = calculate_time(params)
+
+    # Кредит/ипотека
+    credit_principal = p(params, 'credit_principal', 0)
+    credit_rate = p(params, 'credit_rate', 0.18)
+    credit_months = int(p(params, 'credit_months', 120))
+
+    # Актив
+    asset_cost = p(params, 'asset_cost', 0)
+    asset_growth_rate = p(params, 'asset_growth', 0.04)
+
+    # Инвестиции
+    invest_pmt = p(params, 'investments', 0) or p(params, 'monthly_investment', 0)
+    invest_return = p(params, 'invest_return', 0.12) or p(params, 'investment_return_rate', 0.12)
+    invest_initial = p(params, 'initial_investment', 0)
+
+    # Типоспецифичные дополнения
+    extra_annual = 0
+    biz = None
+    reloc = None
+
+    if sc == 'real_estate':
+        re = prep_real_estate(params)
+        asset_cost = re['asset_cost'] or asset_cost
+        credit_principal = re['credit_principal'] or credit_principal
+        credit_rate = re['credit_rate'] or credit_rate
+        credit_months = re['credit_months'] or credit_months
+        asset_growth_rate = re['asset_growth']
+        extra_annual = asset_cost * (re['maintenance_rate'] + re['tax_rate'])
+
+    elif sc == 'car':
+        ca = prep_car(params)
+        asset_cost = ca['asset_cost'] or asset_cost
+        asset_growth_rate = ca['asset_growth']
+        credit_principal = ca['credit_principal'] or credit_principal
+        credit_rate = ca['credit_rate'] or credit_rate
+        credit_months = ca['credit_months'] or credit_months
+        extra_annual = ca['extra_annual']
+
+    elif sc == 'business':
+        biz = prep_business(params)
+        start_capital -= biz['startup_investment']
+
+    elif sc in ('relocation', 'career'):
+        pass
+
+    elif sc == 'investment':
+        inv = prep_investments(params)
+        invest_pmt = inv['monthly_investment'] or invest_pmt
+        invest_return = inv['invest_return'] or invest_return
+        invest_initial = inv['initial_investment'] or invest_initial
+
+    # Аннуитет
+    monthly_pay = annuity_payment(credit_principal, credit_rate, credit_months)
+    annual_debt = monthly_pay * 12
+
+    capital = start_capital
+    if asset_cost > 0:
+        capital = capital - asset_cost + credit_principal
+
+    invest_portfolio = invest_initial
     yearly = []
 
     for year in range(1, period + 1):
-        # Доход этого года (с учётом роста и риска)
-        income_year = income_start * (1 + income_growth) ** year
-        expected_income = income_year * (1 - risk_probability)
+        # Доход
+        income_annual = calculate_income(params, year)
 
-        # Расходы этого года (растут с инфляцией)
-        expenses_year = expenses_start * (1 + inflation) ** year
+        # Бизнес-модель: доход = revenue с ростом × вероятность успеха
+        if biz and biz['monthly_revenue'] > 0:
+            biz_rev = biz['monthly_revenue'] * 12 * (1 + biz['revenue_growth_rate']) ** year
+            biz_exp = biz['monthly_business_expenses'] * 12 * (1 + p(params, 'inflation', 0.07)) ** year
+            biz_profit = (biz_rev - biz_exp) * biz['success_probability']
+            income_annual = income_annual + biz_profit
 
-        # Кредитные выплаты в этом году
-        debt_paid_this_year = annual_debt_payment if (year - 1) * 12 < credit_months else 0.0
+        expected_income = income_annual * (1 - risk_prob)
+        expenses_annual = calculate_expenses(params, year, extra_annual)
 
-        # Инвестиции: пополняем и считаем рост
-        invest_portfolio = invest_portfolio * (1 + invest_return) + investments_pmt * 12
+        # Кредит
+        debt_this_year = annual_debt if (year - 1) * 12 < credit_months else 0.0
 
-        # Актив растёт
-        current_asset_value = asset_cost * (1 + asset_growth) ** year
+        # Инвестиции
+        invest_portfolio = invest_portfolio * (1 + invest_return) + invest_pmt * 12
 
-        # Остаток долга по кредиту
+        # Актив
+        current_asset = asset_cost * (1 + asset_growth_rate) ** year if asset_cost > 0 else 0
+
+        # Остаток долга
         months_paid = min(year * 12, credit_months)
-        if credit_principal > 0 and credit_months > 0:
-            remaining_debt = annuity_remaining_debt(credit_principal, credit_rate, credit_months, months_paid)
-        else:
-            remaining_debt = 0.0
+        remaining_debt = annuity_remaining_debt(credit_principal, credit_rate, credit_months, months_paid) if credit_principal > 0 else 0
 
-        # Капитал (ликвидный)
-        savings_this_year = (expected_income - expenses_year) * 12 - debt_paid_this_year
-        capital += savings_this_year
+        # Капитал
+        savings = expected_income - expenses_annual - debt_this_year
+        capital += savings
 
         # Чистые активы
-        total_assets = max(0, capital) + current_asset_value + invest_portfolio
+        total_assets = max(0, capital) + current_asset + invest_portfolio
         net_worth = total_assets - remaining_debt
 
-        # --- Время ---
-        work_hours_year = work_hours_week * 52
-        commute_hours_year = commute_hours_week * 52
-        free_time = TOTAL_HOURS_YEAR - work_hours_year - commute_hours_year
+        # Показатели качества
+        work_h, commute_h, free_time, stress_idx = calculate_time(params)
+        life_idx = calculate_life_index(expected_income / 12, free_time, stress_idx)
 
-        # --- Стресс ---
-        workload = work_hours_year / STANDARD_WORK_HOURS_YEAR
-        stress_index = min(10, workload * stress_coeff * 5)
-
-        # --- Индекс качества жизни ---
-        income_score = min(3.0, expected_income / AVERAGE_INCOME)
-        free_time_score = min(3.0, free_time / MAX_FREE_TIME * 3)
-        stress_score = stress_index / 10 * 3
-        life_index = max(0, min(10, (income_score + free_time_score - stress_score) * 10 / 3))
-
-        # --- Финансовая устойчивость ---
-        annual_expenses_total = expenses_year * 12
-        fin_stability = capital / annual_expenses_total if annual_expenses_total > 0 else 0
-
-        # --- Индекс риска ---
-        risk_index = min(10, risk_probability * 10 + (debt_paid_this_year / (expected_income * 12 + 1)) * 10)
+        annual_exp = expenses_annual if expenses_annual > 0 else 1
+        fin_stability = capital / annual_exp
+        risk_index = min(10, risk_prob * 10 + (debt_this_year / (expected_income + 1)) * 10)
 
         yearly.append({
             'year': year,
-            'income': round(expected_income * 12),
-            'expenses': round(expenses_year * 12),
-            'savings': round(savings_this_year),
+            'income': round(expected_income),
+            'expenses': round(expenses_annual),
+            'savings': round(savings),
             'capital': round(capital),
             'invest_portfolio': round(invest_portfolio),
-            'asset_value': round(current_asset_value),
+            'asset_value': round(current_asset),
             'net_worth': round(net_worth),
             'debt_remaining': round(remaining_debt),
             'free_time_hours': round(free_time),
-            'stress_index': round(stress_index, 2),
-            'life_index': round(life_index, 2),
+            'stress_index': round(stress_idx, 2),
+            'life_index': round(life_idx, 2),
             'fin_stability': round(fin_stability, 2),
             'risk_index': round(risk_index, 2),
         })
 
     final = yearly[-1] if yearly else {}
+    income_start = (p(params, 'monthly_income', 0) or p(params, 'income', 100000))
+    wealth_index = min(10, max(0, final.get('net_worth', 0) / (income_start * 120 + 1) * 10))
+    income_index = min(10, final.get('income', 0) / (AVERAGE_INCOME * 12 + 1) * 5)
+    life_f = final.get('life_index', 5)
+    risk_f = final.get('risk_index', 5)
 
-    # --- Итоговый рейтинг сценария ---
-    wealth_index = min(10, max(0, final.get('net_worth', 0) / (income_start * 120) * 10))
-    income_index = min(10, final.get('income', 0) / (AVERAGE_INCOME * 12) * 5)
-    life_idx_final = final.get('life_index', 5)
-    risk_idx_final = final.get('risk_index', 5)
+    scenario_score = max(0, min(10,
+        0.4 * wealth_index + 0.2 * income_index + 0.2 * life_f - 0.2 * risk_f
+    ))
 
-    scenario_score = (
-        0.4 * wealth_index
-        + 0.2 * income_index
-        + 0.2 * life_idx_final
-        - 0.2 * risk_idx_final
-    )
-
-    # Тип инвестора
-    risk_share = risk_probability
-    if risk_share < 0.3:
-        investor_type = 'консервативный'
-    elif risk_share < 0.6:
-        investor_type = 'сбалансированный'
-    else:
-        investor_type = 'рискованный'
+    risk_prob_val = risk_prob
+    investor_type = 'консервативный' if risk_prob_val < 0.08 else ('сбалансированный' if risk_prob_val < 0.15 else 'рискованный')
 
     return {
         'yearly': yearly,
@@ -195,32 +318,21 @@ def simulate_variant(params: dict, period: int) -> dict:
             'risk_index': final.get('risk_index', 0),
             'scenario_score': round(scenario_score, 2),
             'investor_type': investor_type,
-        }
+        },
     }
 
 
-def annuity_remaining_debt(principal: float, annual_rate: float, total_months: int, months_paid: int) -> float:
-    """Остаток долга по аннуитетному кредиту после months_paid выплат."""
-    if annual_rate <= 0:
-        return max(0, principal * (1 - months_paid / total_months))
-    r = annual_rate / 12
-    payment = principal * r * (1 + r) ** total_months / ((1 + r) ** total_months - 1)
-    remaining = principal * (1 + r) ** months_paid - payment * ((1 + r) ** months_paid - 1) / r
-    return max(0.0, remaining)
-
-
-def build_recommendation(variants_results: list) -> str:
-    """Формирует итоговый вывод на основе рейтингов сценариев."""
+def build_recommendation(variants_results):
     if not variants_results:
         return ''
     best = max(variants_results, key=lambda x: x['final']['scenario_score'])
-    best_name = best['name']
+    worst = min(variants_results, key=lambda x: x['final']['scenario_score'])
+    name = best['name']
     score = best['final']['scenario_score']
     nw = best['final']['net_worth']
-
     nw_fmt = f"{nw / 1_000_000:.1f} млн ₽" if abs(nw) >= 1_000_000 else f"{nw / 1_000:.0f} тыс. ₽"
 
-    parts = [f"Сценарий «{best_name}» показывает лучший итоговый рейтинг ({score:.1f}/10)."]
+    parts = [f"Сценарий «{name}» показывает лучший итоговый рейтинг ({score:.1f}/10)."]
 
     life_idx = best['final']['life_index']
     risk_idx = best['final']['risk_index']
@@ -228,10 +340,23 @@ def build_recommendation(variants_results: list) -> str:
 
     if life_idx >= 7:
         parts.append("Высокое качество жизни.")
-    if risk_idx <= 3:
+    elif life_idx >= 5:
+        parts.append("Комфортное качество жизни.")
+    if risk_idx <= 2:
         parts.append("Риски минимальны.")
+    elif risk_idx <= 4:
+        parts.append("Риски умеренные.")
     if fin_stab > 3:
         parts.append("Финансовая подушка устойчива.")
+    elif fin_stab > 1:
+        parts.append("Финансовая подушка на среднем уровне.")
+
     parts.append(f"Чистый капитал к концу периода: {nw_fmt}.")
+
+    if len(variants_results) > 1 and worst['name'] != best['name']:
+        diff = best['final']['net_worth'] - worst['final']['net_worth']
+        if diff > 0:
+            diff_fmt = f"{diff / 1_000_000:.1f} млн" if diff >= 1_000_000 else f"{diff / 1_000:.0f} тыс."
+            parts.append(f"Разница с «{worst['name']}» составляет {diff_fmt} ₽.")
 
     return " ".join(parts)

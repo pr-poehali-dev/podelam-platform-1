@@ -122,17 +122,18 @@ def handler(event: dict, context) -> dict:
         # Запустить симуляцию
         if action == 'run' and method == 'POST':
             sc_id = int(body.get('scenario_id', 0))
-            cur.execute("SELECT id, title, period FROM simulator_scenarios WHERE id = %s AND user_id = %s", (sc_id, user_id))
+            cur.execute("SELECT id, title, period, type FROM simulator_scenarios WHERE id = %s AND user_id = %s", (sc_id, user_id))
             sc = cur.fetchone()
             if not sc:
                 return err('Сценарий не найден', 404)
             cur.execute("SELECT id, name, parameters_json FROM simulator_variants WHERE scenario_id = %s ORDER BY id", (sc_id,))
             db_variants = cur.fetchall()
             period = sc[2]
+            sc_type = sc[3] or 'free'
 
             variants_results = []
             for v in db_variants:
-                sim = simulate_variant(v[2] or {}, period)
+                sim = simulate_variant(v[2] or {}, period, sc_type)
                 variants_results.append({
                     'variant_id': v[0],
                     'name': v[1],
