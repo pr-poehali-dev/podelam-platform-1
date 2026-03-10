@@ -190,6 +190,27 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
         </div>
       )}
 
+      {/* Симулятор — баннер */}
+      <div
+        onClick={() => onNavigate("/pro/simulator")}
+        className="bg-white rounded-3xl border border-cyan-200/60 p-5 cursor-pointer transition-all hover:border-cyan-300 hover:shadow-md relative overflow-hidden group"
+      >
+        <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-gradient-to-br from-cyan-100/60 to-teal-100/40 transition-transform duration-300 group-hover:scale-110" />
+        <div className="relative flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shrink-0">
+            <Icon name="GitCompare" size={22} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <h3 className="font-bold text-foreground text-sm">Симулятор решений</h3>
+              <span className="text-[10px] font-bold text-cyan-600 bg-cyan-50 border border-cyan-100 px-2 py-0.5 rounded-full">PRO</span>
+            </div>
+            <p className="text-muted-foreground text-xs leading-relaxed">Моделируй последствия решений на 5–30 лет вперёд</p>
+          </div>
+          <Icon name="ChevronRight" size={18} className="text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        </div>
+      </div>
+
       {/* Тренажеры — баннер */}
       <div
         onClick={() => onNavigate("/trainers")}
