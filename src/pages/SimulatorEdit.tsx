@@ -54,13 +54,65 @@ function emptyVariant(label: string): Variant {
   return { name: label, parameters: {} };
 }
 
-function FieldInput({ field, value, onChange, step }: { field: ParamField | ParamFieldDef; value: string; onChange: (v: string) => void; step?: string }) {
+function getLifeHourValue(params: Record<string, string>): number {
+  const income = parseFloat(params.income || params.monthly_income || '') || 0;
+  if (income <= 0) return 0;
+  const workHoursWeek = parseFloat(params.work_hours_week || '') || 40;
+  const commuteHoursWeek = parseFloat(params.commute_hours_week || '') || 0;
+  const totalHoursMonth = (workHoursWeek + commuteHoursWeek) * 4.33;
+  return totalHoursMonth > 0 ? income / totalHoursMonth : 0;
+}
+
+function isRubleField(hint?: string): false | 'once' | 'month' | 'year' {
+  if (!hint) return false;
+  if (/₽\/мес/.test(hint)) return 'month';
+  if (/₽\/год/.test(hint)) return 'year';
+  if (/₽/.test(hint) && !/доля/.test(hint)) return 'once';
+  return false;
+}
+
+function formatLifeHours(hours: number): string {
+  if (hours < 1) return '< 1 ч';
+  if (hours < 24) return `≈ ${Math.round(hours)} ч`;
+  const days = hours / 8;
+  if (days < 30) return `≈ ${Math.round(days)} раб. дн.`;
+  const months = days / 22;
+  if (months < 12) return `≈ ${months.toFixed(1)} мес.`;
+  const years = months / 12;
+  return `≈ ${years.toFixed(1)} лет`;
+}
+
+function LifeHoursBadge({ value, hint, lifeHourValue }: { value: string; hint?: string; lifeHourValue: number }) {
+  const rubleType = isRubleField(hint);
+  if (!rubleType || lifeHourValue <= 0) return null;
+  const amount = parseFloat(value) || 0;
+  if (amount <= 0) return null;
+
+  let monthlyEquiv = amount;
+  if (rubleType === 'year') monthlyEquiv = amount / 12;
+
+  const hours = monthlyEquiv / lifeHourValue;
+  if (hours < 0.5) return null;
+
+  const suffix = rubleType === 'once' ? ' работы' : '/мес работы';
+
+  return (
+    <span className="inline-flex items-center gap-1 text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 px-1.5 py-0.5 rounded-md ml-auto whitespace-nowrap">
+      <span>⏱</span>{formatLifeHours(hours)}{suffix}
+    </span>
+  );
+}
+
+function FieldInput({ field, value, onChange, step, lifeHourValue }: { field: ParamField | ParamFieldDef; value: string; onChange: (v: string) => void; step?: string; lifeHourValue?: number }) {
   const resolvedStep = step || ('step' in field && field.step) || ('type' in field && (field as ParamField).type === 'percent' ? '0.01' : '1');
   return (
     <div>
-      <label className="text-xs font-medium text-foreground block mb-1">
-        {field.label}
-        {field.hint && <span className="text-muted-foreground font-normal ml-1">— {field.hint}</span>}
+      <label className="text-xs font-medium text-foreground flex items-center gap-1 mb-1">
+        <span>
+          {field.label}
+          {field.hint && <span className="text-muted-foreground font-normal ml-1">— {field.hint}</span>}
+        </span>
+        {lifeHourValue ? <LifeHoursBadge value={value} hint={field.hint} lifeHourValue={lifeHourValue} /> : null}
       </label>
       <input
         type="number"
@@ -241,7 +293,9 @@ export default function SimulatorEdit() {
             )}
           </div>
 
-          {variants.map((v, vi) => (
+          {variants.map((v, vi) => {
+            const lhv = getLifeHourValue(v.parameters);
+            return (
             <div key={vi} className="bg-card border border-border rounded-2xl p-5">
               {/* Имя варианта */}
               <div className="flex items-center gap-2 mb-5">
@@ -261,7 +315,7 @@ export default function SimulatorEdit() {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Доходы и расходы</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 {BASE_FIELDS.map(f => (
-                  <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
+                  <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} lifeHourValue={lhv} />
                 ))}
               </div>
 
@@ -271,7 +325,7 @@ export default function SimulatorEdit() {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">{group.title}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     {group.fields.map(f => (
-                      <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} step={f.step} />
+                      <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} step={f.step} lifeHourValue={lhv} />
                     ))}
                   </div>
                 </div>
@@ -283,7 +337,7 @@ export default function SimulatorEdit() {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Кредит / ипотека</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                     {CREDIT_FIELDS.map(f => (
-                      <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
+                      <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} lifeHourValue={lhv} />
                     ))}
                   </div>
                 </>
@@ -293,7 +347,7 @@ export default function SimulatorEdit() {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Инвестиции</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 {INVEST_FIELDS.map(f => (
-                  <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} />
+                  <FieldInput key={f.key} field={f} value={v.parameters[f.key] || ''} onChange={val => setParam(vi, f.key, val)} lifeHourValue={lhv} />
                 ))}
               </div>
 
@@ -314,7 +368,7 @@ export default function SimulatorEdit() {
                 </div>
               )}
             </div>
-          ))}
+          ); })}
         </div>
 
         <button
