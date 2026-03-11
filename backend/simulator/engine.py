@@ -8,6 +8,10 @@ STANDARD_WORK_HOURS_YEAR = 2000
 TOTAL_HOURS_YEAR = 8760
 MAX_FREE_TIME = 4380
 
+DEFAULT_INFLATION = 0.07
+DEFAULT_DAYS_IN_MONTH = 30
+DEFAULT_WORK_HOURS_MONTH = 160
+
 
 def annuity_payment(principal, annual_rate, months):
     if principal <= 0 or months <= 0:
@@ -44,7 +48,7 @@ def calculate_income(params, year):
 
 def calculate_expenses(params, year, extra_annual=0):
     monthly = p(params, 'monthly_expenses', 0) or p(params, 'expenses', 70000)
-    inflation = p(params, 'inflation_rate', 0) or p(params, 'inflation', 0.07)
+    inflation = p(params, 'inflation_rate', 0) or p(params, 'inflation', DEFAULT_INFLATION)
     return monthly * 12 * (1 + inflation) ** year + extra_annual
 
 
@@ -67,6 +71,89 @@ def calculate_life_index(expected_income_monthly, free_time, stress_index):
     free_time_score = min(3.0, free_time / MAX_FREE_TIME * 3)
     stress_score = stress_index / 10 * 3
     return max(0, min(10, (income_score + free_time_score - stress_score) * 10 / 3))
+
+
+# ──────────── EconomicMetrics ────────────
+
+def calculate_daily_budget(monthly_income, monthly_expenses, days_in_month=DEFAULT_DAYS_IN_MONTH):
+    daily_income = monthly_income / days_in_month
+    daily_expenses = monthly_expenses / days_in_month
+    monthly_free = monthly_income - monthly_expenses
+    daily_free = monthly_free / days_in_month
+    return {
+        'daily_income': round(daily_income),
+        'daily_expenses': round(daily_expenses),
+        'daily_free_budget': round(daily_free),
+    }
+
+
+def calculate_real_capital(nominal_capital, inflation_rate, year):
+    if year <= 0:
+        return nominal_capital
+    return nominal_capital / (1 + inflation_rate) ** year
+
+
+def calculate_safety_months(capital, monthly_expenses):
+    if monthly_expenses <= 0:
+        return 999.0
+    return capital / monthly_expenses
+
+
+def calculate_life_hour_value(monthly_income, work_hours_month=DEFAULT_WORK_HOURS_MONTH):
+    if work_hours_month <= 0:
+        return 0.0
+    return monthly_income / work_hours_month
+
+
+def calculate_daily_cost_projection(monthly_expenses, inflation_rate, days_in_month=DEFAULT_DAYS_IN_MONTH, max_years=30):
+    cost_today = monthly_expenses / days_in_month
+    projection = []
+    for y in [1, 5, 10, 15, 20, 25, 30]:
+        if y <= max_years:
+            projection.append({
+                'year': y,
+                'daily_cost': round(cost_today * (1 + inflation_rate) ** y),
+            })
+    return projection
+
+
+def build_economic_summary(params, final_yearly, period):
+    monthly_income = p(params, 'monthly_income', 0) or p(params, 'income', 100000)
+    monthly_expenses = p(params, 'monthly_expenses', 0) or p(params, 'expenses', 70000)
+    inflation = p(params, 'inflation_rate', 0) or p(params, 'inflation', DEFAULT_INFLATION)
+    income_growth = p(params, 'income_growth_rate', 0) or p(params, 'income_growth', 0.05)
+    days_in_month = DEFAULT_DAYS_IN_MONTH
+    work_hours_month = DEFAULT_WORK_HOURS_MONTH
+
+    nominal_capital = final_yearly.get('capital', 0) if final_yearly else 0
+    real_cap = calculate_real_capital(nominal_capital, inflation, period)
+
+    daily = calculate_daily_budget(monthly_income, monthly_expenses, days_in_month)
+
+    cost_of_life_day = round(monthly_expenses / days_in_month)
+
+    life_hour = calculate_life_hour_value(monthly_income, work_hours_month)
+
+    safety_m = calculate_safety_months(max(0, nominal_capital), monthly_expenses)
+    safety_d = safety_m * days_in_month
+
+    real_income_growth = income_growth - inflation
+
+    projection = calculate_daily_cost_projection(monthly_expenses, inflation, days_in_month, period)
+
+    return {
+        'daily_income': daily['daily_income'],
+        'daily_expenses': daily['daily_expenses'],
+        'daily_free_budget': daily['daily_free_budget'],
+        'cost_of_life_day': cost_of_life_day,
+        'life_hour_value': round(life_hour),
+        'safety_months': round(safety_m, 1),
+        'safety_days': round(safety_d),
+        'nominal_capital': round(nominal_capital),
+        'real_capital': round(real_cap),
+        'real_income_growth': round(real_income_growth, 4),
+        'daily_cost_projection': projection,
+    }
 
 
 # ──────────── Типоспецифичные расширения ────────────
@@ -165,21 +252,17 @@ def simulate_variant(params, period, scenario_type='free'):
     risk_prob = calculate_risk_probability(params)
     _, _, free_time, stress_index = calculate_time(params)
 
-    # Кредит/ипотека
     credit_principal = p(params, 'credit_principal', 0)
     credit_rate = p(params, 'credit_rate', 0.18)
     credit_months = int(p(params, 'credit_months', 120))
 
-    # Актив
     asset_cost = p(params, 'asset_cost', 0)
     asset_growth_rate = p(params, 'asset_growth', 0.04)
 
-    # Инвестиции
     invest_pmt = p(params, 'investments', 0) or p(params, 'monthly_investment', 0)
     invest_return = p(params, 'invest_return', 0.12) or p(params, 'investment_return_rate', 0.12)
     invest_initial = p(params, 'initial_investment', 0)
 
-    # Типоспецифичные дополнения
     extra_annual = 0
     biz = None
     reloc = None
@@ -215,7 +298,6 @@ def simulate_variant(params, period, scenario_type='free'):
         invest_return = inv['invest_return'] or invest_return
         invest_initial = inv['initial_investment'] or invest_initial
 
-    # Аннуитет
     monthly_pay = annuity_payment(credit_principal, credit_rate, credit_months)
     annual_debt = monthly_pay * 12
 
@@ -224,50 +306,44 @@ def simulate_variant(params, period, scenario_type='free'):
         capital = capital - asset_cost + credit_principal
 
     invest_portfolio = invest_initial
+    inflation = p(params, 'inflation_rate', 0) or p(params, 'inflation', DEFAULT_INFLATION)
     yearly = []
 
     for year in range(1, period + 1):
-        # Доход
         income_annual = calculate_income(params, year)
 
-        # Бизнес-модель: доход = revenue с ростом × вероятность успеха
         if biz and biz['monthly_revenue'] > 0:
             biz_rev = biz['monthly_revenue'] * 12 * (1 + biz['revenue_growth_rate']) ** year
-            biz_exp = biz['monthly_business_expenses'] * 12 * (1 + p(params, 'inflation', 0.07)) ** year
+            biz_exp = biz['monthly_business_expenses'] * 12 * (1 + inflation) ** year
             biz_profit = (biz_rev - biz_exp) * biz['success_probability']
             income_annual = income_annual + biz_profit
 
         expected_income = income_annual * (1 - risk_prob)
         expenses_annual = calculate_expenses(params, year, extra_annual)
 
-        # Кредит
         debt_this_year = annual_debt if (year - 1) * 12 < credit_months else 0.0
 
-        # Инвестиции
         invest_portfolio = invest_portfolio * (1 + invest_return) + invest_pmt * 12
 
-        # Актив
         current_asset = asset_cost * (1 + asset_growth_rate) ** year if asset_cost > 0 else 0
 
-        # Остаток долга
         months_paid = min(year * 12, credit_months)
         remaining_debt = annuity_remaining_debt(credit_principal, credit_rate, credit_months, months_paid) if credit_principal > 0 else 0
 
-        # Капитал
         savings = expected_income - expenses_annual - debt_this_year
         capital += savings
 
-        # Чистые активы
         total_assets = max(0, capital) + current_asset + invest_portfolio
         net_worth = total_assets - remaining_debt
 
-        # Показатели качества
         work_h, commute_h, free_time, stress_idx = calculate_time(params)
         life_idx = calculate_life_index(expected_income / 12, free_time, stress_idx)
 
         annual_exp = expenses_annual if expenses_annual > 0 else 1
         fin_stability = capital / annual_exp
         risk_index = min(10, risk_prob * 10 + (debt_this_year / (expected_income + 1)) * 10)
+
+        real_cap = calculate_real_capital(capital, inflation, year)
 
         yearly.append({
             'year': year,
@@ -284,6 +360,7 @@ def simulate_variant(params, period, scenario_type='free'):
             'life_index': round(life_idx, 2),
             'fin_stability': round(fin_stability, 2),
             'risk_index': round(risk_index, 2),
+            'real_capital': round(real_cap),
         })
 
     final = yearly[-1] if yearly else {}
@@ -299,6 +376,8 @@ def simulate_variant(params, period, scenario_type='free'):
 
     risk_prob_val = risk_prob
     investor_type = 'консервативный' if risk_prob_val < 0.08 else ('сбалансированный' if risk_prob_val < 0.15 else 'рискованный')
+
+    economic_summary = build_economic_summary(params, final, period)
 
     return {
         'yearly': yearly,
@@ -318,7 +397,12 @@ def simulate_variant(params, period, scenario_type='free'):
             'risk_index': final.get('risk_index', 0),
             'scenario_score': round(scenario_score, 2),
             'investor_type': investor_type,
+            'real_capital': final.get('real_capital', 0),
+            'daily_free_budget': economic_summary['daily_free_budget'],
+            'cost_of_life_day': economic_summary['cost_of_life_day'],
+            'safety_months': economic_summary['safety_months'],
         },
+        'economic_summary': economic_summary,
     }
 
 
@@ -352,6 +436,19 @@ def build_recommendation(variants_results):
         parts.append("Финансовая подушка на среднем уровне.")
 
     parts.append(f"Чистый капитал к концу периода: {nw_fmt}.")
+
+    eco = best.get('economic_summary')
+    if eco:
+        sm = eco.get('safety_months', 0)
+        if sm >= 12:
+            parts.append(f"Финансовая безопасность: {sm:.0f} мес. запаса.")
+        elif sm >= 6:
+            parts.append(f"Финансовый запас: {sm:.0f} мес. — достаточно.")
+        elif sm >= 0:
+            parts.append(f"Запас средств: {sm:.1f} мес. — стоит увеличить подушку.")
+        lhv = eco.get('life_hour_value', 0)
+        if lhv > 0:
+            parts.append(f"Стоимость часа жизни: {lhv:,.0f} ₽.".replace(',', ' '))
 
     if len(variants_results) > 1 and worst['name'] != best['name']:
         diff = best['final']['net_worth'] - worst['final']['net_worth']

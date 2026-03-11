@@ -139,6 +139,7 @@ def handler(event: dict, context) -> dict:
                     'name': v[1],
                     'final': sim['final'],
                     'yearly': sim['yearly'],
+                    'economic_summary': sim.get('economic_summary'),
                 })
 
             recommendation = build_recommendation(variants_results)
