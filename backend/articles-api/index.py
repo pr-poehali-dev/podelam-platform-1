@@ -296,10 +296,12 @@ def handle_save(body):
                 UPDATE "{S}".articles SET
                     title=%s, summary=%s, body=%s, slug=%s, category_id=%s,
                     cover_url=%s, video_url=%s, meta_title=%s, meta_description=%s,
-                    meta_keywords=%s, reading_time=%s, is_published=%s, updated_at=NOW()
+                    meta_keywords=%s, reading_time=%s, is_published=%s, updated_at=NOW(),
+                    published_at = CASE WHEN %s = TRUE AND (published_at IS NULL OR is_published = FALSE) THEN NOW() ELSE published_at END
                 WHERE id=%s RETURNING id
             """, [title, summary, article_body, slug, category_id, cover_url, video_url,
-                  meta_title, meta_description, meta_keywords, reading_time, is_published, article_id])
+                  meta_title, meta_description, meta_keywords, reading_time, is_published,
+                  is_published, article_id])
         else:
             initial_views = random.randint(950, 2500)
             cur.execute(f"""
