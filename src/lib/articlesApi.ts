@@ -42,6 +42,12 @@ function setCache(key: string, data: unknown) {
   cache[key] = { data, ts: Date.now() };
 }
 
+export function clearPublicCache() {
+  Object.keys(cache).forEach((key) => {
+    if (key.startsWith("list_") || key === "categories") delete cache[key];
+  });
+}
+
 export async function fetchArticles(page = 1, category = "") {
   const cacheKey = `list_${page}_${category}`;
   const cached = getCached<{ articles: ArticlePreview[]; total: number; page: number; pages: number }>(cacheKey);

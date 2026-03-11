@@ -8,6 +8,7 @@ import {
   adminTogglePublish,
   adminUploadCover,
   fetchCategories,
+  clearPublicCache,
   ArticlePreview,
   Category,
 } from "@/lib/articlesApi";
@@ -96,6 +97,7 @@ export default function AdminArticles() {
 
   const handleToggle = async (id: number) => {
     await adminTogglePublish(token, id);
+    clearPublicCache();
     load();
   };
 
@@ -138,6 +140,7 @@ export default function AdminArticles() {
     setSaving(true);
     await adminSaveArticle(token, editing);
     setSaving(false);
+    clearPublicCache();
     setEditing(null);
     load();
   };
