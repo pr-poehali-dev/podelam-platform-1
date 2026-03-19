@@ -3,9 +3,9 @@ import Icon from "@/components/ui/icon";
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/e85cccde-a68c-43c5-8e98-e53c3460428b.jpg";
 
 const problems = [
-  { emoji: "🔥", title: "Выгорание", text: "Работаешь много, а удовлетворения нет. Сил становится меньше, а смысла — ещё меньше." },
-  { emoji: "🎭", title: "Не своё место", text: "Ощущение, что занимаешься не тем. Коллеги кажутся «на своём месте», а ты — нет." },
-  { emoji: "🔄", title: "Бесконечный поиск", text: "Меняешь работу или пробуешь новое, но снова оказываешься в тупике через пару лет." },
+  { icon: "Flame", color: "text-orange-500", bg: "bg-orange-50", title: "Выгорание", text: "Работаешь много, а удовлетворения нет. Сил становится меньше, а смысла — ещё меньше." },
+  { icon: "Drama", color: "text-violet-500", bg: "bg-violet-50", title: "Не своё место", text: "Ощущение, что занимаешься не тем. Коллеги кажутся «на своём месте», а ты — нет." },
+  { icon: "RefreshCw", color: "text-blue-500", bg: "bg-blue-50", title: "Бесконечный поиск", text: "Меняешь работу или пробуешь новое, но снова оказываешься в тупике через пару лет." },
 ];
 
 const steps = [
@@ -87,7 +87,10 @@ export default function IndexHero({ scrollTo }: IndexHeroProps) {
           <div className="grid md:grid-cols-3 gap-6">
             {problems.map((p) => (
               <div key={p.title} className="bg-white rounded-3xl p-7 border border-border card-hover">
-                <div className="text-4xl mb-4">{p.emoji}</div>
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${p.bg} mb-5`}>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  <Icon name={p.icon as any} size={24} className={p.color} />
+                </div>
                 <h3 className="font-bold text-lg text-foreground mb-2">{p.title}</h3>
                 <p className="text-muted-foreground leading-relaxed text-[14px]">{p.text}</p>
               </div>
