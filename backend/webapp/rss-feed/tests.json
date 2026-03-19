@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "name": "RSS feed returns XML",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}
