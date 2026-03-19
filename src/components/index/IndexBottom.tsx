@@ -4,9 +4,9 @@ import Icon from "@/components/ui/icon";
 import InstallPWA from "@/components/InstallPWA";
 
 const audience = [
-  { emoji: "💼", title: "Ищут доп. доход", text: "Хотите монетизировать навыки или найти подработку, которая не будет в тягость" },
-  { emoji: "😮‍💨", title: "Выгорели", text: "Устали от текущей работы и не знаете, куда двигаться дальше" },
-  { emoji: "🔀", title: "Меняют сферу", text: "Готовы к переходу, но боитесь ошибиться и потерять время" },
+  { icon: "Briefcase", color: "text-emerald-500", bg: "bg-emerald-50", title: "Ищут доп. доход", text: "Хотите монетизировать навыки или найти подработку, которая не будет в тягость" },
+  { icon: "BatteryLow", color: "text-rose-500", bg: "bg-rose-50", title: "Выгорели", text: "Устали от текущей работы и не знаете, куда двигаться дальше" },
+  { icon: "Shuffle", color: "text-indigo-500", bg: "bg-indigo-50", title: "Меняют сферу", text: "Готовы к переходу, но боитесь ошибиться и потерять время" },
 ];
 
 const faqs = [
@@ -121,7 +121,10 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
           <div className="grid md:grid-cols-3 gap-6">
             {audience.map((a) => (
               <div key={a.title} className="flex gap-4 bg-white rounded-3xl p-6 border border-border card-hover">
-                <div className="text-3xl shrink-0">{a.emoji}</div>
+                <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${a.bg} shrink-0`}>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  <Icon name={a.icon as any} size={22} className={a.color} />
+                </div>
                 <div>
                   <h3 className="font-bold text-foreground mb-1">{a.title}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">{a.text}</p>
