@@ -1,6 +1,6 @@
 import Icon from "@/components/ui/icon";
 
-const HERO_IMAGE = "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/e85cccde-a68c-43c5-8e98-e53c3460428b.jpg";
+const HERO_IMAGE = "https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/c0beafe8-cfba-42e4-91ca-a0206b8ad79c.jpg";
 
 const problems = [
   { icon: "Flame", color: "text-orange-500", bg: "bg-orange-50", title: "Выгорание", text: "Работаешь много, а удовлетворения нет. Сил становится меньше, а смысла — ещё меньше." },
