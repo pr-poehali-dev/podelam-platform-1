@@ -30,11 +30,12 @@ export default function IndexHero({ scrollTo }: IndexHeroProps) {
               Диагностика сильных сторон
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black leading-[1.15] text-foreground mb-5">
-              Зарабатывай больше —{" "}
-              <span className="text-gradient">без выгорания</span>
+              Узнай, где ты можешь{" "}
+              <span className="text-gradient">зарабатывать больше</span>{" "}
+              без выгорания
             </h1>
             <p className="text-muted-foreground text-xl leading-relaxed mb-8 max-w-md">
-              Пойми, в каком деле ты раскроешься сильнее всего. Диагностика сильных сторон и внутренней мотивации — с конкретным планом роста дохода.
+              Диагностика твоих сильных сторон и мотивации с конкретным планом: в каком направлении расти и как увеличить доход.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <button
