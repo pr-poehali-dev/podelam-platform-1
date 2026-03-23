@@ -27,15 +27,15 @@ export default function IndexHero({ scrollTo }: IndexHeroProps) {
           <div className="animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-2 mb-6 text-sm text-primary font-medium shadow-sm">
               <Icon name="Sparkles" size={14} />
-              Психологическое ориентирование
+              Диагностика сильных сторон
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black leading-[1.15] text-foreground mb-5">
-              Узнай, какое дело{" "}
-              <span className="text-gradient">тебе подходит</span>{" "}
-              и не приведёт к выгоранию
+              Узнай, где ты можешь{" "}
+              <span className="text-gradient">зарабатывать больше</span>{" "}
+              без выгорания
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8 max-w-md">
-              Платформа раскрывает твою внутреннюю мотивацию и предлагает конкретные направления для роста и дохода.
+              Диагностика твоих сильных сторон и внутренней мотивации — с конкретным планом: где и как расти в доходе, оставаясь в ресурсе.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <button
