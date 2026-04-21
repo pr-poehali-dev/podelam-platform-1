@@ -12,6 +12,7 @@ Allow: /
 
 User-agent: YandexBot
 Allow: /
+Clean-param: etext
 
 User-agent: *
 Allow: /
