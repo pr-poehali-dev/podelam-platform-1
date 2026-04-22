@@ -325,23 +325,7 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
         </AccordionSection>
       )}
 
-      {/* Подписка — баннер если нет */}
-      {!hasSub && careerResult && (
-        <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-100 rounded-3xl p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h4 className="font-bold text-foreground mb-1">Полный доступ — 990 ₽/мес</h4>
-              <p className="text-muted-foreground text-xs leading-relaxed">Все инструменты + Дневник самоанализа. Без ограничений 30 дней.</p>
-            </div>
-            <button
-              onClick={() => onTabChange?.("tools")}
-              className="shrink-0 gradient-brand text-white font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90 transition-opacity"
-            >
-              990 ₽
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {completions.length > 0 && (
         <AccordionSection icon="Activity" title="Недавняя активность">
