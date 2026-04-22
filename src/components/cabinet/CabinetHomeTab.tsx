@@ -282,16 +282,43 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
             {(hasPsychDone || hasBarrier) && (
               <div
                 onClick={() => onNavigate("/progress")}
-                className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all bg-blue-50 border border-blue-100 hover:border-blue-300"
+                className="rounded-2xl overflow-hidden border border-blue-200 cursor-pointer group"
               >
-                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                  <Icon name="BarChart3" size={18} className="text-blue-600" />
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-600 px-4 pt-4 pb-3 text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <Icon name="BarChart3" size={16} className="text-white" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wide text-white/70">Прокачай себя</span>
+                  </div>
+                  <h4 className="font-black text-base leading-snug mb-1">30 дней без ограничений</h4>
+                  <p className="text-white/85 text-xs leading-relaxed">
+                    Один раз — и все инструменты открыты. Проходи сколько угодно раз, в любое время, следи за своим ростом.
+                  </p>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-foreground">Прогресс развития</div>
-                  <div className="text-xs text-muted-foreground">Психологический портрет и динамика</div>
+                <div className="bg-blue-50 px-4 py-3 space-y-2.5">
+                  <div className="space-y-1.5">
+                    {[
+                      { icon: "TrendingUp", text: "Отслеживай динамику своего развития" },
+                      { icon: "Repeat", text: "Неограниченные прохождения всех инструментов" },
+                      { icon: "Unlock", text: "Все 5+ инструментов сразу на 30 дней" },
+                    ].map((item) => (
+                      <div key={item.text} className="flex items-center gap-2">
+                        <Icon name={item.icon as "TrendingUp"} size={13} className="text-blue-500 shrink-0" />
+                        <span className="text-xs text-blue-800">{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between pt-0.5">
+                    <div>
+                      <span className="text-base font-black text-blue-900">990 ₽</span>
+                      <span className="text-xs text-blue-500 ml-1">/ 30 дней</span>
+                    </div>
+                    <span className="text-xs font-black text-blue-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                      Открыть доступ <Icon name="ChevronRight" size={14} className="text-blue-500" />
+                    </span>
+                  </div>
                 </div>
-                <Icon name="ChevronRight" size={16} className="text-blue-400 shrink-0" />
               </div>
             )}
           </div>
