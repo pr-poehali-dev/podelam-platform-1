@@ -1,8 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Message, BotStep } from "./psychBotEngine";
-import CourseRecommendation from "./CourseRecommendation";
-import { findCourseForProfession } from "./courseOffers";
+
 
 // ─── РЕНДЕР ТЕКСТА ────────────────────────────────────────────────────────────
 
@@ -178,11 +177,6 @@ export default function PsychBotChat({
             </div>
           </div>
         )}
-
-        {isFinished && !loading && selectedProfession && (() => {
-          const course = findCourseForProfession(selectedProfession);
-          return course ? <CourseRecommendation course={course} /> : null;
-        })()}
 
         {isFinished && !loading && (
           <div className="mt-4 pb-6 space-y-2">
