@@ -6,6 +6,74 @@ import { getStats, getCurrentSession } from "../trainerStorage";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import TrainerCard from "./TrainerCard";
+
+// Маппинг: психологический сегмент → рекомендованные тренажёры с причиной
+const SEGMENT_TRAINER_TIPS: Record<string, { id: string; why: string; priority: number }[]> = {
+  creative: [
+    { id: "anti-procrastination", why: "Снимет блок «ещё не готов» и запустит тебя в действие", priority: 1 },
+    { id: "conscious-choice", why: "Поможет выбрать одну идею и довести её до конца", priority: 2 },
+  ],
+  help_people: [
+    { id: "self-esteem", why: "Восстановит внутренний баланс после помощи другим", priority: 1 },
+    { id: "money-anxiety", why: "Снимет тревогу вокруг денег и цены своей работы", priority: 2 },
+  ],
+  analytics: [
+    { id: "conscious-choice", why: "Даст алгоритм выхода из аналитического паралича", priority: 1 },
+    { id: "anti-procrastination", why: "Разрушит паттерн «ещё немного данных — тогда начну»", priority: 2 },
+  ],
+  business: [
+    { id: "conscious-choice", why: "Поможет выбрать один проект из множества идей", priority: 1 },
+    { id: "money-anxiety", why: "Проработает денежные установки предпринимателя", priority: 2 },
+  ],
+  education: [
+    { id: "self-esteem", why: "Даст внутреннюю опору для запуска своего продукта", priority: 1 },
+    { id: "anti-procrastination", why: "Разобьёт запуск курса на первый маленький шаг", priority: 2 },
+  ],
+  communication: [
+    { id: "emotions-in-action", why: "Научит управлять энергией после интенсивного общения", priority: 1 },
+    { id: "self-esteem", why: "Обеспечит внутреннюю опору для публичности", priority: 2 },
+  ],
+  management: [
+    { id: "conscious-choice", why: "Создаст систему принятия решений вместо хаоса", priority: 1 },
+    { id: "emotions-in-action", why: "Снизит накопленное напряжение от контроля", priority: 2 },
+  ],
+  practical: [
+    { id: "self-esteem", why: "Поможет ценить себя и брать достойную цену", priority: 1 },
+    { id: "anti-procrastination", why: "Запустит действие через 15-минутный первый шаг", priority: 2 },
+  ],
+  research: [
+    { id: "conscious-choice", why: "Переведёт знания в конкретные действия", priority: 1 },
+    { id: "money-anxiety", why: "Научит монетизировать свою экспертизу", priority: 2 },
+  ],
+  freedom: [
+    { id: "conscious-choice", why: "Даст ясность при слишком большом выборе", priority: 1 },
+    { id: "money-anxiety", why: "Стабилизирует финансовый фон при нестабильном доходе", priority: 2 },
+  ],
+};
+
+function getPersonalizedTrainers(): { id: string; why: string }[] {
+  try {
+    const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
+    const saved = localStorage.getItem(`psych_result_${u.email}`);
+    if (!saved) return [];
+    const psych = JSON.parse(saved);
+    const topSeg = psych?.topSeg;
+    if (!topSeg || !SEGMENT_TRAINER_TIPS[topSeg]) return [];
+    return SEGMENT_TRAINER_TIPS[topSeg].sort((a, b) => a.priority - b.priority);
+  } catch {
+    return [];
+  }
+}
+
+function getUserFirstName(): string {
+  try {
+    const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
+    const name = u.name || "";
+    return name.split(" ")[0] || "";
+  } catch {
+    return "";
+  }
+}
 import {
   TrainerPlanId,
   TRAINER_PLANS,
@@ -90,6 +158,9 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
   const [balance, setBalance] = useState(getBalance);
   const [, forceUpdate] = useState(0);
 
+  const personalizedTrainers = useMemo(() => getPersonalizedTrainers(), []);
+  const firstName = useMemo(() => getUserFirstName(), []);
+
   const sub = getTrainerSubscription();
   const subExpires = trainerSubExpiresFormatted();
   const refreshBalance = () => {
@@ -159,6 +230,70 @@ export default function TrainerCatalog({ onSelectTrainer }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Персональные рекомендации — показываем если есть профиль */}
+      {personalizedTrainers.length > 0 && !search.trim() && (
+        <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl p-4 border border-violet-100">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
+              <Icon name="Sparkles" size={14} className="text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-foreground text-sm">
+                {firstName ? `${firstName}, твои тренажёры` : "Твои тренажёры"}
+              </p>
+              <p className="text-xs text-muted-foreground">Подобраны под твой профиль</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {personalizedTrainers.map(({ id, why }) => {
+              const def = TRAINER_DEFS.find((d) => d.id === id);
+              if (!def) return null;
+              return (
+                <div key={id} className="bg-white rounded-xl p-3 border border-white shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${def.bgGradient} flex items-center justify-center shrink-0`}>
+                      <Icon name={def.icon as "Compass"} size={16} className="text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-foreground text-sm leading-tight">{def.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{why}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        try { window.ym?.(107022183, "reachGoal", "personal_trainer_click", { trainer: id }); } catch { /* ignore */ }
+                        onSelectTrainer(id as TrainerId);
+                      }}
+                      className="shrink-0 text-xs font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 transition-colors px-3 py-1.5 rounded-lg"
+                    >
+                      Начать
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Триггер действия — если нет профиля, предлагаем пройти тест */}
+      {personalizedTrainers.length === 0 && !search.trim() && (
+        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+            <Icon name="Lightbulb" size={16} className="text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-amber-900 text-sm">Получи персональные рекомендации</p>
+            <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">Пройди тест — и мы подберём тренажёры именно под твой профиль</p>
+          </div>
+          <button
+            onClick={() => navigate("/psych-bot")}
+            className="shrink-0 text-xs font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 transition-colors px-3 py-1.5 rounded-lg"
+          >
+            Пройти
+          </button>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative">

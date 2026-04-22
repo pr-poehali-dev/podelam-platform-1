@@ -108,16 +108,46 @@ export default function PaymentSuccess() {
 
         {status === "paid" && (
           <div className="bg-white rounded-3xl border border-green-200 shadow-lg overflow-hidden animate-scale-in">
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-8 text-center text-white">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                <Icon name="CheckCircle" size={42} className="text-white" />
+            {/* Шапка */}
+            <div className="bg-gradient-to-br from-emerald-500 to-green-600 p-7 text-center text-white">
+              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                <Icon name="CheckCircle" size={34} className="text-white" />
               </div>
-              <h1 className="text-2xl font-black mb-1">Оплата прошла!</h1>
+              <h1 className="text-2xl font-black mb-1">Доступ открыт!</h1>
               {amount > 0 && (
-                <p className="text-green-100 text-lg font-bold">+{amount} ₽ на ваш баланс</p>
+                <p className="text-emerald-100 text-sm font-semibold">+{amount} ₽ зачислено на баланс</p>
               )}
             </div>
-            <div className="p-6 space-y-3">
+
+            {/* Ценностный блок */}
+            {!isProTrainerPayment && !isTrainerPayment && (
+              <div className="px-5 pt-5 pb-0">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">Теперь тебе доступно</p>
+                <div className="space-y-2 mb-4">
+                  {[
+                    { icon: "Brain", text: "Полный разбор твоего психологического профиля" },
+                    { icon: "Zap", text: "Персональные тренажёры под твои слабые зоны" },
+                    { icon: "Target", text: "Конкретный план первых шагов" },
+                    { icon: "TrendingUp", text: "Инструменты для роста концентрации и уверенности" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                        <Icon name={item.icon as "Brain"} size={14} className="text-emerald-600" />
+                      </div>
+                      <p className="text-sm text-foreground">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-amber-50 rounded-2xl px-4 py-3 border border-amber-100 mb-4">
+                  <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                    💡 Изменения заметны уже через 2–3 сессии. Лучше начать сегодня.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Кнопки действий */}
+            <div className="p-5 space-y-3">
               {isProTrainerPayment ? (
                 <>
                   <button
@@ -129,9 +159,9 @@ export default function PaymentSuccess() {
                   </button>
                   <button
                     onClick={() => navigate("/cabinet")}
-                    className="w-full border-2 border-border text-foreground font-bold py-3.5 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
+                    className="w-full border-2 border-border text-foreground font-semibold py-3 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
                   >
-                    <Icon name="User" size={17} />
+                    <Icon name="User" size={16} />
                     В личный кабинет
                   </button>
                 </>
@@ -142,30 +172,49 @@ export default function PaymentSuccess() {
                     className="w-full gradient-brand text-white font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2"
                   >
                     <Icon name="Dumbbell" size={17} />
-                    Перейти к тренажерам
+                    Запустить тренажёр
                   </button>
                   <button
                     onClick={() => navigate("/cabinet")}
-                    className="w-full border-2 border-border text-foreground font-bold py-3.5 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
+                    className="w-full border-2 border-border text-foreground font-semibold py-3 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
                   >
-                    <Icon name="User" size={17} />
+                    <Icon name="User" size={16} />
                     В личный кабинет
                   </button>
                 </>
               ) : (
                 <>
                   <button
-                    onClick={() => navigate("/cabinet?tab=tools")}
-                    className="w-full gradient-brand text-white font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2"
+                    onClick={() => navigate("/trainers")}
+                    className="w-full gradient-brand text-white font-black py-4 rounded-2xl hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2 shadow-md"
                   >
-                    <Icon name="Compass" size={17} />
-                    Перейти к инструментам
+                    <Icon name="Dumbbell" size={17} />
+                    Хочу улучшить своё состояние
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Ищем последний результат теста
+                      try {
+                        const u = JSON.parse(localStorage.getItem("pdd_user") || "{}");
+                        const tests = JSON.parse(localStorage.getItem(`pdd_tests_${u.email}`) || "[]");
+                        const psychTest = tests.find((t: {type: string; id: string}) => t.type === "Тест на призвание");
+                        if (psychTest) {
+                          navigate(`/results/${psychTest.id}`);
+                          return;
+                        }
+                      } catch { /* ignore */ }
+                      navigate("/cabinet?tab=tools");
+                    }}
+                    className="w-full border-2 border-violet-200 text-violet-700 font-bold py-3.5 rounded-2xl hover:bg-violet-50 transition-colors text-sm flex items-center justify-center gap-2"
+                  >
+                    <Icon name="Compass" size={16} />
+                    Посмотреть полный разбор
                   </button>
                   <button
                     onClick={() => navigate("/cabinet")}
-                    className="w-full border-2 border-border text-foreground font-bold py-3.5 rounded-2xl hover:bg-secondary transition-colors text-sm flex items-center justify-center gap-2"
+                    className="w-full text-muted-foreground font-medium py-2 rounded-2xl hover:text-foreground transition-colors text-sm flex items-center justify-center gap-2"
                   >
-                    <Icon name="User" size={17} />
+                    <Icon name="User" size={15} />
                     В личный кабинет
                   </button>
                 </>

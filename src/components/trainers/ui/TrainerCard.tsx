@@ -187,7 +187,10 @@ export default function TrainerCard({
         <div className="pt-1">
           {hasActiveSession && onContinue && hasAccess ? (
             <Button
-              onClick={onContinue}
+              onClick={() => {
+                try { window.ym?.(107022183, "reachGoal", "trainer_continue", { trainer: trainer.id }); } catch { /* ignore */ }
+                onContinue();
+              }}
               className={`w-full h-10 rounded-xl text-sm font-medium bg-gradient-to-r ${trainer.bgGradient} text-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200`}
             >
               <Icon name="Play" className="w-4 h-4 mr-1.5" />
@@ -195,7 +198,10 @@ export default function TrainerCard({
             </Button>
           ) : hasAccess ? (
             <Button
-              onClick={onStart}
+              onClick={() => {
+                try { window.ym?.(107022183, "reachGoal", "trainer_start", { trainer: trainer.id }); } catch { /* ignore */ }
+                onStart();
+              }}
               variant="outline"
               className="w-full h-10 rounded-xl text-sm font-medium hover:bg-primary/5 transition-colors duration-200"
             >
@@ -204,7 +210,10 @@ export default function TrainerCard({
             </Button>
           ) : (
             <Button
-              onClick={onStart}
+              onClick={() => {
+                try { window.ym?.(107022183, "reachGoal", "trainer_paywall_click", { trainer: trainer.id }); } catch { /* ignore */ }
+                onStart();
+              }}
               variant="outline"
               className="w-full h-10 rounded-xl text-sm font-medium hover:bg-primary/5 transition-colors duration-200"
             >
