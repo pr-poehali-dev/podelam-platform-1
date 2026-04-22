@@ -251,13 +251,13 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
                   <p className="text-rose-800 text-xs leading-relaxed font-medium">
                     Узнай, какие именно барьеры стоят на твоём пути — и получи конкретный план, как от них избавиться. Люди, которые это прошли, описывают это как «наконец-то увидел себя честно».
                   </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex gap-1.5 flex-wrap flex-1 min-w-0">
                       {["Страхи", "Самозванец", "Прокрастинация"].map((tag) => (
-                        <span key={tag} className="text-[11px] font-semibold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">{tag}</span>
+                        <span key={tag} className="text-[11px] font-semibold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full whitespace-nowrap">{tag}</span>
                       ))}
                     </div>
-                    <span className="text-xs font-black text-rose-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    <span className="text-xs font-black text-rose-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1 shrink-0">
                       290 ₽ <Icon name="ChevronRight" size={14} className="text-rose-500" />
                     </span>
                   </div>
