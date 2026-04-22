@@ -227,20 +227,56 @@ export default function CabinetHomeTab({ user, psychTest, psychResult, careerRes
               {!hasPsychDone && <Icon name="ChevronRight" size={16} className="text-indigo-400 shrink-0" />}
             </div>
 
-            {/* Барьеры и тревога */}
-            <div
-              onClick={() => onNavigate("/barrier-bot")}
-              className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all ${hasBarrier ? "bg-green-50 border border-green-100" : "bg-rose-50 border border-rose-100 hover:border-rose-300"}`}
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${hasBarrier ? "bg-green-100" : "bg-rose-100"}`}>
-                <Icon name={hasBarrier ? "CheckCircle2" : "ShieldAlert"} size={18} className={hasBarrier ? "text-green-600" : "text-rose-600"} />
+            {/* Барьеры и тревога — мотивирующий баннер если не пройден */}
+            {!hasBarrier ? (
+              <div
+                onClick={() => onNavigate("/barrier-bot")}
+                className="rounded-2xl overflow-hidden border border-rose-200 cursor-pointer group"
+              >
+                <div className="bg-gradient-to-br from-rose-500 to-orange-500 px-4 pt-4 pb-3 text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <Icon name="ShieldAlert" size={16} className="text-white" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wide text-white/80">Следующий шаг</span>
+                  </div>
+                  <h4 className="font-black text-base leading-snug mb-1">
+                    Что мешает тебе быть уверенным?
+                  </h4>
+                  <p className="text-white/85 text-xs leading-relaxed">
+                    Ты знаешь, кто ты — но что-то всё равно тормозит. Страх ошибиться, синдром самозванца, привычка откладывать. Это не слабость — это барьеры, которые можно убрать.
+                  </p>
+                </div>
+                <div className="bg-rose-50 px-4 py-3 space-y-2">
+                  <p className="text-rose-800 text-xs leading-relaxed font-medium">
+                    Узнай, какие именно барьеры стоят на твоём пути — и получи конкретный план, как от них избавиться. Люди, которые это прошли, описывают это как «наконец-то увидел себя честно».
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-3">
+                      {["Страхи", "Самозванец", "Прокрастинация"].map((tag) => (
+                        <span key={tag} className="text-[11px] font-semibold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">{tag}</span>
+                      ))}
+                    </div>
+                    <span className="text-xs font-black text-rose-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                      290 ₽ <Icon name="ChevronRight" size={14} className="text-rose-500" />
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-foreground">Барьеры и тревога</div>
-                <div className="text-xs text-muted-foreground">Страхи, самозванец, прокрастинация · 290 ₽</div>
+            ) : (
+              <div
+                onClick={() => onNavigate("/barrier-bot")}
+                className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all bg-green-50 border border-green-100"
+              >
+                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                  <Icon name="CheckCircle2" size={18} className="text-green-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm text-foreground">Барьеры и тревога</div>
+                  <div className="text-xs text-muted-foreground">Пройдено</div>
+                </div>
               </div>
-              {!hasBarrier && <Icon name="ChevronRight" size={16} className="text-rose-400 shrink-0" />}
-            </div>
+            )}
 
             {/* Прогресс развития */}
             {(hasPsychDone || hasBarrier) && (
