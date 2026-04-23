@@ -150,8 +150,8 @@ export default function BarrierLanding() {
                 Барьеры и тревога
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black text-foreground leading-tight mb-5 sm:mb-6">
-                Ты не ленивый.<br />
-                <span className="text-rose-600">Тебя просто что-то держит.</span>
+                Ты не ленивый<br />
+                <span className="text-rose-600">Тебя просто что-то держит</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-7 sm:mb-8">
                 Страхи, синдром самозванца и прокрастинация — это не черты характера.
