@@ -33,6 +33,7 @@ export default function IndexNav({ isLoggedIn, scrollTo, useHashNav }: IndexNavP
           <button onClick={() => goTo("how")} className="hover:text-foreground transition-colors">Как работает</button>
           <button onClick={() => goTo("tools")} className="hover:text-foreground transition-colors">Инструменты</button>
           <button onClick={() => navigate("/trainers-info")} className="hover:text-foreground transition-colors">Тренажеры</button>
+          <button onClick={() => navigate("/pro-trainers")} className="hover:text-foreground transition-colors font-semibold text-amber-600">Pro-тренажёры</button>
           <button onClick={() => goTo("faq")} className="hover:text-foreground transition-colors">FAQ</button>
           <button onClick={() => navigate("/blog")} className="hover:text-foreground transition-colors">Статьи</button>
         </div>
@@ -75,6 +76,10 @@ export default function IndexNav({ isLoggedIn, scrollTo, useHashNav }: IndexNavP
             <button onClick={() => { navigate("/trainers-info"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
               <Icon name="Dumbbell" size={18} className="text-primary" />
               Тренажеры
+            </button>
+            <button onClick={() => { navigate("/pro-trainers"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-amber-600 hover:bg-secondary transition-colors">
+              <Icon name="Crown" size={18} className="text-amber-500" />
+              Pro-тренажёры
             </button>
             <button onClick={() => { goTo("faq"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
               <Icon name="HelpCircle" size={18} className="text-primary" />
