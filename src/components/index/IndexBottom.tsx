@@ -61,18 +61,25 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
-              { icon: "Brain", color: "bg-indigo-50", iconColor: "text-indigo-600", border: "border-indigo-100", name: "Психологический анализ", desc: "Глубокий разбор твоей личности: тип мышления, мотивация, риски выгорания. Помогает понять, в каких условиях тебе комфортно работать" },
-              { icon: "ShieldAlert", color: "bg-rose-50", iconColor: "text-rose-600", border: "border-rose-100", name: "Барьеры и тревога", desc: "Выявляет страхи, синдром самозванца и прокрастинацию. Показывает, что именно мешает двигаться вперёд и как с этим работать" },
-              { icon: "Banknote", color: "bg-green-50", iconColor: "text-green-600", border: "border-green-100", name: "Подбор дохода", desc: "Анализирует навыки и предпочтения, подбирает подходящие варианты заработка — от фриланса до своего дела" },
-              { icon: "Map", color: "bg-amber-50", iconColor: "text-amber-600", border: "border-amber-100", name: "Шаги развития", desc: "Составляет персональный план на 3 месяца с конкретными шагами — от первых действий до результата" },
-              { icon: "BarChart3", color: "bg-blue-50", iconColor: "text-blue-600", border: "border-blue-100", name: "Прогресс развития", desc: "Отслеживает динамику твоего состояния: энергия, мотивация, удовлетворённость. Видна реальная картина изменений" },
-              { icon: "BookOpen", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Дневник самоанализа", desc: "Пространство для рефлексии и фиксации мыслей. Алгоритм помогает находить паттерны и делать выводы" },
+              { icon: "Brain", color: "bg-indigo-50", iconColor: "text-indigo-600", border: "border-indigo-100", name: "Психологический анализ", desc: "Глубокий разбор твоей личности: тип мышления, мотивация, риски выгорания. Помогает понять, в каких условиях тебе комфортно работать", link: "/psych-analysis-info" },
+              { icon: "ShieldAlert", color: "bg-rose-50", iconColor: "text-rose-600", border: "border-rose-100", name: "Барьеры и тревога", desc: "Выявляет страхи, синдром самозванца и прокрастинацию. Показывает, что именно мешает двигаться вперёд и как с этим работать", link: null },
+              { icon: "Banknote", color: "bg-green-50", iconColor: "text-green-600", border: "border-green-100", name: "Подбор дохода", desc: "Анализирует навыки и предпочтения, подбирает подходящие варианты заработка — от фриланса до своего дела", link: null },
+              { icon: "Map", color: "bg-amber-50", iconColor: "text-amber-600", border: "border-amber-100", name: "Шаги развития", desc: "Составляет персональный план на 3 месяца с конкретными шагами — от первых действий до результата", link: null },
+              { icon: "BarChart3", color: "bg-blue-50", iconColor: "text-blue-600", border: "border-blue-100", name: "Прогресс развития", desc: "Отслеживает динамику твоего состояния: энергия, мотивация, удовлетворённость. Видна реальная картина изменений", link: null },
+              { icon: "BookOpen", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Дневник самоанализа", desc: "Пространство для рефлексии и фиксации мыслей. Алгоритм помогает находить паттерны и делать выводы", link: null },
             ].map((tool) => (
-              <div key={tool.name} className={`rounded-3xl p-6 border ${tool.border} ${tool.color} card-hover`}>
+              <div
+                key={tool.name}
+                className={`rounded-3xl p-6 border ${tool.border} ${tool.color} card-hover ${tool.link ? "cursor-pointer" : ""}`}
+                onClick={() => tool.link && navigate(tool.link)}
+              >
                 <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-4 shadow-sm`}>
                   <Icon name={tool.icon} size={22} className={tool.iconColor} />
                 </div>
-                <h3 className="font-bold text-foreground text-[17px] mb-2">{tool.name}</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-bold text-foreground text-[17px]">{tool.name}</h3>
+                  {tool.link && <Icon name="ArrowRight" size={16} className="text-muted-foreground shrink-0" />}
+                </div>
                 <p className="text-muted-foreground text-sm leading-relaxed">{tool.desc}</p>
               </div>
             ))}
