@@ -24,7 +24,7 @@ export default function IndexHero({ scrollTo }: IndexHeroProps) {
       {/* HERO */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 md:pt-24 md:pb-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="animate-fade-in-up">
+          <div className="animate-fade-in-up text-center md:text-left">
             <div className="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-2 mb-6 text-sm text-primary font-medium shadow-sm">
               <Icon name="Sparkles" size={14} />
               Что на самом деле мешает тебе стать успешным
@@ -33,10 +33,10 @@ export default function IndexHero({ scrollTo }: IndexHeroProps) {
               Успех — это не профессия{" "}
               <span className="text-gradient">Это ощущение внутри</span>
             </h1>
-            <p className="text-muted-foreground text-xl leading-relaxed mb-8 max-w-md">
+            <p className="text-muted-foreground text-xl leading-relaxed mb-8 max-w-md mx-auto md:mx-0">
               Ты мыслишь об успехе через работу и должность — но суть глубже. Пройди тест и мы поможем разобраться: что ты чувствуешь на самом деле и что именно держит тебя на месте.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
               <button
                 onClick={() => scrollTo("demo")}
                 className="gradient-brand text-white font-bold px-7 py-4 rounded-2xl hover:opacity-90 transition-all hover:shadow-lg text-[15px]"
@@ -50,7 +50,7 @@ export default function IndexHero({ scrollTo }: IndexHeroProps) {
                 Как мы помогаем
               </button>
             </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-8 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-2 mt-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5"><Icon name="Sparkles" size={14} className="text-primary" />Первый тест бесплатно</div>
               <div className="flex items-center gap-1.5"><Icon name="Clock" size={14} className="text-primary" />15–20 минут</div>
               <div className="flex items-center gap-1.5"><Icon name="Users" size={14} className="text-primary" />2 400+ прошли</div>
