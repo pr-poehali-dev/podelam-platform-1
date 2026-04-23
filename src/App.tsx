@@ -40,6 +40,7 @@ import PsychAnalysisLanding from "./pages/PsychAnalysisLanding";
 import BarrierLanding from "./pages/BarrierLanding";
 import IncomeLanding from "./pages/IncomeLanding";
 import PlanLanding from "./pages/PlanLanding";
+import ProgressLanding from "./pages/ProgressLanding";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
 import CookieBanner from "./components/CookieBanner";
@@ -104,6 +105,7 @@ const App = () => (
           <Route path="/barrier-info" element={<BarrierLanding />} />
           <Route path="/income-info" element={<IncomeLanding />} />
           <Route path="/plan-info" element={<PlanLanding />} />
+          <Route path="/progress-info" element={<ProgressLanding />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
