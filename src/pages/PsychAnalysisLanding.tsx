@@ -141,34 +141,57 @@ export default function PsychAnalysisLanding() {
 
       {/* HERO */}
       <section className="pt-16 sm:pt-20 pb-12 sm:pb-16 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 sm:mb-6">
-            <Icon name="Brain" size={14} />
-            Психологический анализ
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            {/* Text */}
+            <div className="flex-1 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 sm:mb-6">
+                <Icon name="Brain" size={14} />
+                Психологический анализ
+              </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black text-foreground leading-tight mb-5 sm:mb-6">
+                Ты уже знаешь ответ.<br />
+                <span className="text-primary">Просто не слышишь его.</span>
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-7 sm:mb-8">
+                Психологический анализ помогает разобраться в себе — без гаданий и советов «просто попробуй».
+                Только твои настоящие черты, мотивы и ограничения. Честно и по делу.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                <button
+                  onClick={() => navigate("/psych-bot")}
+                  className="gradient-brand text-white font-bold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:opacity-90 transition-opacity"
+                >
+                  Пройти бесплатно
+                </button>
+                <button
+                  onClick={() => navigate("/pricing")}
+                  className="bg-white border border-border text-foreground font-semibold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:bg-muted transition-colors"
+                >
+                  Все инструменты — 990 ₽/мес
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-4">Без регистрации · Без AI-галлюцинаций · 20 минут</p>
+            </div>
+            {/* Image */}
+            <div className="w-full lg:w-[420px] xl:w-[480px] shrink-0">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src="https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/c0c4ddf8-cd74-4255-89cd-6b6aaa3845f5.jpg"
+                  alt="Уверенность и спокойствие"
+                  className="w-full h-[320px] sm:h-[380px] lg:h-[440px] object-cover object-top"
+                />
+                {/* Overlay chart */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-5">
+                  <img
+                    src="https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/e0078dc2-fb69-4355-a499-335a203eef13.jpg"
+                    alt=""
+                    className="w-full h-20 object-cover opacity-80 rounded-xl mix-blend-screen"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-tight mb-5 sm:mb-6">
-            Ты уже знаешь ответ.<br />
-            <span className="text-primary">Просто не слышишь его.</span>
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-7 sm:mb-8">
-            Психологический анализ помогает разобраться в себе — без гаданий и советов «просто попробуй».
-            Только твои настоящие черты, мотивы и ограничения. Честно и по делу.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => navigate("/psych-bot")}
-              className="gradient-brand text-white font-bold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:opacity-90 transition-opacity"
-            >
-              Пройти бесплатно
-            </button>
-            <button
-              onClick={() => navigate("/pricing")}
-              className="bg-white border border-border text-foreground font-semibold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:bg-muted transition-colors"
-            >
-              Все инструменты — 990 ₽/мес
-            </button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-4">Без регистрации · Без AI-галлюцинаций · 20 минут</p>
         </div>
       </section>
 
