@@ -66,7 +66,7 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
               { icon: "Banknote", color: "bg-green-50", iconColor: "text-green-600", border: "border-green-100", name: "Подбор дохода", desc: "Анализирует навыки и предпочтения, подбирает подходящие варианты заработка — от фриланса до своего дела", link: "/income-info" },
               { icon: "Map", color: "bg-amber-50", iconColor: "text-amber-600", border: "border-amber-100", name: "Шаги развития", desc: "Составляет персональный план на 3 месяца с конкретными шагами — от первых действий до результата", link: "/plan-info" },
               { icon: "BarChart3", color: "bg-blue-50", iconColor: "text-blue-600", border: "border-blue-100", name: "Прогресс развития", desc: "Отслеживает динамику твоего состояния: энергия, мотивация, удовлетворённость. Видна реальная картина изменений", link: "/progress-info" },
-              { icon: "BookOpen", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Дневник самоанализа", desc: "Пространство для рефлексии и фиксации мыслей. Алгоритм помогает находить паттерны и делать выводы", link: null },
+              { icon: "BookOpen", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Дневник самоанализа", desc: "Пространство для рефлексии и фиксации мыслей. Алгоритм помогает находить паттерны и делать выводы", link: "/diary-info" },
             ].map((tool) => (
               <div
                 key={tool.name}
