@@ -7,7 +7,7 @@ import InstallPWA from "@/components/InstallPWA";
 const META = {
   title: "Осознанный выбор — тренажёр принятия решений | ПоДелам",
   description:
-    "Тренажёр помогает принимать решения без сомнений и страха. Выходишь из неопределённости, видишь последствия выбора и фиксируешь конкретные шаги. Индекс решительности.",
+    "Тренажёр помогает принимать решения без сомнений и страха. Прокачай навык решительности: выходи из неопределённости, видь последствия выбора, фиксируй шаги. Индекс решительности.",
 };
 
 function setMeta(name: string, content: string, property?: boolean) {
@@ -44,7 +44,7 @@ const FEELINGS = [
     bg: "bg-amber-50",
     border: "border-amber-100",
     title: "Решительность",
-    text: "Принимаешь решения быстрее и увереннее. Больше не застреваешь в петле «подумаю ещё раз».",
+    text: "Прокачиваешь навык принимать решения быстрее и увереннее. Петля «подумаю ещё раз» исчезает.",
   },
   {
     icon: "TrendingUp",
@@ -52,7 +52,7 @@ const FEELINGS = [
     bg: "bg-emerald-50",
     border: "border-emerald-100",
     title: "Движение",
-    text: "После сессии — конкретный следующий шаг. Не планы, а действие. И это ощущение не покидает.",
+    text: "После каждой сессии — конкретный следующий шаг. Не планы, а действие. Привычка закрепляется.",
   },
 ];
 
@@ -60,7 +60,7 @@ const WHAT_YOU_GET = [
   {
     icon: "GitBranch",
     title: "Выход из неопределённости",
-    desc: "Тренажёр раскладывает сложный выбор по полочкам — ценности, последствия, риски. Становится видно.",
+    desc: "Тренажёр раскладывает сложный выбор по полочкам — ценности, последствия, риски. Прокачивай это с каждой сессией.",
   },
   {
     icon: "AlertTriangle",
@@ -75,12 +75,12 @@ const WHAT_YOU_GET = [
   {
     icon: "ListChecks",
     title: "Первые шаги",
-    desc: "После каждой сессии — список конкретных действий. Решение не висит в воздухе, оно уже начато.",
+    desc: "После каждой сессии — список конкретных действий. Решение не висит в воздухе, оно уже в движении.",
   },
   {
     icon: "BarChart3",
     title: "Индекс решительности",
-    desc: "Отслеживает прогресс: как меняется твоя способность принимать решения от сессии к сессии.",
+    desc: "Показывает, как ты прокачиваешь навык принимать решения. Растёт от сессии к сессии.",
   },
 ];
 
@@ -88,7 +88,7 @@ const STEPS = [
   { num: "01", title: "Описываешь ситуацию", desc: "Рассказываешь о выборе, который стоит перед тобой. Тренажёр задаёт уточняющие вопросы." },
   { num: "02", title: "Анализируешь с алгоритмом", desc: "Система помогает разложить варианты по ценностям, последствиям и рискам." },
   { num: "03", title: "Видишь картину целиком", desc: "Получаешь структурированный разбор с выводами — без советов «просто реши»." },
-  { num: "04", title: "Фиксируешь шаги", desc: "Конкретный план первых действий. Решение принято — и оно уже в движении." },
+  { num: "04", title: "Прокачиваешь привычку", desc: "Каждая новая сессия тренирует навык решительности. Со временем ты делаешь это быстрее и точнее." },
 ];
 
 const QUOTES = [
@@ -98,12 +98,12 @@ const QUOTES = [
     role: "Ушёл в собственный проект",
   },
   {
-    text: "Думала, что нерешительность — это мой характер. Оказалось, я просто никогда не раскладывала выбор по ценностям. Теперь умею — и это меняет всё.",
+    text: "Думала, что нерешительность — это мой характер. Оказалось, я просто никогда не раскладывала выбор по ценностям. Прокачала этот навык за месяц — и это меняет всё.",
     name: "Наталья, 29 лет",
     role: "Приняла решение о переезде",
   },
   {
-    text: "Тренажёр не говорит тебе, что выбрать. Он помогает тебе самому это понять. Это важно — потому что ты живёшь с этим решением, а не он.",
+    text: "Тренажёр не говорит тебе, что выбрать. Он тренирует тебя делать это самому. Это важно — потому что ты живёшь с этим решением, а не он.",
     name: "Антон, 41 год",
     role: "Менял карьерное направление",
   },
@@ -151,15 +151,15 @@ export default function ConsciousChoiceLanding() {
                 <span className="text-indigo-600">и то же в голове</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-7 sm:mb-8">
-                Тренажёр «Осознанный выбор» помогает выйти из петли неопределённости.
-                Раскладывает сложный выбор по ценностям, последствиям и страхам — и ты наконец видишь, что делать.
+                Тренажёр «Осознанный выбор» прокачивает навык принятия решений.
+                С каждой сессией ты тренируешь решительность — пока она не станет привычкой.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                 <button
                   onClick={() => navigate("/trainers")}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base transition-colors"
                 >
-                  Начать тренажёр
+                  Прокачать решительность — 2 490 ₽
                 </button>
                 <button
                   onClick={() => navigate("/pricing")}
@@ -168,7 +168,7 @@ export default function ConsciousChoiceLanding() {
                   Все инструменты — 990 ₽/мес
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground mt-4">Входит в подписку · 15–20 минут на сессию</p>
+              <p className="text-xs text-muted-foreground mt-4">2 490 ₽ на 3 месяца · 15–20 минут на сессию</p>
             </div>
             <div className="w-full lg:w-[420px] xl:w-[480px] shrink-0">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
@@ -192,8 +192,8 @@ export default function ConsciousChoiceLanding() {
       <section className="py-12 sm:py-16 px-4 bg-white/60">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8 sm:mb-12">
-            <p className="text-indigo-600 font-semibold text-sm uppercase tracking-widest mb-3">После сессии</p>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground">Что ты почувствуешь</h2>
+            <p className="text-indigo-600 font-semibold text-sm uppercase tracking-widest mb-3">Что прокачивает тренажёр</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground">Что ты почувствуешь уже после первой сессии</h2>
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto text-sm sm:text-base">
               Принятое решение — это не просто выбор. Это ощущение, что ты снова контролируешь свою жизнь.
             </p>
@@ -234,7 +234,7 @@ export default function ConsciousChoiceLanding() {
               ))}
             </div>
             <p className="mt-6 text-muted-foreground text-sm leading-relaxed">
-              Нерешительность — это не черта характера. Это отсутствие инструмента. Тренажёр даёт этот инструмент.
+              Нерешительность — это не черта характера. Это навык, который не прокачан. Тренажёр это исправляет.
             </p>
           </div>
         </div>
@@ -244,7 +244,7 @@ export default function ConsciousChoiceLanding() {
       <section className="py-12 sm:py-16 px-4 bg-white/60">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8 sm:mb-12">
-            <p className="text-indigo-600 font-semibold text-sm uppercase tracking-widest mb-3">Что даёт тренажёр</p>
+            <p className="text-indigo-600 font-semibold text-sm uppercase tracking-widest mb-3">Что прокачиваешь</p>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground">Что происходит в каждой сессии</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
@@ -261,14 +261,14 @@ export default function ConsciousChoiceLanding() {
               <div>
                 <h3 className="font-bold text-xl mb-2">Тренажёр — не советник</h3>
                 <p className="text-white/80 text-sm leading-relaxed">
-                  Он не говорит тебе, что делать. Он помогает тебе самому это понять. Твоё решение — твоя ответственность и твоя сила.
+                  Он не говорит тебе, что делать. Он прокачивает твой навык делать это самому. С каждой сессией — лучше.
                 </p>
               </div>
               <button
                 onClick={() => navigate("/trainers")}
                 className="mt-6 bg-white text-indigo-600 font-bold px-5 py-3 rounded-xl text-sm hover:bg-indigo-50 transition-colors w-full sm:w-auto"
               >
-                Начать сессию
+                Начать прокачку
               </button>
             </div>
           </div>
@@ -295,9 +295,9 @@ export default function ConsciousChoiceLanding() {
           </div>
           <div className="mt-5 sm:mt-6 bg-indigo-50 border border-indigo-100 rounded-3xl p-5 sm:p-6 text-center">
             <Icon name="RefreshCw" size={20} className="text-indigo-400 mx-auto mb-2" />
-            <p className="text-sm text-indigo-700 font-medium">Можно возвращаться к разным решениям</p>
+            <p className="text-sm text-indigo-700 font-medium">Тренируйся регулярно — навык закрепляется</p>
             <p className="text-xs text-indigo-500 mt-1">
-              Каждая новая сессия — новая ситуация. Индекс решительности копится и показывает твой рост в динамике.
+              Каждая новая сессия — новая ситуация. Индекс решительности копится и показывает, как ты прокачиваешься в динамике.
             </p>
           </div>
         </div>
@@ -341,10 +341,10 @@ export default function ConsciousChoiceLanding() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { icon: "Heart", color: "text-rose-600", bg: "bg-rose-50", title: "Эмоции в действии", desc: "Управляй чувствами и реакциями осознанно", link: "/trainer-emotions-info" },
-              { icon: "Zap", color: "text-orange-500", bg: "bg-orange-50", title: "Антипрокрастинация", desc: "Запускай действия с первого маленького шага", link: "/trainer-antiprocrastination-info" },
-              { icon: "Shield", color: "text-teal-600", bg: "bg-teal-50", title: "Самооценка и опора", desc: "Устойчивая самоценность без внешней оценки", link: "/trainer-selfesteem-info" },
-              { icon: "Wallet", color: "text-emerald-600", bg: "bg-emerald-50", title: "Деньги без тревоги", desc: "Спокойное и осознанное управление финансами", link: "/trainer-money-info" },
+              { icon: "Heart", color: "text-rose-600", bg: "bg-rose-50", title: "Эмоции в действии", desc: "Прокачай управление чувствами и реакциями", link: "/trainer-emotions-info" },
+              { icon: "Zap", color: "text-orange-500", bg: "bg-orange-50", title: "Антипрокрастинация", desc: "Прокачай запуск действий с первого шага", link: "/trainer-antiprocrastination-info" },
+              { icon: "Shield", color: "text-teal-600", bg: "bg-teal-50", title: "Самооценка и опора", desc: "Прокачай устойчивую самоценность изнутри", link: "/trainer-selfesteem-info" },
+              { icon: "Wallet", color: "text-emerald-600", bg: "bg-emerald-50", title: "Деньги без тревоги", desc: "Прокачай спокойное отношение к финансам", link: "/trainer-money-info" },
             ].map((t) => (
               <div
                 key={t.title}
@@ -370,18 +370,18 @@ export default function ConsciousChoiceLanding() {
         <div className="max-w-3xl mx-auto">
           <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-7 sm:p-10 md:p-12 text-center text-white">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black mb-4 leading-tight">
-              Сделай выбор — прямо сейчас
+              Прокачай решительность за 3 месяца
             </h2>
             <p className="text-white/85 text-base sm:text-lg leading-relaxed mb-7 sm:mb-8 max-w-xl mx-auto">
               Одна сессия — и ты выйдешь с принятым решением и конкретными шагами.
-              Не завтра. Сегодня.
+              Три месяца тренировок — и решительность станет твоей привычкой.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={() => navigate("/trainers")}
                 className="bg-white text-indigo-600 font-bold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:bg-indigo-50 transition-colors"
               >
-                Начать тренажёр
+                Прокачать решительность — 2 490 ₽
               </button>
               <button
                 onClick={() => navigate("/pricing")}
@@ -391,7 +391,7 @@ export default function ConsciousChoiceLanding() {
               </button>
             </div>
             <p className="text-white/60 text-xs mt-5">
-              Входит в подписку · История сессий сохраняется
+              2 490 ₽ на 3 месяца · История сессий сохраняется
             </p>
           </div>
         </div>
