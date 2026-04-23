@@ -215,10 +215,17 @@ export default function LandingTrainersList({ trainersRef }: LandingTrainersList
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-4 text-sm flex-wrap">
                 <span className="text-violet-300 font-semibold">490 ₽ / 7 дней</span>
                 <span className="text-slate-600">·</span>
                 <span className="text-slate-400">отдельно от подписки</span>
+                <button
+                  onClick={() => navigate("/simulator-pro-info")}
+                  className="flex items-center gap-1 text-violet-300 hover:text-white font-semibold transition-colors ml-auto"
+                >
+                  Подробнее
+                  <Icon name="ArrowRight" size={13} />
+                </button>
               </div>
             </div>
           </div>
