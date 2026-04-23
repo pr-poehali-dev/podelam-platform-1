@@ -212,49 +212,73 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
                 </div>
               </div>
             </button>
+            {/* Financial Thinking PRO — premium card */}
             <button
-              onClick={() => onNavigate?.("/financial-thinking-info")}
-              className="w-full group flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 text-left transition-all hover:border-slate-300 hover:shadow-md"
+              onClick={() => onNavigate?.("/financial-thinking-pro")}
+              className="w-full group relative flex flex-col rounded-2xl overflow-hidden border-0 bg-emerald-950 text-left transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-950/30 shadow-lg"
             >
-              <div className="w-11 h-11 rounded-xl bg-emerald-900 flex items-center justify-center shrink-0">
-                <Icon name="TrendingUp" size={20} className="text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-foreground text-sm">
-                    Финансовое мышление PRO
-                  </h3>
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-800/60 to-emerald-950" />
+              <div className="relative p-5 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
+                    <Icon name="TrendingUp" size={20} className="text-white" />
+                  </div>
+                  <span className="text-[10px] font-black text-white bg-white/15 border border-white/20 px-2.5 py-1 rounded-full tracking-widest uppercase">PRO</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Анализ денежных потоков, стресс-тесты, моделирование целей.
+                <h3 className="font-black text-white text-sm mb-1.5 leading-snug">
+                  Финансовое мышление
+                </h3>
+                <p className="text-xs text-emerald-400/80 mb-3 leading-relaxed">
+                  7 этапов. IFMP-балл. Стресс-тест. PDF-отчёт.
                 </p>
-                <span className="text-xs font-medium text-slate-500">
-                  от 2 990 ₽ →
-                </span>
-              </div>
-            </button>
-            <button
-              onClick={() => onNavigate?.("/logic-thinking-info")}
-              className="w-full group flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 text-left transition-all hover:border-slate-300 hover:shadow-md"
-            >
-              <div className="w-11 h-11 rounded-xl bg-indigo-900 flex items-center justify-center shrink-0">
-                <Icon name="Lightbulb" size={20} className="text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-foreground text-sm">
-                    Логика мышления PRO
-                  </h3>
-                  <span className="px-2 py-0.5 rounded-full bg-indigo-900 text-white text-[10px] font-semibold">
-                    NEW
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {["7 этапов", "10 индексов", "PDF"].map((t) => (
+                    <span key={t} className="text-[10px] bg-white/10 text-emerald-300 px-2 py-0.5 rounded-full">{t}</span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black text-white">от 2 990 ₽</span>
+                  <span className="flex items-center gap-1 text-xs text-emerald-400 group-hover:text-white transition-colors font-semibold">
+                    Подробнее
+                    <Icon name="ArrowRight" size={12} />
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Анализ аргументов, причинно-следственные связи, когнитивные искажения.
+              </div>
+            </button>
+            {/* Logic Thinking PRO — premium card */}
+            <button
+              onClick={() => onNavigate?.("/logic-thinking-pro")}
+              className="w-full group relative flex flex-col rounded-2xl overflow-hidden border-0 bg-indigo-950 text-left transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-indigo-950/30 shadow-lg"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-800/60 to-indigo-950" />
+              <div className="relative p-5 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
+                    <Icon name="Lightbulb" size={20} className="text-white" />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-black text-indigo-200 bg-indigo-500/30 border border-indigo-500/30 px-2 py-0.5 rounded-full tracking-wide">NEW</span>
+                    <span className="text-[10px] font-black text-white bg-white/15 border border-white/20 px-2.5 py-1 rounded-full tracking-widest uppercase">PRO</span>
+                  </div>
+                </div>
+                <h3 className="font-black text-white text-sm mb-1.5 leading-snug">
+                  Логика мышления
+                </h3>
+                <p className="text-xs text-indigo-400/80 mb-3 leading-relaxed">
+                  7 этапов. LQI-балл. Когнитивные искажения. PDF.
                 </p>
-                <span className="text-xs font-medium text-slate-500">
-                  от 2 590 ₽ →
-                </span>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {["7 этапов", "6+ индексов", "PDF"].map((t) => (
+                    <span key={t} className="text-[10px] bg-white/10 text-indigo-300 px-2 py-0.5 rounded-full">{t}</span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black text-white">от 2 590 ₽</span>
+                  <span className="flex items-center gap-1 text-xs text-indigo-400 group-hover:text-white transition-colors font-semibold">
+                    Подробнее
+                    <Icon name="ArrowRight" size={12} />
+                  </span>
+                </div>
               </div>
             </button>
           </div>

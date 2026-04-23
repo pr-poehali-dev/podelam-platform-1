@@ -34,8 +34,10 @@ import StrategicThinkingLanding from "./pages/StrategicThinkingLanding";
 import StrategicThinkingProLanding from "./pages/StrategicThinkingProLanding";
 import StrategicThinking from "./pages/StrategicThinking";
 import FinancialThinkingLanding from "./pages/FinancialThinkingLanding";
+import FinancialThinkingProLanding from "./pages/FinancialThinkingProLanding";
 import FinancialThinking from "./pages/FinancialThinking";
 import LogicThinkingLanding from "./pages/LogicThinkingLanding";
+import LogicThinkingProLanding from "./pages/LogicThinkingProLanding";
 import LogicThinking from "./pages/LogicThinking";
 import PsychAnalysisLanding from "./pages/PsychAnalysisLanding";
 import BarrierLanding from "./pages/BarrierLanding";
@@ -103,8 +105,10 @@ const App = () => (
           <Route path="/strategic-thinking-pro" element={<StrategicThinkingProLanding />} />
           <Route path="/strategic-thinking" element={<StrategicThinking />} />
           <Route path="/financial-thinking-info" element={<FinancialThinkingLanding />} />
+          <Route path="/financial-thinking-pro" element={<FinancialThinkingProLanding />} />
           <Route path="/financial-thinking" element={<FinancialThinking />} />
           <Route path="/logic-thinking-info" element={<LogicThinkingLanding />} />
+          <Route path="/logic-thinking-pro" element={<LogicThinkingProLanding />} />
           <Route path="/logic-thinking" element={<LogicThinking />} />
           <Route path="/pro/simulator" element={<SimulatorDashboard />} />
           <Route path="/pro/simulator/create" element={<SimulatorCreate />} />
