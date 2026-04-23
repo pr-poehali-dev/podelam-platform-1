@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import IndexNav from "@/components/index/IndexNav";
 import InstallPWA from "@/components/InstallPWA";
+import TrainerPricingBlock from "@/components/trainers/TrainerPricingBlock";
 
 const META = {
   title: "Осознанный выбор — тренажёр принятия решений | ПоДелам",
@@ -159,16 +160,16 @@ export default function ConsciousChoiceLanding() {
                   onClick={() => navigate("/trainers")}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base transition-colors"
                 >
-                  Прокачать решительность — 2 490 ₽
+                  Прокачать решительность
                 </button>
                 <button
                   onClick={() => navigate("/pricing")}
                   className="bg-white border border-border text-foreground font-semibold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:bg-muted transition-colors"
                 >
-                  Все инструменты — 990 ₽/мес
+                  Смотреть тарифы
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground mt-4">2 490 ₽ на 3 месяца · 15–20 минут на сессию</p>
+              <p className="text-xs text-muted-foreground mt-4">от 990 ₽ · 15–20 минут на сессию</p>
             </div>
             <div className="w-full lg:w-[420px] xl:w-[480px] shrink-0">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
@@ -370,7 +371,7 @@ export default function ConsciousChoiceLanding() {
         <div className="max-w-3xl mx-auto">
           <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-7 sm:p-10 md:p-12 text-center text-white">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black mb-4 leading-tight">
-              Прокачай решительность за 3 месяца
+              Прокачай решительность — сделай выбор сегодня
             </h2>
             <p className="text-white/85 text-base sm:text-lg leading-relaxed mb-7 sm:mb-8 max-w-xl mx-auto">
               Одна сессия — и ты выйдешь с принятым решением и конкретными шагами.
@@ -381,21 +382,23 @@ export default function ConsciousChoiceLanding() {
                 onClick={() => navigate("/trainers")}
                 className="bg-white text-indigo-600 font-bold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:bg-indigo-50 transition-colors"
               >
-                Прокачать решительность — 2 490 ₽
+                Прокачать решительность
               </button>
               <button
-                onClick={() => navigate("/pricing")}
+                onClick={() => navigate("/trainers-info")}
                 className="bg-white/15 border border-white/30 text-white font-semibold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:bg-white/25 transition-colors"
               >
-                Все инструменты — 990 ₽/мес
+                Смотреть тарифы
               </button>
             </div>
             <p className="text-white/60 text-xs mt-5">
-              2 490 ₽ на 3 месяца · История сессий сохраняется
+              от 990 ₽ · История сессий сохраняется
             </p>
           </div>
         </div>
       </section>
+
+      <TrainerPricingBlock />
 
       {/* FOOTER */}
       <footer className="border-t border-border py-8 md:py-10">
