@@ -137,7 +137,7 @@ export default function PsychAnalysisLanding() {
 
   return (
     <div className="min-h-screen bg-background font-golos">
-      <IndexNav isLoggedIn={isLoggedIn} scrollTo={scrollTo} />
+      <IndexNav isLoggedIn={isLoggedIn} scrollTo={scrollTo} useHashNav />
 
       {/* HERO */}
       <section className="pt-16 sm:pt-20 pb-12 sm:pb-16 px-4">
