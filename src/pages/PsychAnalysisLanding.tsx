@@ -150,8 +150,8 @@ export default function PsychAnalysisLanding() {
                 Психологический анализ
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black text-foreground leading-tight mb-5 sm:mb-6">
-                Ты уже знаешь ответ.<br />
-                <span className="text-primary">Просто не слышишь его.</span>
+                Ты уже знаешь ответ<br />
+                <span className="text-primary">Просто не слышишь его</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-7 sm:mb-8">
                 Психологический анализ помогает разобраться в себе — без гаданий и советов «просто попробуй».
