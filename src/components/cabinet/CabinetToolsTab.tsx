@@ -12,6 +12,7 @@ type ToolDef = {
   color: string;
   iconColor: string;
   link: string;
+  infoLink: string;
   price: string;
   onlySubscription?: boolean;
 };
@@ -25,6 +26,7 @@ const TOOLS: ToolDef[] = [
     color: "bg-indigo-50",
     iconColor: "text-indigo-600",
     link: "/psych-bot",
+    infoLink: "/psych-analysis-info",
     price: "290 ₽ / раз",
   },
   {
@@ -35,6 +37,7 @@ const TOOLS: ToolDef[] = [
     color: "bg-rose-50",
     iconColor: "text-rose-600",
     link: "/barrier-bot",
+    infoLink: "/barrier-info",
     price: "290 ₽ / раз",
   },
   {
@@ -45,6 +48,7 @@ const TOOLS: ToolDef[] = [
     color: "bg-green-50",
     iconColor: "text-green-600",
     link: "/income-bot",
+    infoLink: "/income-info",
     price: "290 ₽ / раз",
   },
   {
@@ -55,6 +59,7 @@ const TOOLS: ToolDef[] = [
     color: "bg-emerald-50",
     iconColor: "text-emerald-600",
     link: "/plan-bot",
+    infoLink: "/plan-info",
     price: "290 ₽ / раз",
   },
   {
@@ -65,6 +70,7 @@ const TOOLS: ToolDef[] = [
     color: "bg-blue-50",
     iconColor: "text-blue-600",
     link: "/progress",
+    infoLink: "/progress-info",
     price: "290 ₽ / раз",
   },
   {
@@ -75,6 +81,7 @@ const TOOLS: ToolDef[] = [
     color: "bg-violet-50",
     iconColor: "text-violet-600",
     link: "/diary",
+    infoLink: "/diary-info",
     price: "990 ₽/мес",
     onlySubscription: true,
   },
@@ -270,14 +277,22 @@ export default function CabinetToolsTab({ hasPsychTest, onNavigate }: Props) {
                 <span className={`text-xs font-bold ${isActive ? "text-green-600" : "text-primary"}`}>
                   {isActive ? (hasSub ? "Включено в подписку" : "Куплено") : tool.price}
                 </span>
-                {lastActivity[tool.id] ? (
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    <Icon name="Clock" size={10} />
-                    {lastActivity[tool.id]}
-                  </span>
-                ) : tool.onlySubscription && !hasSub ? (
-                  <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">Только подписка</span>
-                ) : null}
+                <div className="flex items-center gap-2">
+                  {lastActivity[tool.id] ? (
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Icon name="Clock" size={10} />
+                      {lastActivity[tool.id]}
+                    </span>
+                  ) : tool.onlySubscription && !hasSub ? (
+                    <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">Только подписка</span>
+                  ) : null}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onNavigate(tool.infoLink); }}
+                    className="text-[10px] text-muted-foreground hover:text-primary transition-colors underline underline-offset-2 shrink-0"
+                  >
+                    Подробнее
+                  </button>
+                </div>
               </div>
             </div>
           );
