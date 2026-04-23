@@ -31,6 +31,7 @@ import Trainers from "./pages/Trainers";
 import TrainersLanding from "./pages/TrainersLanding";
 import TrainerStats from "./pages/TrainerStats";
 import StrategicThinkingLanding from "./pages/StrategicThinkingLanding";
+import StrategicThinkingProLanding from "./pages/StrategicThinkingProLanding";
 import StrategicThinking from "./pages/StrategicThinking";
 import FinancialThinkingLanding from "./pages/FinancialThinkingLanding";
 import FinancialThinking from "./pages/FinancialThinking";
@@ -99,6 +100,7 @@ const App = () => (
           <Route path="/trainers" element={<Trainers />} />
           <Route path="/trainers/stats" element={<TrainerStats />} />
           <Route path="/strategic-thinking-info" element={<StrategicThinkingLanding />} />
+          <Route path="/strategic-thinking-pro" element={<StrategicThinkingProLanding />} />
           <Route path="/strategic-thinking" element={<StrategicThinking />} />
           <Route path="/financial-thinking-info" element={<FinancialThinkingLanding />} />
           <Route path="/financial-thinking" element={<FinancialThinking />} />

@@ -179,25 +179,37 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {/* Strategic Thinking PRO — premium card */}
             <button
-              onClick={() => onNavigate?.("/strategic-thinking-info")}
-              className="w-full group flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 text-left transition-all hover:border-slate-300 hover:shadow-md"
+              onClick={() => onNavigate?.("/strategic-thinking-pro")}
+              className="w-full group relative flex flex-col rounded-2xl overflow-hidden border-0 bg-slate-950 text-left transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-slate-950/30 shadow-lg"
             >
-              <div className="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
-                <Icon name="Brain" size={20} className="text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-foreground text-sm">
-                    Стратегическое мышление PRO
-                  </h3>
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-800/60 to-slate-950" />
+              <div className="relative p-5 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
+                    <Icon name="Brain" size={20} className="text-white" />
+                  </div>
+                  <span className="text-[10px] font-black text-white bg-white/15 border border-white/20 px-2.5 py-1 rounded-full tracking-widest uppercase">PRO</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Симулятор стратегических решений. 7 этапов, формулы, PDF-отчёт.
+                <h3 className="font-black text-white text-sm mb-1.5 leading-snug">
+                  Стратегическое мышление
+                </h3>
+                <p className="text-xs text-slate-400 mb-3 leading-relaxed">
+                  7 этапов анализа. OSI-балл. PDF-отчёт. Для серьёзных решений.
                 </p>
-                <span className="text-xs font-medium text-slate-500">
-                  от 3 590 ₽ →
-                </span>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {["7 этапов", "6 индексов", "PDF"].map((t) => (
+                    <span key={t} className="text-[10px] bg-white/10 text-slate-300 px-2 py-0.5 rounded-full">{t}</span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black text-white">от 3 590 ₽</span>
+                  <span className="flex items-center gap-1 text-xs text-slate-400 group-hover:text-white transition-colors font-semibold">
+                    Подробнее
+                    <Icon name="ArrowRight" size={12} />
+                  </span>
+                </div>
               </div>
             </button>
             <button
