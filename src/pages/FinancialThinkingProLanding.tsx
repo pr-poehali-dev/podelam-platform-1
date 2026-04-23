@@ -188,8 +188,8 @@ export default function FinancialThinkingProLanding() {
                 <span className="text-[11px] text-emerald-400 uppercase tracking-widest font-semibold">PRO-тренажёр · Финансовое мышление</span>
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-[56px] font-black text-white leading-[1.08] mb-6">
-                Перестань догадываться.<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-600">Начни считать точно.</span>
+                Перестань догадываться<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-600">Начни считать точно</span>
               </h1>
               <p className="text-base sm:text-lg text-emerald-300/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8">
                 Симулятор финансовых решений. 7 этапов анализа — без ИИ, на чистых формулах.
