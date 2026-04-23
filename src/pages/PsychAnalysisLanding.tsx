@@ -162,7 +162,7 @@ export default function PsychAnalysisLanding() {
                   onClick={() => navigate("/psych-bot")}
                   className="gradient-brand text-white font-bold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:opacity-90 transition-opacity"
                 >
-                  Пройти бесплатно
+                  Пройти анализ — 290 ₽
                 </button>
                 <button
                   onClick={() => navigate("/pricing")}
@@ -171,7 +171,7 @@ export default function PsychAnalysisLanding() {
                   Все инструменты — 990 ₽/мес
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground mt-4">Без регистрации · Без AI-галлюцинаций · 20 минут</p>
+              <p className="text-xs text-muted-foreground mt-4">290 ₽ · Без AI-галлюцинаций · 20 минут</p>
             </div>
             {/* Image */}
             <div className="w-full lg:w-[420px] xl:w-[480px] shrink-0">
