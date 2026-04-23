@@ -1,4 +1,5 @@
 import { RefObject } from "react";
+import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
 const TRAINERS = [
@@ -16,6 +17,7 @@ const TRAINERS = [
       "Фиксирует шаги для реализации",
     ],
     index: "Индекс решительности отображает прогресс по принятым решениям.",
+    infoLink: "/trainer-conscious-choice-info",
   },
   {
     icon: "Heart",
@@ -31,6 +33,7 @@ const TRAINERS = [
       "Отслеживает эмоциональную зрелость",
     ],
     index: "Индекс EMI отображает уровень эмоциональной зрелости.",
+    infoLink: "/trainer-emotions-info",
   },
   {
     icon: "Zap",
@@ -45,6 +48,7 @@ const TRAINERS = [
       "Отслеживает прогресс и индекс действия",
     ],
     index: "Индекс AI отображает способность запускать действия.",
+    infoLink: "/trainer-antiprocrastination-info",
   },
   {
     icon: "Shield",
@@ -60,6 +64,7 @@ const TRAINERS = [
       "Снижает колебания в эмоциональной реакции",
     ],
     index: "Индекс IVO отражает рост внутренней устойчивости.",
+    infoLink: "/trainer-selfesteem-info",
   },
   {
     icon: "Wallet",
@@ -75,6 +80,7 @@ const TRAINERS = [
       "Отслеживает индекс финансовой устойчивости",
     ],
     index: "Индекс FSI показывает рост финансовой зрелости.",
+    infoLink: "/trainer-money-info",
   },
 ];
 
@@ -99,6 +105,7 @@ interface LandingTrainersListProps {
 }
 
 export default function LandingTrainersList({ trainersRef }: LandingTrainersListProps) {
+  const navigate = useNavigate();
   return (
     <>
       {/* 5 trainers */}
@@ -164,7 +171,18 @@ export default function LandingTrainersList({ trainersRef }: LandingTrainersList
                     ))}
                   </ul>
 
-                  <p className="text-xs text-primary/70 italic">{t.index}</p>
+                  <div className="flex items-center justify-between gap-3 mt-1">
+                    <p className="text-xs text-primary/70 italic">{t.index}</p>
+                    {t.infoLink && (
+                      <button
+                        onClick={() => navigate(t.infoLink)}
+                        className="shrink-0 text-xs font-semibold text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
+                      >
+                        Подробнее
+                        <Icon name="ArrowRight" size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
