@@ -5,14 +5,13 @@ import IndexNav from "@/components/index/IndexNav";
 import InstallPWA from "@/components/InstallPWA";
 import BalanceTopUpModal from "@/components/BalanceTopUpModal";
 import {
-  checkAccess,
   getBalance,
   syncFromServer,
   payForSimulator,
   SIMULATOR_PRICE,
   SIMULATOR_DAYS,
   hasSimulatorAccess,
-  getSimulatorExpiry,
+  simulatorAccessExpires,
 } from "@/lib/access";
 
 const META = {
@@ -106,7 +105,7 @@ export default function SimulatorProLanding() {
   const [balance, setBalance] = useState(getBalance());
   const [showTopUp, setShowTopUp] = useState(false);
   const [hasAccess, setHasAccess] = useState(hasSimulatorAccess());
-  const [expiry, setExpiry] = useState(getSimulatorExpiry());
+  const [expiry, setExpiry] = useState<Date | null>(simulatorAccessExpires());
   const isLoggedIn = !!localStorage.getItem("pdd_user");
 
   const scrollTo = (id: string) => {
@@ -131,7 +130,7 @@ export default function SimulatorProLanding() {
   function refreshBalance() {
     setBalance(getBalance());
     setHasAccess(hasSimulatorAccess());
-    setExpiry(getSimulatorExpiry());
+    setExpiry(simulatorAccessExpires());
   }
 
   async function handlePaymentConfirm() {
