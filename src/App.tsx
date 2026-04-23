@@ -52,6 +52,7 @@ import SelfEsteemLanding from "./pages/SelfEsteemLanding";
 import MoneyLanding from "./pages/MoneyLanding";
 import SimulatorProLanding from "./pages/SimulatorProLanding";
 import ProTrainersLanding from "./pages/ProTrainersLanding";
+import About from "./pages/About";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
 import CookieBanner from "./components/CookieBanner";
@@ -128,6 +129,7 @@ const App = () => (
           <Route path="/trainer-money-info" element={<MoneyLanding />} />
           <Route path="/simulator-pro-info" element={<SimulatorProLanding />} />
           <Route path="/pro-trainers" element={<ProTrainersLanding />} />
+          <Route path="/about" element={<About />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
