@@ -48,7 +48,7 @@ export default function About() {
   const navigate = useNavigate();
   const scrollTo = () => {};
 
-  const [form, setForm] = useState({ name: "", contact: "", message: "" });
+  const [form, setForm] = useState({ name: "", contact: "", message: "", agreed: false });
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -289,12 +289,27 @@ export default function About() {
                   className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background resize-none"
                 />
               </div>
+              <div className="flex items-start gap-3">
+                <input
+                  id="agreed"
+                  type="checkbox"
+                  checked={form.agreed}
+                  onChange={(e) => setForm({ ...form, agreed: e.target.checked })}
+                  className="mt-0.5 w-4 h-4 rounded border-border accent-primary cursor-pointer flex-shrink-0"
+                />
+                <label htmlFor="agreed" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                  Я принимаю{" "}
+                  <a href="/privacy" target="_blank" className="text-primary underline hover:opacity-80 transition-opacity">Политику конфиденциальности</a>
+                  {" "}и{" "}
+                  <a href="/oferta" target="_blank" className="text-primary underline hover:opacity-80 transition-opacity">Оферту</a>
+                </label>
+              </div>
               {status === "error" && (
                 <p className="text-sm text-destructive">Что-то пошло не так. Попробуйте позже.</p>
               )}
               <button
                 type="submit"
-                disabled={status === "loading" || !form.message.trim()}
+                disabled={status === "loading" || !form.message.trim() || !form.agreed}
                 className="w-full gradient-brand text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {status === "loading" ? (

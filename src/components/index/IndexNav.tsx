@@ -36,7 +36,7 @@ export default function IndexNav({ isLoggedIn, scrollTo, useHashNav }: IndexNavP
           <button onClick={() => navigate("/pro-trainers")} className="hover:text-foreground transition-colors font-semibold text-amber-600">Pro-тренажёры</button>
           <button onClick={() => goTo("faq")} className="hover:text-foreground transition-colors">FAQ</button>
           <button onClick={() => navigate("/blog")} className="hover:text-foreground transition-colors">Статьи</button>
-          <button onClick={() => navigate("/about")} className="hover:text-foreground transition-colors">Об Анне</button>
+          <button onClick={() => navigate("/about")} className="hover:text-foreground transition-colors">Автор проекта</button>
         </div>
         <div className="flex items-center gap-2">
           {isLoggedIn ? (
@@ -92,7 +92,7 @@ export default function IndexNav({ isLoggedIn, scrollTo, useHashNav }: IndexNavP
             </button>
             <button onClick={() => { navigate("/about"); setMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors">
               <Icon name="User" size={18} className="text-primary" />
-              Об Анне
+              Автор проекта
             </button>
           </div>
         </div>
