@@ -37,6 +37,7 @@ import FinancialThinking from "./pages/FinancialThinking";
 import LogicThinkingLanding from "./pages/LogicThinkingLanding";
 import LogicThinking from "./pages/LogicThinking";
 import PsychAnalysisLanding from "./pages/PsychAnalysisLanding";
+import BarrierLanding from "./pages/BarrierLanding";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
 import CookieBanner from "./components/CookieBanner";
@@ -98,6 +99,7 @@ const App = () => (
           <Route path="/pro/simulator/edit" element={<SimulatorEdit />} />
           <Route path="/pro/simulator/result" element={<SimulatorResult />} />
           <Route path="/psych-analysis-info" element={<PsychAnalysisLanding />} />
+          <Route path="/barrier-info" element={<BarrierLanding />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
