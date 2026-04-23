@@ -163,7 +163,7 @@ export default function ConsciousChoiceLanding() {
                   Прокачать решительность
                 </button>
                 <button
-                  onClick={() => navigate("/pricing")}
+                  onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
                   className="bg-white border border-border text-foreground font-semibold px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl text-[15px] sm:text-base hover:bg-muted transition-colors"
                 >
                   Смотреть тарифы
@@ -398,7 +398,9 @@ export default function ConsciousChoiceLanding() {
         </div>
       </section>
 
-      <TrainerPricingBlock />
+      <div id="pricing">
+        <TrainerPricingBlock />
+      </div>
 
       {/* FOOTER */}
       <footer className="border-t border-border py-8 md:py-10">
