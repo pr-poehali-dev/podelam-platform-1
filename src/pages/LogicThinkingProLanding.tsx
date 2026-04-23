@@ -190,7 +190,7 @@ export default function LogicThinkingProLanding() {
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-[56px] font-black text-white leading-[1.08] mb-6">
                 Думаешь логично?<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-500">Проверь это.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-500">Проверь это</span>
               </h1>
               <p className="text-base sm:text-lg text-indigo-300/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8">
                 Тренажёр анализа рассуждений и решений. 7 этапов — без ИИ, на чистой логике.
