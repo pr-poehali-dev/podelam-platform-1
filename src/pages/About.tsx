@@ -125,7 +125,7 @@ export default function About() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <Icon name="Quote" size={28} className="text-white/30 mx-auto mb-5" />
           <blockquote className="text-xl md:text-2xl font-semibold text-white leading-relaxed">
-            «Устойчивый бизнес строится устойчивым человеком. Не тем, кто не устаёт — а тем, кто умеет восстанавливаться и принимать решения, оставаясь собой.»
+            «Устойчивый бизнес строится устойчивым человеком. Который умеет восстанавливаться и принимать решения, оставаясь собой.»
           </blockquote>
         </div>
       </section>
