@@ -43,6 +43,7 @@ import PlanLanding from "./pages/PlanLanding";
 import ProgressLanding from "./pages/ProgressLanding";
 import DiaryLanding from "./pages/DiaryLanding";
 import ConsciousChoiceLanding from "./pages/ConsciousChoiceLanding";
+import EmotionsLanding from "./pages/EmotionsLanding";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
 import CookieBanner from "./components/CookieBanner";
@@ -110,6 +111,7 @@ const App = () => (
           <Route path="/progress-info" element={<ProgressLanding />} />
           <Route path="/diary-info" element={<DiaryLanding />} />
           <Route path="/trainer-conscious-choice-info" element={<ConsciousChoiceLanding />} />
+          <Route path="/trainer-emotions-info" element={<EmotionsLanding />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
