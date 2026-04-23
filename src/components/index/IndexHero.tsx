@@ -30,7 +30,7 @@ export default function IndexHero({ scrollTo }: IndexHeroProps) {
               Что на самом деле мешает тебе стать успешным
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black leading-[1.15] text-foreground mb-5">
-              Успех — это не профессия.{" "}
+              Успех — это не профессия{" "}
               <span className="text-gradient">Это ощущение внутри</span>
             </h1>
             <p className="text-muted-foreground text-xl leading-relaxed mb-8 max-w-md">
