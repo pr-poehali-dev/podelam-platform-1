@@ -2,12 +2,12 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 
 const RESULTS = [
-  { icon: "TrendingDown", text: "Снижение тревоги и страха" },
-  { icon: "Rocket", text: "Меньше откладывания важных шагов" },
-  { icon: "Lightbulb", text: "Больше ясных решений" },
-  { icon: "Shield", text: "Укрепление внутренней опоры" },
-  { icon: "Wallet", text: "Спокойствие в финансовой сфере" },
-  { icon: "Target", text: "Рост дисциплины и осознанных действий" },
+  { icon: "ScanSearch", text: "Разбор на основе твоих ответов, а не шаблонов" },
+  { icon: "Activity", text: "Реальные поведенческие паттерны, без воды" },
+  { icon: "Lightbulb", text: "Конкретные выводы, которые можно применить сразу" },
+  { icon: "Target", text: "Понимаешь, где теряешь деньги и энергию" },
+  { icon: "Wallet", text: "Находишь свою модель дохода" },
+  { icon: "Rocket", text: "Получаешь пошаговый план без лишней теории" },
 ];
 
 interface LandingPricingProps {
@@ -23,49 +23,49 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
         <div className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-3">
-              Формат доступа
+              Выбери формат
             </h2>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Глубокие изменения требуют системной работы и повторяемости
+              Начни с теста — получи разбор и конкретный план
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
             {[
               {
-                name: "Базовый доступ",
-                period: "1 месяц",
-                price: "990",
-                desc: "1 тренажер на выбор",
+                name: "Базовый тест",
+                period: "разово",
+                price: "299",
+                desc: "Старт и первичный разбор",
                 features: [
-                  "Пакет из 4 сессий",
-                  "Базовая аналитика",
-                  "Сохранение результатов",
+                  "Разбор основных блоков",
+                  "Определение модели дохода",
+                  "Конкретные выводы",
                 ],
                 accent: false,
               },
               {
-                name: "Углублённый",
-                period: "3 месяца",
-                price: "2 490",
-                desc: "Все тренажеры · полная аналитика",
+                name: "Расширенный разбор",
+                period: "разово",
+                price: "990",
+                desc: "Глубокий анализ и план действий",
                 features: [
-                  "Все 5 тренажеров",
-                  "Неограниченные сессии",
-                  "Индексы EMI, AI, IVO, FSI",
-                  "Трекер прогресса",
+                  "Глубокий анализ паттернов",
+                  "Подробные рекомендации",
+                  "Пошаговый план",
+                  "Доступ к тренажёрам",
                 ],
                 accent: true,
               },
               {
                 name: "Системный рост",
-                period: "1 год",
-                price: "6 990",
-                desc: "Максимальная глубина проработки",
+                period: "3 месяца",
+                price: "2 490",
+                desc: "Разбор + работа с результатом",
                 features: [
-                  "Все 5 тренажеров",
-                  "Годовая динамика индексов",
-                  "Анализ паттернов",
+                  "Все 5 тренажёров",
+                  "Неограниченные сессии",
+                  "Трекер прогресса",
                   "Глубокая проработка",
                 ],
                 accent: false,
@@ -141,10 +141,10 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
       <section className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
         <div className="text-center mb-12">
           <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-3">
-            Результаты через 30–90 дней
+            Почему это работает
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Пользователи замечают
+            Разбор строится на твоих ответах — не на общих шаблонах
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
@@ -339,22 +339,22 @@ export default function LandingPricing({ goTrainers, onNavigate }: LandingPricin
         <div className="absolute inset-0 bg-gradient-to-t from-violet-50/80 to-transparent pointer-events-none" />
         <div className="relative max-w-4xl mx-auto px-4 py-16 sm:py-24 text-center">
           <h2 className="text-2xl sm:text-4xl font-black text-foreground leading-tight mb-4">
-            Жить по Делам —{" "}
+            Ты не ленивый —{" "}
             <span className="bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-              значит действовать осознанно
+              ты в неправильной модели
             </span>
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
-            Начало работы с тренажерами — первый шаг к устойчивой внутренней
-            опоре и осознанным решениям.
+            Пойми, что тебя тормозит, и начни зарабатывать без постоянных
+            попыток и выгорания.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button
               onClick={goTrainers}
               className="gradient-brand text-white font-bold px-8 py-6 rounded-2xl text-base border-0 shadow-lg shadow-violet-200/50 hover:shadow-xl transition-shadow"
             >
-              <Icon name="Dumbbell" size={18} className="mr-2" />
-              Выбрать тренажер
+              <Icon name="Play" size={18} className="mr-2" />
+              Пройти тест
             </Button>
             <Button
               onClick={goTrainers}
