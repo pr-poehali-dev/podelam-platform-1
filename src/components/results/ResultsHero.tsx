@@ -1,6 +1,6 @@
 import Icon from "@/components/ui/icon";
 import { SEGMENT_NAMES } from "@/components/psych-bot/psychBotData";
-import { TestResult, PsychResult, IDENTITY_PHRASES, CONSEQUENCES } from "./resultsTypes";
+import { TestResult, PsychResult, IDENTITY_PHRASES, CONSEQUENCES, MAIN_BLOCK, MONEY_LOSS, INCOME_MODEL } from "./resultsTypes";
 
 interface ResultsHeroProps {
   result: TestResult;
@@ -22,6 +22,9 @@ export default function ResultsHero({
 }: ResultsHeroProps) {
   const identityPhrases = IDENTITY_PHRASES[topSeg] ?? IDENTITY_PHRASES["analytics"];
   const consequences = CONSEQUENCES[topSeg] ?? CONSEQUENCES["analytics"];
+  const mainBlock = MAIN_BLOCK[topSeg] ?? MAIN_BLOCK["analytics"];
+  const moneyLoss = MONEY_LOSS[topSeg] ?? MONEY_LOSS["analytics"];
+  const incomeModel = INCOME_MODEL[topSeg] ?? INCOME_MODEL["analytics"];
 
   return (
     <>
@@ -90,6 +93,43 @@ export default function ResultsHero({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          НОВЫЕ БЛОКИ — ГЛАВНЫЙ БЛОК, ДЕНЬГИ, МОДЕЛЬ ДОХОДА
+      ═══════════════════════════════════════════════════════════ */}
+
+      {/* Главный блок */}
+      <div className="bg-red-50 rounded-2xl p-5 border border-red-100">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center">
+            <Icon name="AlertOctagon" size={16} className="text-red-600" />
+          </div>
+          <h2 className="font-bold text-red-900">Главный блок</h2>
+        </div>
+        <p className="text-red-800 text-sm leading-relaxed">{mainBlock}</p>
+      </div>
+
+      {/* Где теряешь деньги */}
+      <div className="bg-orange-50 rounded-2xl p-5 border border-orange-100">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center">
+            <Icon name="TrendingDown" size={16} className="text-orange-600" />
+          </div>
+          <h2 className="font-bold text-orange-900">Где ты теряешь деньги</h2>
+        </div>
+        <p className="text-orange-800 text-sm leading-relaxed">{moneyLoss}</p>
+      </div>
+
+      {/* Твоя модель дохода */}
+      <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center">
+            <Icon name="Wallet" size={16} className="text-emerald-600" />
+          </div>
+          <h2 className="font-bold text-emerald-900">Твоя модель дохода</h2>
+        </div>
+        <p className="text-emerald-800 text-sm leading-relaxed">{incomeModel}</p>
       </div>
     </>
   );

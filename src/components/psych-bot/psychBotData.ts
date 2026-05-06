@@ -202,6 +202,39 @@ export const QUESTIONS: Question[] = [
       { text: "Руководящая должность, влияние, команда, карьера", segments: { management: 3 }, motivations: { status: 3 } },
     ],
   },
+  {
+    id: 16,
+    text: "Почему ты ещё не зарабатываешь столько, сколько хочешь?",
+    options: [
+      { text: "Не понимаю, на чём сфокусироваться — слишком много идей и направлений", segments: { creative: 1, business: 1 }, motivations: { process: 1 } },
+      { text: "Знаю что делать, но никак не могу начать — что-то всё время мешает", segments: { analytics: 1, research: 1 }, motivations: { meaning: 1 } },
+      { text: "Берусь за слишком много сразу и быстро выгораю", segments: { management: 1, help_people: 1 }, motivations: { status: 1 } },
+      { text: "Работаю не в том формате — чувствую, что это не моё", segments: { freedom: 2 }, motivations: { freedom: 2 } },
+      { text: "Боюсь поднять цену или попросить больше — не чувствую себя достаточно ценным", segments: { help_people: 1, education: 1 }, motivations: { meaning: 1 } },
+    ],
+  },
+  {
+    id: 17,
+    text: "Как ты обычно зарабатываешь или хочешь зарабатывать?",
+    options: [
+      { text: "Продаю свои услуги напрямую — работаю с клиентами один на один", segments: { help_people: 2, practical: 1 }, motivations: { money: 2, meaning: 1 } },
+      { text: "Создаю продукт или контент, который продаётся без моего участия", segments: { creative: 2, freedom: 2 }, motivations: { money: 2, freedom: 2 } },
+      { text: "Работаю в найме — получаю зарплату и бонусы", segments: { analytics: 1, management: 1 }, motivations: { status: 2, money: 1 } },
+      { text: "Веду несколько источников дохода — хочу не зависеть от одного", segments: { business: 2, freedom: 1 }, motivations: { money: 3, freedom: 1 } },
+      { text: "Обучаю других — курсы, консультации, наставничество", segments: { education: 3 }, motivations: { money: 2, meaning: 1 } },
+    ],
+  },
+  {
+    id: 18,
+    text: "Когда ты чувствуешь, что выгораешь — что происходит?",
+    options: [
+      { text: "Делаю то, что не соответствует моим ценностям — работа ради денег без смысла", segments: { help_people: 1, education: 1 }, motivations: { meaning: 2 } },
+      { text: "Слишком много контроля снаружи — нет свободы принимать решения", segments: { freedom: 2, creative: 1 }, motivations: { freedom: 3 } },
+      { text: "Берусь за чужие задачи и не успеваю делать своё", segments: { management: 1, practical: 1 }, motivations: { status: 1 } },
+      { text: "Работаю в изоляции, нет обратной связи и признания", segments: { communication: 2 }, motivations: { recognition: 2 } },
+      { text: "Делаю одно и то же по кругу — нет роста и новых вызовов", segments: { research: 2, analytics: 1 }, motivations: { process: 2 } },
+    ],
+  },
 ];
 
 // ─── ПРОФЕССИИ ────────────────────────────────────────────────────────────────

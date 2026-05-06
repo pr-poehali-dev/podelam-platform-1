@@ -36,17 +36,17 @@ export default function ResultsPaywall({ payLoading, payError, onPayClick }: Res
 
       {/* Оффер */}
       <div className="p-5 border-t border-violet-100 bg-violet-50/50">
-        <p className="text-xs text-violet-500 font-semibold uppercase tracking-wide mb-2">Это только базовый уровень</p>
-        <h3 className="text-lg font-black text-foreground mb-1">Мы ещё не показали главное</h3>
+        <p className="text-xs text-violet-500 font-semibold uppercase tracking-wide mb-2">Разбор готов — осталось открыть</p>
+        <h3 className="text-lg font-black text-foreground mb-1">Что делать дальше — конкретно</h3>
         <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-          Самые важные скрытые параметры — где ты теряешь энергию, какие установки блокируют рост и какие конкретные инструменты тебе подходят.
+          Ты уже видишь, что тебя тормозит. Теперь — пошаговый план: как зарабатывать в своей модели без выгорания и попыток «как все».
         </p>
 
         <div className="space-y-2 mb-5">
           {[
-            "Что с тобой происходит на глубоком уровне",
-            "Где именно ты теряешь ресурс и почему",
-            "Какие конкретные действия подходят твоему профилю",
+            "Пошаговый план на 30 дней под твой тип",
+            "Стратегии монетизации твоего профиля",
+            "Как выстроить доход без постоянного выгорания",
             "Персональные тренажёры под твои задачи",
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-2">
