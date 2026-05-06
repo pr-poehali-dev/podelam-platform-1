@@ -141,6 +141,83 @@ export default function LandingHero({ goTrainers, goPricing }: LandingHeroProps)
         </div>
       </section>
 
+      {/* Example result card */}
+      <section className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-3">
+            Вот как выглядит твой разбор
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Ты увидишь не абстрактное описание, а конкретную картину — под тебя
+          </p>
+        </div>
+
+        <div className="max-w-2xl mx-auto">
+          <div className="rounded-3xl border-2 border-violet-200 bg-white overflow-hidden shadow-lg shadow-violet-100/50">
+            {/* Header */}
+            <div className="gradient-brand px-6 py-5 text-white">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">Пример разбора</span>
+                <span className="text-white/60 text-xs">Психологический анализ</span>
+              </div>
+              <h3 className="text-xl font-black mt-3">Финансово свободный</h3>
+              <p className="text-white/75 text-sm">Аналитика и системность · Деньги и доход</p>
+            </div>
+
+            {/* Blocks */}
+            <div className="p-5 space-y-4">
+              <div className="flex gap-3 items-start bg-red-50 rounded-2xl p-4 border border-red-100">
+                <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                  <Icon name="AlertOctagon" size={18} className="text-red-600" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-red-500 uppercase tracking-wide mb-1">Главный блок</div>
+                  <p className="text-sm text-red-800 leading-relaxed">Паралич анализа — ты ждёшь идеального момента, который никогда не наступит</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 items-start bg-orange-50 rounded-2xl p-4 border border-orange-100">
+                <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                  <Icon name="TrendingDown" size={18} className="text-orange-600" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-orange-500 uppercase tracking-wide mb-1">Где теряешь деньги</div>
+                  <p className="text-sm text-orange-800 leading-relaxed">На промедлении — пока анализируешь, возможности уходят к другим</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 items-start bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                  <Icon name="Wallet" size={18} className="text-emerald-600" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-emerald-600 uppercase tracking-wide mb-1">Твоя модель дохода</div>
+                  <p className="text-sm text-emerald-800 leading-relaxed">Экспертный сервис: аудиты, аналитика под заказ, долгосрочные контракты с системными клиентами</p>
+                </div>
+              </div>
+
+              {/* Blurred "What next" */}
+              <div className="relative rounded-2xl overflow-hidden border border-violet-100">
+                <div className="p-4 blur-[4px] select-none pointer-events-none">
+                  <div className="text-xs font-bold text-violet-500 uppercase tracking-wide mb-2">Что делать дальше</div>
+                  <div className="space-y-1.5">
+                    <div className="h-3 bg-violet-100 rounded w-full" />
+                    <div className="h-3 bg-violet-100 rounded w-4/5" />
+                    <div className="h-3 bg-violet-100 rounded w-3/5" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center bg-white/40">
+                  <div className="flex items-center gap-2 bg-violet-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md">
+                    <Icon name="Lock" size={13} />
+                    Открывается после теста
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="bg-white border-y border-border">
         <div className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
