@@ -106,23 +106,39 @@ export default function ForWhom() {
       {/* HERO */}
       <section className="relative overflow-hidden py-16 sm:py-24 px-4">
         <div className="absolute inset-0 bg-gradient-to-br from-[hsl(252,60%,48%,0.06)] via-transparent to-[hsl(280,40%,92%,0.3)] pointer-events-none" />
-        <div className="max-w-3xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-            <Icon name="Users" size={15} />
-            Для кого ПоДелам
+        <div className="max-w-6xl mx-auto relative">
+          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+            {/* Text */}
+            <div className="flex-1 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+                <Icon name="Users" size={15} />
+                Для кого ПоДелам
+              </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-tight mb-5">
+                Для тех, кто чувствует, что может больше —&nbsp;но не понимает, почему не получается
+              </h1>
+              <p className="text-muted-foreground text-lg sm:text-xl leading-relaxed mb-8 max-w-2xl lg:max-w-none">
+                ПоДелам помогает понять: что тебя тормозит, где ты теряешь энергию и деньги, как тебе зарабатывать без выгорания.
+              </p>
+              <button
+                onClick={() => navigate(isLoggedIn ? "/cabinet" : "/auth")}
+                className="gradient-brand text-white font-bold px-8 py-4 rounded-2xl text-base hover:opacity-90 transition-opacity shadow-lg"
+              >
+                Пройти тест
+              </button>
+            </div>
+            {/* Image */}
+            <div className="flex-shrink-0 w-full max-w-xs sm:max-w-sm lg:max-w-md">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src="https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/8859f369-d50d-4341-a35c-376ec465c3ff.jpg"
+                  alt="Человек на перепутье — ищет своё направление"
+                  className="w-full h-auto object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
+              </div>
+            </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-tight mb-5">
-            Для тех, кто чувствует, что может больше —&nbsp;но не понимает, почему не получается
-          </h1>
-          <p className="text-muted-foreground text-lg sm:text-xl leading-relaxed mb-8 max-w-2xl mx-auto">
-            ПоДелам помогает понять: что тебя тормозит, где ты теряешь энергию и деньги, как тебе зарабатывать без выгорания.
-          </p>
-          <button
-            onClick={() => navigate(isLoggedIn ? "/cabinet" : "/auth")}
-            className="gradient-brand text-white font-bold px-8 py-4 rounded-2xl text-base hover:opacity-90 transition-opacity shadow-lg"
-          >
-            Пройти тест
-          </button>
         </div>
       </section>
 
