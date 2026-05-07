@@ -1,4 +1,33 @@
+import { useEffect, useState } from "react";
 import Icon from "@/components/ui/icon";
+
+const OFFER_KEY = "pdd_offer_expires";
+const OFFER_DURATION = 24 * 60 * 60 * 1000;
+
+function useOfferTimer() {
+  const [secondsLeft, setSecondsLeft] = useState(0);
+
+  useEffect(() => {
+    let expires = Number(localStorage.getItem(OFFER_KEY));
+    if (!expires || expires < Date.now()) {
+      expires = Date.now() + OFFER_DURATION;
+      localStorage.setItem(OFFER_KEY, String(expires));
+    }
+
+    const tick = () => {
+      const left = Math.max(0, Math.floor((expires - Date.now()) / 1000));
+      setSecondsLeft(left);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const h = String(Math.floor(secondsLeft / 3600)).padStart(2, "0");
+  const m = String(Math.floor((secondsLeft % 3600) / 60)).padStart(2, "0");
+  const s = String(secondsLeft % 60).padStart(2, "0");
+  return { h, m, s, expired: secondsLeft === 0 };
+}
 
 interface ResultsPaywallProps {
   payLoading: boolean;
@@ -7,6 +36,8 @@ interface ResultsPaywallProps {
 }
 
 export default function ResultsPaywall({ payLoading, payError, onPayClick }: ResultsPaywallProps) {
+  const { h, m, s, expired } = useOfferTimer();
+
   return (
     <div className="bg-white rounded-2xl border-2 border-violet-200 overflow-hidden">
       {/* Заблюренный превью */}
@@ -33,6 +64,23 @@ export default function ResultsPaywall({ payLoading, payError, onPayClick }: Res
           </div>
         </div>
       </div>
+
+      {/* Таймер */}
+      {!expired && (
+        <div className="bg-amber-50 border-t border-amber-100 px-5 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Icon name="Clock" size={15} className="text-amber-500 shrink-0" />
+            <span className="text-xs font-semibold text-amber-700">Цена 290 ₽ действует ещё:</span>
+          </div>
+          <div className="flex items-center gap-1 font-black text-amber-700 tabular-nums text-sm">
+            <span className="bg-amber-100 rounded-lg px-2 py-0.5">{h}</span>
+            <span>:</span>
+            <span className="bg-amber-100 rounded-lg px-2 py-0.5">{m}</span>
+            <span>:</span>
+            <span className="bg-amber-100 rounded-lg px-2 py-0.5">{s}</span>
+          </div>
+        </div>
+      )}
 
       {/* Оффер */}
       <div className="p-5 border-t border-violet-100 bg-violet-50/50">
