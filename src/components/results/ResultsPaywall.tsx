@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Icon from "@/components/ui/icon";
-import { PLAN_30 } from "@/components/psych-bot/psychBotData";
+import { PLAN_30, MONETIZATION } from "@/components/psych-bot/psychBotData";
 
 const OFFER_KEY = "pdd_offer_expires";
 const OFFER_DURATION = 24 * 60 * 60 * 1000;
@@ -41,6 +41,7 @@ export default function ResultsPaywall({ payLoading, payError, onPayClick, topSe
   const { h, m, s, expired } = useOfferTimer();
   const plan = PLAN_30[topSeg] ?? PLAN_30["analytics"];
   const firstStep = plan[0];
+  const monetization = MONETIZATION[topSeg] ?? MONETIZATION["analytics"];
 
   return (
     <div className="bg-white rounded-2xl border-2 border-violet-200 overflow-hidden">
@@ -124,9 +125,40 @@ export default function ResultsPaywall({ payLoading, payError, onPayClick, topSe
           </div>
         </div>
 
+        {/* Крючок — превью монетизации */}
+        <div className="rounded-xl border border-emerald-100 overflow-hidden mb-5">
+          <div className="bg-emerald-50 px-4 py-2 flex items-center gap-2 border-b border-emerald-100">
+            <Icon name="TrendingUp" size={14} className="text-emerald-600" />
+            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Стратегии монетизации</span>
+          </div>
+          {/* Старт — виден */}
+          <div className="px-4 py-3 bg-white flex items-start gap-3">
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0 mt-0.5">Старт</span>
+            <p className="text-sm text-foreground leading-relaxed">{monetization.start}</p>
+          </div>
+          {/* Рост и масштаб — заблюрены */}
+          <div className="relative">
+            <div className="px-4 py-3 space-y-2.5 blur-[4px] select-none pointer-events-none bg-white border-t border-border/40">
+              <div className="flex items-start gap-3">
+                <span className="text-xs font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full shrink-0 mt-0.5">Рост</span>
+                <p className="text-sm text-muted-foreground leading-relaxed">{monetization.mid}</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full shrink-0 mt-0.5">Масштаб</span>
+                <p className="text-sm text-muted-foreground leading-relaxed">{monetization.scale}</p>
+              </div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-white/90 border border-emerald-200 rounded-full px-4 py-1.5 flex items-center gap-1.5 shadow-sm">
+                <Icon name="Lock" size={13} className="text-emerald-600" />
+                <span className="text-xs font-bold text-emerald-700">Открывается после оплаты</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-2 mb-5">
           {[
-            "Стратегии монетизации твоего профиля",
             "Как выстроить доход без постоянного выгорания",
             "Персональные тренажёры под твои задачи",
           ].map((item, i) => (
