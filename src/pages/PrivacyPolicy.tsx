@@ -1,8 +1,25 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
+function setMeta(name: string, content: string, property?: boolean) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Политика конфиденциальности — ПоДелам";
+    setMeta("description", "Политика конфиденциальности сервиса ПоДелам: как мы обрабатываем и защищаем ваши персональные данные.");
+    setMeta("og:title", "Политика конфиденциальности — ПоДелам", true);
+    setMeta("og:description", "Политика конфиденциальности сервиса ПоДелам: обработка персональных данных.", true);
+    return () => { document.title = prevTitle; };
+  }, []);
 
   return (
     <div className="min-h-screen font-golos" style={{ background: "hsl(248, 50%, 98%)" }}>

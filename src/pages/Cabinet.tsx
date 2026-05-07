@@ -25,6 +25,12 @@ export default function Cabinet() {
   const { sessions: careerSessions } = useToolSync<CareerResult>("career-test", "career_sessions");
 
   useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Личный кабинет — ПоДелам";
+    return () => { document.title = prevTitle; };
+  }, []);
+
+  useEffect(() => {
     if (psychSessions.length > 0) {
       const latest = psychSessions[psychSessions.length - 1];
       setPsychResult(latest);

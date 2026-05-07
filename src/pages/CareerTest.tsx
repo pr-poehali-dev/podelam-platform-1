@@ -21,6 +21,14 @@ export default function CareerTest() {
   const [result, setResult] = useState<ReturnType<typeof calcCareerResult> | null>(null);
 
   useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Тест профориентации — ПоДелам";
+    const el = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (el) el.setAttribute("content", "Пройди тест профориентации и узнай свои сильные стороны, подходящий тип деятельности и направление для заработка.");
+    return () => { document.title = prevTitle; };
+  }, []);
+
+  useEffect(() => {
     const u = localStorage.getItem("pdd_user");
     if (!u) navigate("/auth");
     window.ym?.(107022183, 'reachGoal', 'tool_opened', { tool: 'career-test' });

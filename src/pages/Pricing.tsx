@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import InstallPWA from "@/components/InstallPWA";
@@ -54,9 +54,25 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   );
 }
 
+function setMeta(name: string, content: string, property?: boolean) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 export default function Pricing() {
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem("pdd_user");
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Тарифы и цены — ПоДелам";
+    setMeta("description", "Разовый доступ к инструментам от 290 ₽ или подписка на всё включено за 990 ₽/мес. Психологические инструменты для роста и заработка.");
+    setMeta("og:title", "Тарифы и цены — ПоДелам", true);
+    setMeta("og:description", "Разовый доступ к инструментам от 290 ₽ или подписка на всё включено за 990 ₽/мес.", true);
+    return () => { document.title = prevTitle; };
+  }, []);
 
   return (
     <div className="min-h-screen font-golos" style={{ background: "hsl(248, 50%, 98%)" }}>

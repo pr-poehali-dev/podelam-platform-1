@@ -1,8 +1,25 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
+function setMeta(name: string, content: string, property?: boolean) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 export default function ProTrainersLanding() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Pro-тренажёры — глубокая работа над собой | ПоДелам";
+    setMeta("description", "Pro-тренажёры ПоДелам: стратегическое и финансовое мышление, симуляторы решений. Для тех, кто хочет работать с собой на уровне выше.");
+    setMeta("og:title", "Pro-тренажёры — глубокая работа над собой | ПоДелам", true);
+    setMeta("og:description", "Стратегическое мышление, финансовый анализ, симуляторы решений — Pro-инструменты ПоДелам.", true);
+    return () => { document.title = prevTitle; };
+  }, []);
 
   const proTrainers = [
     {

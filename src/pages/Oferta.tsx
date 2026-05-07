@@ -1,8 +1,25 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
+function setMeta(name: string, content: string, property?: boolean) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 export default function Oferta() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Публичная оферта — ПоДелам";
+    setMeta("description", "Публичная оферта на оказание информационных услуг сервиса ПоДелам. ИП Уварова А. С.");
+    setMeta("og:title", "Публичная оферта — ПоДелам", true);
+    setMeta("og:description", "Публичная оферта на оказание информационных услуг сервиса ПоДелам.", true);
+    return () => { document.title = prevTitle; };
+  }, []);
 
   return (
     <div className="min-h-screen font-golos" style={{ background: "hsl(248, 50%, 98%)" }}>

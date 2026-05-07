@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+
+function setMeta(name: string, content: string, property?: boolean) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
 import Icon from "@/components/ui/icon";
 import { activatePaidOnce } from "@/lib/access";
 import { syncTrainerSubscription } from "@/lib/trainerAccess";
@@ -20,6 +27,15 @@ export default function Auth() {
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Войти или зарегистрироваться — ПоДелам";
+    setMeta("description", "Войдите в аккаунт или создайте новый, чтобы пройти тест и получить персональный разбор своих блоков и сильных сторон.");
+    setMeta("og:title", "Войти или зарегистрироваться — ПоДелам", true);
+    setMeta("og:description", "Создайте аккаунт и пройдите тест для персонального разбора.", true);
+    return () => { document.title = prevTitle; };
+  }, []);
 
   useEffect(() => {
     const ref = searchParams.get("ref");

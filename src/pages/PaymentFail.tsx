@@ -1,8 +1,15 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
 export default function PaymentFail() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Ошибка оплаты — ПоДелам";
+    return () => { document.title = prevTitle; };
+  }, []);
 
   return (
     <div className="min-h-screen font-golos flex items-center justify-center p-4" style={{ background: "hsl(248, 50%, 98%)" }}>

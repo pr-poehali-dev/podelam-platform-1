@@ -18,6 +18,12 @@ export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const paymentId = searchParams.get("payment_id");
 
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Оплата прошла успешно — ПоДелам";
+    return () => { document.title = prevTitle; };
+  }, []);
+
   const [status, setStatus] = useState<PaymentStatus>("checking");
   const [amount, setAmount] = useState(0);
   const [isTrainerPayment, setIsTrainerPayment] = useState(false);

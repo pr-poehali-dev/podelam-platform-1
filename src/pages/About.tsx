@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import IndexNav from "@/components/index/IndexNav";
@@ -44,9 +44,25 @@ const tools = [
   },
 ];
 
+function setMeta(name: string, content: string, property?: boolean) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 export default function About() {
   const navigate = useNavigate();
   const scrollTo = () => {};
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Автор проекта — Анна Уварова | ПоДелам";
+    setMeta("description", "История создания ПоДелам: как психолог и предприниматель Анна Уварова создала сервис, который помогает людям найти своё дело и зарабатывать без выгорания.");
+    setMeta("og:title", "Автор проекта — Анна Уварова | ПоДелам", true);
+    setMeta("og:description", "История создания ПоДелам: как психолог и предприниматель Анна Уварова создала сервис, который помогает людям найти своё дело.", true);
+    return () => { document.title = prevTitle; };
+  }, []);
 
   const [form, setForm] = useState({ name: "", contact: "", message: "", agreed: false });
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");

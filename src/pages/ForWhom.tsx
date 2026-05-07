@@ -1,8 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import IndexNav from "@/components/index/IndexNav";
 import LandingFooter from "@/components/landing/LandingFooter";
+
+function setMeta(name: string, content: string, property?: boolean) {
+  const attr = property ? "property" : "name";
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
+const META = {
+  title: "Для кого ПоДелам — если чувствуешь, что можешь больше",
+  description: "Сервис для тех, кто устал топтаться на месте: поможет понять, что тормозит, почему выгораешь и как найти свой способ зарабатывать.",
+};
 
 const recognizeCards = [
   {
@@ -75,6 +87,15 @@ const questions = [
 export default function ForWhom() {
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem("userId");
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = META.title;
+    setMeta("description", META.description);
+    setMeta("og:title", META.title, true);
+    setMeta("og:description", META.description, true);
+    return () => { document.title = prevTitle; };
+  }, []);
 
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
