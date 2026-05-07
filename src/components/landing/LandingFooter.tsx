@@ -19,6 +19,8 @@ export default function LandingFooter() {
           <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
             <InstallPWA />
             <a href="/for-whom" className="hover:text-foreground transition-colors">Для кого</a>
+            <a href="/#faq" className="hover:text-foreground transition-colors">FAQ</a>
+            <a href="/about" className="hover:text-foreground transition-colors">Автор проекта</a>
             <a href="/pricing" className="hover:text-foreground transition-colors">Тарифы</a>
             <a href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</a>
             <a href="/oferta" className="hover:text-foreground transition-colors">Оферта</a>
