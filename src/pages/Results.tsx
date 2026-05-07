@@ -15,6 +15,7 @@ import { TestResult, PsychResult, trackEvent } from "@/components/results/result
 import ResultsHero from "@/components/results/ResultsHero";
 import ResultsPaywall from "@/components/results/ResultsPaywall";
 import ResultsUnlocked from "@/components/results/ResultsUnlocked";
+import ShareResult from "@/components/results/ShareResult";
 
 export default function Results() {
   const { id } = useParams<{ id: string }>();
@@ -219,6 +220,9 @@ export default function Results() {
               steps={steps}
             />
           )}
+
+          {/* ─── Поделиться результатом ─── */}
+          <ShareResult profileName={profileName} topSeg={topSeg} topMotivation={topMotivations[0]?.name ?? ""} />
 
           {/* ─── Нижняя навигация ─── */}
           <div className="pb-6 pt-2">
