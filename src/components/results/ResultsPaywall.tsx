@@ -62,6 +62,12 @@ export default function ResultsPaywall({ payLoading, payError, onPayClick }: Res
           </div>
         )}
 
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <span className="text-muted-foreground line-through text-sm">590 ₽</span>
+          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">−50%</span>
+          <span className="text-foreground font-black text-xl">290 ₽</span>
+        </div>
+
         <button
           onClick={onPayClick}
           disabled={payLoading}
@@ -70,7 +76,7 @@ export default function ResultsPaywall({ payLoading, payError, onPayClick }: Res
           {payLoading ? (
             <><Icon name="Loader2" size={18} className="animate-spin" /> Обработка...</>
           ) : (
-            <><Icon name="Unlock" size={18} /> Получить полный разбор за 290 ₽</>
+            <><Icon name="Unlock" size={18} /> Открыть мой полный разбор</>
           )}
         </button>
         <p className="text-center text-xs text-muted-foreground mt-2">Разовый платёж · Доступ навсегда</p>
