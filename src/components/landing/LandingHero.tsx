@@ -215,6 +215,64 @@ export default function LandingHero({ goTrainers, goPricing }: LandingHeroProps)
               </div>
             </div>
           </div>
+
+          {/* CTA под карточкой */}
+          <div className="mt-8 text-center">
+            <Button
+              onClick={goTrainers}
+              className="gradient-brand text-white font-black px-10 py-6 rounded-2xl text-base border-0 shadow-lg shadow-violet-200/60 hover:shadow-xl transition-shadow"
+            >
+              <Icon name="Play" size={18} className="mr-2" />
+              Узнать про себя — бесплатно
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3">Тест занимает 3–4 минуты · Результат сразу</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Отзывы */}
+      <section className="bg-white border-y border-border">
+        <div className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-3">Что говорят люди после разбора</h2>
+            <p className="text-muted-foreground">Реальные истории — без приукрашиваний</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            {[
+              {
+                type: "Финансово свободный",
+                seg: "Аналитика · Деньги",
+                text: "Всегда думала, что мне нужно больше анализировать перед стартом. Разбор показал — это мой главный блок. Запустила курс через неделю после теста.",
+                name: "Алина, 31 год",
+              },
+              {
+                type: "Осознанный творец",
+                seg: "Творчество · Смысл",
+                text: "Понял, где именно теряю деньги — брал проекты ниже своей ценности. Сразу поднял ставку. Клиенты никуда не делись.",
+                name: "Максим, 28 лет",
+              },
+              {
+                type: "Прагматичный помощник",
+                seg: "Помощь людям · Деньги",
+                text: "Наконец-то увидела свою модель дохода — не консультации один на один, а групповой формат. Доход вырос в 2 раза при той же нагрузке.",
+                name: "Ольга, 35 лет",
+              },
+            ].map((r) => (
+              <div key={r.name} className="rounded-2xl border bg-[hsl(248,50%,98%)] p-5 flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full gradient-brand flex items-center justify-center text-white font-black text-sm shrink-0">
+                    {r.name[0]}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-foreground">{r.name}</div>
+                    <div className="text-xs text-primary font-semibold">{r.type}</div>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">«{r.text}»</p>
+                <div className="text-xs text-muted-foreground/60 border-t border-border pt-2">{r.seg}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

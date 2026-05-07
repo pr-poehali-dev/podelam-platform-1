@@ -419,20 +419,28 @@ export default function PsychBot() {
           )}
         </div>
         <SyncIndicator syncing={syncing} />
-        {botState.step === "quiz" && (
-          <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-violet-500 rounded-full transition-all duration-500"
-              style={{ width: `${(botState.currentQuestion / TOTAL_QUESTIONS) * 100}%` }}
-            />
-          </div>
-        )}
         {messages.length > 1 && (
           <button onClick={handleReset} className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600" title="Начать заново">
             <Icon name="RotateCcw" size={16} />
           </button>
         )}
       </div>
+
+      {/* Прогресс-бар теста */}
+      {botState.step === "quiz" && (
+        <div className="bg-white border-b border-gray-100 px-4 py-2">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-semibold text-violet-600">Вопрос {botState.currentQuestion + 1} из {TOTAL_QUESTIONS}</span>
+            <span className="text-xs text-gray-400">{Math.round(((botState.currentQuestion) / TOTAL_QUESTIONS) * 100)}% пройдено</span>
+          </div>
+          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full transition-all duration-500"
+              style={{ width: `${(botState.currentQuestion / TOTAL_QUESTIONS) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {botState.step === 0 && (
         <ToolHint
