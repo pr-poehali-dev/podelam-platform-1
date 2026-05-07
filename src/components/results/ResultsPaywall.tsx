@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Icon from "@/components/ui/icon";
+import { PLAN_30 } from "@/components/psych-bot/psychBotData";
 
 const OFFER_KEY = "pdd_offer_expires";
 const OFFER_DURATION = 24 * 60 * 60 * 1000;
@@ -33,10 +34,13 @@ interface ResultsPaywallProps {
   payLoading: boolean;
   payError: string;
   onPayClick: () => void;
+  topSeg: string;
 }
 
-export default function ResultsPaywall({ payLoading, payError, onPayClick }: ResultsPaywallProps) {
+export default function ResultsPaywall({ payLoading, payError, onPayClick, topSeg }: ResultsPaywallProps) {
   const { h, m, s, expired } = useOfferTimer();
+  const plan = PLAN_30[topSeg] ?? PLAN_30["analytics"];
+  const firstStep = plan[0];
 
   return (
     <div className="bg-white rounded-2xl border-2 border-violet-200 overflow-hidden">
@@ -90,9 +94,38 @@ export default function ResultsPaywall({ payLoading, payError, onPayClick }: Res
           Ты уже видишь, что тебя тормозит. Теперь — пошаговый план: как зарабатывать в своей модели без выгорания и попыток «как все».
         </p>
 
+        {/* Крючок — превью плана */}
+        <div className="rounded-xl border border-violet-100 overflow-hidden mb-5">
+          <div className="bg-violet-50 px-4 py-2 flex items-center gap-2 border-b border-violet-100">
+            <Icon name="CalendarDays" size={14} className="text-violet-500" />
+            <span className="text-xs font-bold text-violet-600 uppercase tracking-wide">Твой план на 30 дней</span>
+          </div>
+          {/* Первый шаг — виден */}
+          <div className="px-4 py-3 flex items-start gap-3 bg-white">
+            <div className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">1</div>
+            <p className="text-sm text-foreground leading-relaxed">{firstStep.replace(/^Неделя \d+ — /, "")}</p>
+          </div>
+          {/* Недели 2–4 — заблюрены */}
+          <div className="relative">
+            <div className="px-4 py-3 space-y-2.5 blur-[4px] select-none pointer-events-none bg-white border-t border-border/40">
+              {plan.slice(1).map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-400 text-xs font-black flex items-center justify-center shrink-0 mt-0.5">{i + 2}</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.replace(/^Неделя \d+ — /, "")}</p>
+                </div>
+              ))}
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-white/90 border border-violet-200 rounded-full px-4 py-1.5 flex items-center gap-1.5 shadow-sm">
+                <Icon name="Lock" size={13} className="text-violet-500" />
+                <span className="text-xs font-bold text-violet-600">Открывается после оплаты</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-2 mb-5">
           {[
-            "Пошаговый план на 30 дней под твой тип",
             "Стратегии монетизации твоего профиля",
             "Как выстроить доход без постоянного выгорания",
             "Персональные тренажёры под твои задачи",

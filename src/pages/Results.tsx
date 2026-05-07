@@ -204,6 +204,7 @@ export default function Results() {
               payLoading={payLoading}
               payError={payError}
               onPayClick={handlePayClick}
+              topSeg={topSeg}
             />
           )}
 
