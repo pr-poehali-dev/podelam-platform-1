@@ -54,6 +54,7 @@ import MoneyLanding from "./pages/MoneyLanding";
 import SimulatorProLanding from "./pages/SimulatorProLanding";
 import ProTrainersLanding from "./pages/ProTrainersLanding";
 import About from "./pages/About";
+import ForWhom from "./pages/ForWhom";
 import NotFound from "./pages/NotFoundPage";
 import useAutoLogout from "./hooks/useAutoLogout";
 import CookieBanner from "./components/CookieBanner";
@@ -138,6 +139,7 @@ const App = () => (
           <Route path="/simulator-pro-info" element={<SimulatorProLanding />} />
           <Route path="/pro-trainers" element={<ProTrainersLanding />} />
           <Route path="/about" element={<About />} />
+          <Route path="/for-whom" element={<ForWhom />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
