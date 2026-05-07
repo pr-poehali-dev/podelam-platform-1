@@ -152,7 +152,7 @@ export default function LandingHero({ goTrainers, goPricing }: LandingHeroProps)
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto flex flex-col gap-6">
           <div className="rounded-3xl border-2 border-violet-200 bg-white overflow-hidden shadow-lg shadow-violet-100/50">
             {/* Header */}
             <div className="gradient-brand px-6 py-5 text-white">
@@ -217,10 +217,10 @@ export default function LandingHero({ goTrainers, goPricing }: LandingHeroProps)
           </div>
 
           {/* CTA под карточкой */}
-          <div className="mt-8 text-center">
+          <div className="text-center">
             <Button
               onClick={goTrainers}
-              className="gradient-brand text-white font-black px-10 py-6 rounded-2xl text-base border-0 shadow-lg shadow-violet-200/60 hover:shadow-xl transition-shadow"
+              className="gradient-brand text-white font-black px-10 py-6 rounded-2xl text-base border-0 shadow-lg shadow-violet-200/60 hover:shadow-xl transition-shadow w-full sm:w-auto"
             >
               <Icon name="Play" size={18} className="mr-2" />
               Узнать про себя — бесплатно
