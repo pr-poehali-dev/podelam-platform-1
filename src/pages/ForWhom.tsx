@@ -131,7 +131,7 @@ export default function ForWhom() {
             <div className="flex-shrink-0 w-full max-w-xs sm:max-w-sm lg:max-w-md">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img
-                  src="https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/8859f369-d50d-4341-a35c-376ec465c3ff.jpg"
+                  src="https://cdn.poehali.dev/projects/6c16557d-8f84-49ee-9bbb-b86108059a50/files/741564a6-c2d0-4428-b0e2-641da5b4bbc2.jpg"
                   alt="Человек на перепутье — ищет своё направление"
                   className="w-full h-auto object-cover"
                 />
