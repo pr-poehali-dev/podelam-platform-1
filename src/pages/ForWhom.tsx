@@ -49,6 +49,7 @@ const resultCards = [
   { icon: "TrendingDown", text: "Где ты теряешь деньги" },
   { icon: "Briefcase", text: "Какой формат заработка тебе подходит" },
   { icon: "Map", text: "Как тебе двигаться дальше" },
+  { icon: "Star", text: "В чём твои настоящие сильные стороны" },
 ];
 
 const questions = [
