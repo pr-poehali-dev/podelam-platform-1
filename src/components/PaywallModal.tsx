@@ -52,12 +52,12 @@ export default function PaywallModal({ toolId, toolName, onClose, onSuccess }: P
           <div className="p-5 space-y-3">
             {!isDiaryOnly && (
               <div className="rounded-2xl border-2 border-gray-100 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="min-w-0">
                     <div className="font-bold text-foreground text-base">Разовый доступ</div>
                     <div className="text-muted-foreground text-sm mt-0.5">1 прохождение, история сохраняется</div>
                   </div>
-                  <div className="text-2xl font-black text-primary">{TOOL_PRICE} ₽</div>
+                  <div className="text-2xl font-black text-primary shrink-0">{TOOL_PRICE} ₽</div>
                 </div>
                 {canPayOnce ? (
                   <button
