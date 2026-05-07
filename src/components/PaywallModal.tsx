@@ -33,7 +33,7 @@ export default function PaywallModal({ toolId, toolName, onClose, onSuccess }: P
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)" }}>
-        <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
+        <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto">
           <div className="gradient-brand p-6 text-white relative">
             <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
               <Icon name="X" size={16} />
