@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import IndexNav from "@/components/index/IndexNav";
+import LandingFooter from "@/components/landing/LandingFooter";
 
 const recognizeCards = [
   {
@@ -378,22 +379,7 @@ export default function ForWhom() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-border py-8 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg gradient-brand flex items-center justify-center">
-              <Icon name="Compass" size={12} className="text-white" />
-            </div>
-            <span className="font-semibold text-foreground">ПоДелам</span>
-          </div>
-          <div className="flex gap-4">
-            <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Политика</button>
-            <button onClick={() => navigate("/oferta")} className="hover:text-foreground transition-colors">Оферта</button>
-            <button onClick={() => navigate("/about")} className="hover:text-foreground transition-colors">Автор</button>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }
