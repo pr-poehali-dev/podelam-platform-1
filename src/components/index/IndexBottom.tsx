@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import InstallPWA from "@/components/InstallPWA";
 
-const whatYouGet = [
-  { icon: "Zap", color: "bg-amber-50", iconColor: "text-amber-600", border: "border-amber-100", name: "Твои сильные стороны", desc: "Что у тебя получается естественно и на что стоит опираться в работе и жизни." },
-  { icon: "Anchor", color: "bg-indigo-50", iconColor: "text-indigo-600", border: "border-indigo-100", name: "Твоя внутренняя опора", desc: "На что тебе стоит опираться в сложных ситуациях — чтобы не терять себя." },
-  { icon: "TrendingUp", color: "bg-green-50", iconColor: "text-green-600", border: "border-green-100", name: "Твой стиль роста", desc: "Как тебе проще развиваться и двигаться вперёд — без выгорания и лишнего напряжения." },
-  { icon: "Banknote", color: "bg-emerald-50", iconColor: "text-emerald-600", border: "border-emerald-100", name: "Твоя модель дохода", desc: "Какой формат заработка подходит именно тебе: фриланс, найм, экспертность или своё дело." },
-  { icon: "ShieldAlert", color: "bg-rose-50", iconColor: "text-rose-600", border: "border-rose-100", name: "Твои ограничения", desc: "Что мешает раскрывать потенциал на максимум — и как с этим работать конкретно." },
-  { icon: "Target", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Пошаговые рекомендации", desc: "Не общие советы, а конкретные действия под твою ситуацию и тип мышления." },
+const tools = [
+  { icon: "Brain", color: "bg-indigo-50", iconColor: "text-indigo-600", border: "border-indigo-100", name: "Тип личности и сильные стороны", desc: "Кто ты: Аналитик, Инициатор, Исполнитель или Созидатель. На основе этого строится твоя персональная модель роста.", link: "/psych-analysis-info" },
+  { icon: "ShieldAlert", color: "bg-rose-50", iconColor: "text-rose-600", border: "border-rose-100", name: "Ограничения и внутренние блоки", desc: "Страх, перегруз, хаос или расфокус — что именно тормозит тебя прямо сейчас и как с этим работать.", link: "/barrier-info" },
+  { icon: "Banknote", color: "bg-green-50", iconColor: "text-green-600", border: "border-green-100", name: "Модель дохода", desc: "Какой способ заработка подходит именно тебе: фриланс, найм, экспертность, своё дело или партнёрство.", link: "/income-info" },
+  { icon: "Zap", color: "bg-amber-50", iconColor: "text-amber-600", border: "border-amber-100", name: "Где ты теряешь энергию", desc: "Конкретные паттерны, которые съедают твой ресурс — и как их убрать, чтобы двигаться без выгорания.", link: "/plan-info" },
+  { icon: "BarChart3", color: "bg-blue-50", iconColor: "text-blue-600", border: "border-blue-100", name: "Прогресс развития", desc: "Отслеживаешь динамику: ограничения уменьшаются, энергия растёт, доход двигается вперёд.", link: "/progress-info" },
+  { icon: "Target", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Пошаговый план действий", desc: "Персональные шаги — не общие советы, а конкретные действия для твоей ситуации и типа мышления.", link: "/diary-info" },
 ];
 
 const exampleResult = {
@@ -71,16 +71,20 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Разбор, который можно применять в жизни — без воды и абстрактных формулировок</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {whatYouGet.map((item) => (
+            {tools.map((tool) => (
               <div
-                key={item.name}
-                className={`rounded-3xl p-6 border ${item.border} ${item.color} card-hover`}
+                key={tool.name}
+                className={`rounded-3xl p-6 border ${tool.border} ${tool.color} card-hover cursor-pointer`}
+                onClick={() => navigate(tool.link)}
               >
                 <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-4 shadow-sm">
-                  <Icon name={item.icon as Parameters<typeof Icon>[0]["name"]} size={22} className={item.iconColor} />
+                  <Icon name={tool.icon as Parameters<typeof Icon>[0]["name"]} size={22} className={tool.iconColor} />
                 </div>
-                <h3 className="font-bold text-foreground text-[17px] mb-2">{item.name}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-bold text-foreground text-[17px]">{tool.name}</h3>
+                  <Icon name="ArrowRight" size={16} className="text-muted-foreground shrink-0" />
+                </div>
+                <p className="text-muted-foreground text-sm leading-relaxed">{tool.desc}</p>
               </div>
             ))}
           </div>
