@@ -4,12 +4,12 @@ import Icon from "@/components/ui/icon";
 
 const demoQuestions = [
   {
-    text: "Когда что-то важное нужно сделать, ты чаще всего...",
+    text: "Когда нужно принять важное решение, ты чаще всего...",
     options: [
-      "Откладываю — не могу заставить себя начать",
-      "Начинаю, но быстро теряю энергию",
-      "Делаю, но потом чувствую опустошение",
-      "Делаю без проблем, мне комфортно",
+      "Долго анализирую и сомневаюсь — боюсь ошибиться",
+      "Начинаю двигаться, но быстро теряю уверенность",
+      "Слушаю других больше, чем себя",
+      "Принимаю решение, но потом перепроверяю снова",
     ],
     scores: [
       [3, 0, 0, 0],
@@ -19,12 +19,12 @@ const demoQuestions = [
     ],
   },
   {
-    text: "Как ты зарабатываешь деньги — или хотел бы зарабатывать?",
+    text: "Как ты чаще всего работаешь — или хотел бы работать?",
     options: [
-      "Хочу сам решать, когда и сколько работать",
-      "Мне нужна стабильность — фиксированный доход",
-      "Хочу помогать людям и получать за это",
-      "Хочу создавать что-то своё — продукт, бизнес",
+      "Самостоятельно, с гибким графиком и своими задачами",
+      "В стабильной структуре с понятными обязанностями",
+      "Помогаю людям — это даёт смысл",
+      "Создаю что-то своё — продукт, бизнес, систему",
     ],
     scores: [
       [1, 0, 0, 2],
@@ -34,12 +34,12 @@ const demoQuestions = [
     ],
   },
   {
-    text: "Что лучше всего описывает твоё состояние сейчас?",
+    text: "Что точнее всего описывает твоё состояние сейчас?",
     options: [
-      "Много планов, но ничего не двигается",
-      "Устал, хочется отдохнуть и перезагрузиться",
-      "Непонятно куда идти — нет ясного направления",
-      "Есть направление, но что-то внутри тормозит",
+      "Чувствую потенциал, но не могу собрать его в систему",
+      "Быстро устаю и теряю энергию на пути к цели",
+      "Много направлений — не знаю, на чём сфокусироваться",
+      "Знаю куда двигаться, но что-то внутри тормозит",
     ],
     scores: [
       [3, 0, 0, 0],
@@ -52,28 +52,36 @@ const demoQuestions = [
 
 const resultProfiles = [
   {
-    emoji: "🔒",
-    label: "Твой блок: прокрастинация и страх старта",
-    desc: "Ты знаешь, что делать — но что-то внутри останавливает. Скорее всего это страх ошибки или неопределённости. Тебе подойдёт модель с чёткой структурой и маленькими шагами.",
-    model: "Модель дохода: фриланс с понятными задачами или найм с ростом",
+    emoji: "🧠",
+    label: "Стратегический аналитик",
+    strength: "Умеешь видеть систему и принимать взвешенные решения",
+    block: "Перегруз вариантами и постоянные сомнения мешают двигаться",
+    growth: "Постепенное развитие через структуру и фокус на одном направлении",
+    model: "Модель роста: убрать лишние задачи и выстроить понятную систему действий",
   },
   {
-    emoji: "🔋",
-    label: "Твой блок: выгорание и перегруз",
-    desc: "Ты много стараешься, но ресурс заканчивается. Текущая модель работы не совпадает с твоей энергетикой. Тебе нужен доход, который даёт восстановление, а не только нагрузку.",
-    model: "Модель дохода: автономная занятость или гибкий формат",
+    emoji: "⚡",
+    label: "Энергичный инициатор",
+    strength: "Легко загораешься и запускаешь новое — это твоя сила",
+    block: "Быстро теряешь ресурс, если формат работы не совпадает с твоей энергетикой",
+    growth: "Гибкий формат с автономией — без жёсткой рутины и микроменеджмента",
+    model: "Модель роста: фриланс, экспертность или своё небольшое дело",
   },
   {
     emoji: "🧭",
-    label: "Твой блок: расфокус и отсутствие направления",
-    desc: "Ты хочешь двигаться, но не понимаешь куда. Много вариантов — и ни одного выбора. Тебе нужна система, которая поможет выбрать одно и идти.",
-    model: "Модель дохода: экспертная деятельность или создание своего продукта",
+    label: "Человек с широким взглядом",
+    strength: "Видишь много возможностей и умеешь думать нестандартно",
+    block: "Расфокус и сложность выбора одного направления тормозят реализацию",
+    growth: "Структура и чёткий фокус помогут превратить потенциал в конкретный результат",
+    model: "Модель роста: экспертная деятельность или создание собственного продукта",
   },
   {
-    emoji: "🚧",
-    label: "Твой блок: внутренний тормоз",
-    desc: "Направление есть, но что-то не даёт двигаться. Это могут быть убеждения, чужие ожидания или страх результата. Полный тест покажет точно.",
-    model: "Модель дохода: собственное дело или партнёрство",
+    emoji: "🚀",
+    label: "Практик с внутренним тормозом",
+    strength: "Понимаешь куда двигаться и умеешь работать системно",
+    block: "Внутренние ограничивающие убеждения или чужие ожидания тормозят рост",
+    growth: "Работа с внутренними паттернами откроет потенциал, который уже есть",
+    model: "Модель роста: собственное дело или партнёрство с чёткими ролями",
   },
 ];
 
@@ -108,8 +116,8 @@ export default function IndexDemo() {
     <section id="demo" className="py-12 md:py-20 bg-white/60">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-10">
-          <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Мини-тест</p>
-          <h2 className="text-3xl font-black text-foreground">Узнай свой блок за 3 вопроса</h2>
+          <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Мини-разбор</p>
+          <h2 className="text-3xl font-black text-foreground">Узнай свой тип за 3 вопроса</h2>
           <p className="text-muted-foreground mt-2">Честные вопросы — без правильных ответов</p>
         </div>
 
@@ -148,15 +156,24 @@ export default function IndexDemo() {
                 <span className="text-3xl">{r.emoji}</span>
               </div>
               <h3 className="text-2xl font-black text-foreground mb-3">Вот твой предварительный разбор</h3>
-              <div className="gradient-brand text-white font-bold text-base rounded-2xl px-6 py-3 inline-block mb-4">
+              <div className="gradient-brand text-white font-bold text-base rounded-2xl px-6 py-3 inline-block mb-6">
                 {r.emoji} {r.label}
               </div>
-              <p className="text-muted-foreground text-sm mb-3 leading-relaxed">{r.desc}</p>
-              <div className="bg-accent/40 border border-accent rounded-2xl px-5 py-3 mb-2 text-sm font-semibold text-foreground">
-                <Icon name="Banknote" size={14} className="inline mr-1.5 text-primary" />
-                {r.model}
+              <div className="space-y-3 text-left mb-6">
+                <div className="bg-green-50 border border-green-100 rounded-2xl px-5 py-3">
+                  <p className="text-xs text-green-600 font-semibold uppercase tracking-wide mb-1">Сильная сторона</p>
+                  <p className="text-sm text-foreground">{r.strength}</p>
+                </div>
+                <div className="bg-rose-50 border border-rose-100 rounded-2xl px-5 py-3">
+                  <p className="text-xs text-rose-600 font-semibold uppercase tracking-wide mb-1">Что мешает</p>
+                  <p className="text-sm text-foreground">{r.block}</p>
+                </div>
+                <div className="bg-accent/40 border border-accent rounded-2xl px-5 py-3">
+                  <Icon name="TrendingUp" size={14} className="inline mr-1.5 text-primary" />
+                  <span className="text-sm font-semibold text-foreground">{r.model}</span>
+                </div>
               </div>
-              <p className="text-muted-foreground text-xs mb-8">Полный тест из 40+ вопросов даст точный профиль, все блоки и конкретные рекомендации</p>
+              <p className="text-muted-foreground text-xs mb-8">Полный разбор из 40+ вопросов даёт точный профиль, все ограничения и конкретные рекомендации</p>
               </>); })()}
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button

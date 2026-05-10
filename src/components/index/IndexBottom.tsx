@@ -3,19 +3,30 @@ import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import InstallPWA from "@/components/InstallPWA";
 
-const audience = [
-  { icon: "Zap", color: "text-rose-500", bg: "bg-rose-50", title: "Застрял и не двигаешься", text: "Есть желание изменить жизнь, но что-то внутри тормозит. Откладываешь, сомневаешься, начинаешь заново." },
-  { icon: "BatteryLow", color: "text-orange-500", bg: "bg-orange-50", title: "Работаешь, но денег нет", text: "Усилия есть — результата нет. Чувствуешь, что идёшь не той дорогой, но не знаешь, какой должна быть твоя." },
-  { icon: "Compass", color: "text-indigo-500", bg: "bg-indigo-50", title: "Хочешь понять свой путь", text: "Устал копировать чужие модели успеха. Хочется найти то, что работает именно для тебя — и начать зарабатывать без выгорания." },
+const whatYouGet = [
+  { icon: "Zap", color: "bg-amber-50", iconColor: "text-amber-600", border: "border-amber-100", name: "Твои сильные стороны", desc: "Что у тебя получается естественно и на что стоит опираться в работе и жизни." },
+  { icon: "Anchor", color: "bg-indigo-50", iconColor: "text-indigo-600", border: "border-indigo-100", name: "Твоя внутренняя опора", desc: "На что тебе стоит опираться в сложных ситуациях — чтобы не терять себя." },
+  { icon: "TrendingUp", color: "bg-green-50", iconColor: "text-green-600", border: "border-green-100", name: "Твой стиль роста", desc: "Как тебе проще развиваться и двигаться вперёд — без выгорания и лишнего напряжения." },
+  { icon: "Banknote", color: "bg-emerald-50", iconColor: "text-emerald-600", border: "border-emerald-100", name: "Твоя модель дохода", desc: "Какой формат заработка подходит именно тебе: фриланс, найм, экспертность или своё дело." },
+  { icon: "ShieldAlert", color: "bg-rose-50", iconColor: "text-rose-600", border: "border-rose-100", name: "Твои ограничения", desc: "Что мешает раскрывать потенциал на максимум — и как с этим работать конкретно." },
+  { icon: "Target", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Пошаговые рекомендации", desc: "Не общие советы, а конкретные действия под твою ситуацию и тип мышления." },
 ];
 
+const exampleResult = {
+  type: "Стратегический аналитик",
+  strength: "Умение видеть систему и принимать взвешенные решения",
+  block: "Перегруз вариантами и постоянные сомнения",
+  growth: "Постепенное развитие через структуру и фокус на одном направлении",
+  recommendation: "Убрать лишние задачи и выстроить понятную систему действий",
+};
+
 const faqs = [
-  { q: "Почему я много стараюсь, но доход не растёт?", a: "Скорее всего ты используешь модель заработка, которая не совпадает с твоим типом личности и энергетикой. Это как пытаться ехать на велосипеде с пробитым колесом — усилий много, движения мало. Тест помогает найти именно ту модель, которая даст результат без лишнего выгорания." },
-  { q: "Что такое «внутренние блоки» и как они мешают?", a: "Блок — это паттерн поведения, который тормозит тебя на пути к деньгам и результату. Это может быть страх ошибки, перегруз от задач, синдром самозванца или хаос в приоритетах. Пока блок не выявлен, он работает незаметно — но мощно. Тест определяет твой главный блок и показывает, как с ним работать." },
-  { q: "Как работает тест и насколько он точен?", a: "Все расчёты построены на проверенных психологических методиках и математических алгоритмах. Мы принципиально не используем ИИ для оценки — только точные формулы. Одни и те же ответы всегда дают один результат. Чем честнее отвечаешь — тем точнее картина." },
-  { q: "Сколько времени занимает прохождение?", a: "Базовый тест — 15–20 минут. Можно прерваться и продолжить позже — прогресс сохраняется. Расширенный разбор займёт немного больше времени, но даст глубокую расшифровку и персональный план." },
-  { q: "Нужно ли платить?", a: "Мини-тест на главной странице — бесплатно. Полный тест с разбором блоков и моделью дохода — 299 ₽. Расширенный разбор с глубокой расшифровкой и планом — 990 ₽." },
-  { q: "Что такое PRO-тренажёры?", a: "PRO-тренажёры — это углублённые инструменты для развития мышления: стратегическое, финансовое и логическое. Прохождение занимает 30–50 минут. В конце получаешь подробный отчёт с индексами, графиками и рекомендациями — его можно скачать в PDF." },
+  { q: "Это психологический тест?", a: "Нет. Это структурированный разбор твоих сильных сторон, поведенческих паттернов и модели реализации. Без абстрактной психологии — только конкретные выводы." },
+  { q: "Что я получу в итоге?", a: "Понимание того, как тебе лучше двигаться, на что опираться, где твои сильные стороны и как реализовывать себя и зарабатывать. Не описание характера — а разбор, который можно применять." },
+  { q: "Это подойдёт, если я уже многое пробовал?", a: "Да. Особенно тем, кто чувствует потенциал, но пока не смог собрать себя в понятную систему. Разбор помогает увидеть, что именно тормозит и куда направить усилия." },
+  { q: "Сколько времени занимает прохождение?", a: "Базовый разбор — 15–20 минут. Можно прерваться и продолжить позже — прогресс сохраняется. Расширенный даст глубокую расшифровку и персональный план." },
+  { q: "Нужно ли платить?", a: "Мини-разбор на главной странице — бесплатно. Полный разбор с профилем сильных сторон и моделью дохода — 299 ₽. Расширенный разбор с глубокой расшифровкой и планом — 990 ₽." },
+  { q: "Что такое PRO-тренажёры?", a: "PRO-тренажёры — углублённые инструменты для развития мышления: стратегическое, финансовое и логическое. В конце получаешь подробный отчёт с индексами, графиками и рекомендациями." },
 ];
 
 const FaqItem = ({ q, a }: { q: string; a: string }) => {
@@ -51,61 +62,27 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
 
   return (
     <>
-      {/* TOOLS */}
+      {/* WHAT YOU GET */}
       <section id="tools" className="py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
-            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Инструменты</p>
-            <h2 className="text-3xl md:text-4xl font-black text-foreground">Что ты получишь внутри</h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Разбор твоих блоков, модель дохода и конкретный план — всё в одном месте, без воды и мотивашек</p>
+            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Что ты получишь</p>
+            <h2 className="text-3xl md:text-4xl font-black text-foreground">Не просто описание — а понимание себя и своего пути</h2>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Разбор, который можно применять в жизни — без воды и абстрактных формулировок</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { icon: "Brain", color: "bg-indigo-50", iconColor: "text-indigo-600", border: "border-indigo-100", name: "Тип личности", desc: "Кто ты: Аналитик, Инициатор, Исполнитель или Созидатель. На основе этого строится твоя персональная модель.", link: "/psych-analysis-info" },
-              { icon: "ShieldAlert", color: "bg-rose-50", iconColor: "text-rose-600", border: "border-rose-100", name: "Главный блок", desc: "Страх, перегруз, хаос или расфокус — что именно тормозит тебя прямо сейчас и как с этим работать.", link: "/barrier-info" },
-              { icon: "Banknote", color: "bg-green-50", iconColor: "text-green-600", border: "border-green-100", name: "Модель дохода", desc: "Какой способ заработка подходит именно тебе: фриланс, найм, экспертность, своё дело или партнёрство.", link: "/income-info" },
-              { icon: "Zap", color: "bg-amber-50", iconColor: "text-amber-600", border: "border-amber-100", name: "Где ты теряешь энергию", desc: "Конкретные паттерны, которые съедают твой ресурс — и как их убрать, чтобы работать эффективнее.", link: "/plan-info" },
-              { icon: "BarChart3", color: "bg-blue-50", iconColor: "text-blue-600", border: "border-blue-100", name: "Прогресс развития", desc: "Отслеживаешь динамику: блоки уменьшаются, энергия растёт, доход двигается вперёд.", link: "/progress-info" },
-              { icon: "Target", color: "bg-violet-50", iconColor: "text-violet-600", border: "border-violet-100", name: "Что делать дальше", desc: "Персональный пошаговый план — не общие советы, а конкретные действия для твоей ситуации.", link: "/diary-info" },
-            ].map((tool) => (
+            {whatYouGet.map((item) => (
               <div
-                key={tool.name}
-                className={`rounded-3xl p-6 border ${tool.border} ${tool.color} card-hover ${tool.link ? "cursor-pointer" : ""}`}
-                onClick={() => tool.link && navigate(tool.link)}
+                key={item.name}
+                className={`rounded-3xl p-6 border ${item.border} ${item.color} card-hover`}
               >
-                <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-4 shadow-sm`}>
-                  <Icon name={tool.icon} size={22} className={tool.iconColor} />
+                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-4 shadow-sm">
+                  <Icon name={item.icon as Parameters<typeof Icon>[0]["name"]} size={22} className={item.iconColor} />
                 </div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-foreground text-[17px]">{tool.name}</h3>
-                  {tool.link && <Icon name="ArrowRight" size={16} className="text-muted-foreground shrink-0" />}
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">{tool.desc}</p>
+                <h3 className="font-bold text-foreground text-[17px] mb-2">{item.name}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
               </div>
             ))}
-          </div>
-          <div className="mt-16">
-            <div className="text-center mb-8">
-              <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-2">Этапы</p>
-              <h3 className="text-2xl font-black text-foreground">Как выглядит путь</h3>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
-              {[
-                { icon: "MessageCircle", label: "Отвечаешь", text: "на вопросы о себе — честно, без правильных ответов" },
-                { icon: "Lightbulb", label: "Видишь", text: "свои блоки и то, что тебя тормозит прямо сейчас" },
-                { icon: "Banknote", label: "Узнаёшь", text: "свою модель дохода и где ты теряешь энергию" },
-                { icon: "TrendingUp", label: "Действуешь", text: "по конкретному плану и движешься к результату" },
-              ].map((s, i) => (
-                <div key={s.label} className="flex flex-col items-center text-center p-5 rounded-2xl bg-white border border-border">
-                  <div className="w-10 h-10 rounded-full gradient-brand flex items-center justify-center mb-3 shrink-0">
-                    <Icon name={s.icon} size={18} className="text-white" />
-                  </div>
-                  <span className="text-xs text-muted-foreground mb-1">Шаг {i + 1}</span>
-                  <p className="font-bold text-foreground text-sm mb-1">{s.label}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{s.text}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="text-center mt-10">
@@ -113,33 +90,65 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
               onClick={() => scrollTo("demo")}
               className="gradient-brand text-white font-bold px-8 py-3.5 rounded-2xl hover:opacity-90 transition-opacity text-[15px]"
             >
-              Попробовать бесплатно
+              Пройти разбор бесплатно
             </button>
           </div>
         </div>
       </section>
 
-      {/* AUDIENCE */}
+      {/* EXAMPLE RESULT */}
       <section className="py-12 md:py-20 bg-white/60">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-14">
-            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Для тебя, если</p>
-            <h2 className="text-3xl md:text-4xl font-black text-foreground">Тебе это нужно, если...</h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Это не слабость и не лень. Просто текущая модель не твоя — и это можно изменить.</p>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Пример результата</p>
+            <h2 className="text-3xl md:text-4xl font-black text-foreground">Вот как выглядит персональный разбор</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {audience.map((a) => (
-              <div key={a.title} className="flex gap-4 bg-white rounded-3xl p-6 border border-border card-hover">
-                <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${a.bg} shrink-0`}>
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <Icon name={a.icon as any} size={22} className={a.color} />
+          <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+            <div className="gradient-brand p-6 text-white text-center">
+              <p className="text-white/70 text-sm mb-1">Тип личности</p>
+              <h3 className="text-2xl font-black">{exampleResult.type}</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex gap-4 p-4 bg-green-50 rounded-2xl border border-green-100">
+                <div className="w-8 h-8 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                  <Icon name="Zap" size={16} className="text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground mb-1">{a.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{a.text}</p>
+                  <p className="text-xs text-green-600 font-semibold uppercase tracking-wide mb-1">Сильная сторона</p>
+                  <p className="text-foreground text-sm">{exampleResult.strength}</p>
                 </div>
               </div>
-            ))}
+              <div className="flex gap-4 p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                <div className="w-8 h-8 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
+                  <Icon name="AlertCircle" size={16} className="text-rose-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-rose-600 font-semibold uppercase tracking-wide mb-1">Что мешает</p>
+                  <p className="text-foreground text-sm">{exampleResult.block}</p>
+                </div>
+              </div>
+              <div className="flex gap-4 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                <div className="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
+                  <Icon name="TrendingUp" size={16} className="text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-indigo-600 font-semibold uppercase tracking-wide mb-1">Твоя модель роста</p>
+                  <p className="text-foreground text-sm">{exampleResult.growth}</p>
+                </div>
+              </div>
+              <div className="flex gap-4 p-4 bg-accent/40 rounded-2xl border border-accent">
+                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Icon name="CheckCircle" size={16} className="text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-primary font-semibold uppercase tracking-wide mb-1">Рекомендация</p>
+                  <p className="text-foreground text-sm">{exampleResult.recommendation}</p>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 pb-6 text-center">
+              <p className="text-muted-foreground text-xs">👉 Это не абстрактная характеристика, а разбор, который можно применять в жизни</p>
+            </div>
           </div>
         </div>
       </section>
@@ -148,18 +157,21 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
       <section className="py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
-            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Доверие</p>
-            <h2 className="text-3xl md:text-4xl font-black text-foreground">Почему нам доверяют</h2>
+            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Почему это работает</p>
+            <h2 className="text-3xl md:text-4xl font-black text-foreground">Почему людям откликается этот разбор</h2>
+            <p className="text-muted-foreground mt-4 max-w-2xl mx-auto text-lg">
+              Потому что он помогает наконец увидеть свои сильные стороны, причины внутреннего хаоса и подходящий формат реализации — и почувствовать ясность и опору на себя.
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: "BookOpen", title: "Научная методология", text: "Тесты основаны на валидированных методиках: теория типов Голланда, анализ мотивационных профилей и модели ценностей Шварца" },
-              { icon: "BarChart3", title: "Адаптивный алгоритм", text: "Система учитывает историю ответов и адаптирует рекомендации на основе паттернов — чем больше данных, тем точнее результат" },
-              { icon: "Lock", title: "Гарантия конфиденциальности", text: "Ваши ответы видите только вы. Мы не передаём данные третьим лицам и не анализируем содержание — всё хранится в вашем личном кабинете" },
+              { icon: "BookOpen", title: "Научная методология", text: "Разбор основан на валидированных психологических методиках: анализ поведенческих паттернов, мотивационных профилей и моделей ценностей." },
+              { icon: "BarChart3", title: "Адаптивный алгоритм", text: "Система учитывает твои ответы в комплексе — чем честнее отвечаешь, тем точнее картина. Одни и те же ответы всегда дают один результат." },
+              { icon: "Lock", title: "Только для тебя", text: "Твои ответы видишь только ты. Мы не передаём данные третьим лицам — всё хранится в твоём личном кабинете." },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-3xl p-7 border border-border card-hover text-center">
                 <div className="w-12 h-12 rounded-2xl gradient-brand flex items-center justify-center mx-auto mb-4">
-                  <Icon name={item.icon as "BookOpen"} size={22} className="text-white" />
+                  <Icon name={item.icon as Parameters<typeof Icon>[0]["name"]} size={22} className="text-white" />
                 </div>
                 <h3 className="font-bold text-foreground mb-2">{item.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.text}</p>
@@ -194,17 +206,17 @@ export default function IndexBottom({ scrollTo }: IndexBottomProps) {
             </div>
             <div className="relative">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-black mb-4 leading-snug">
-                Начни разбираться в себе уже сегодня
+                У тебя уже есть потенциал.<br />Нужно понять, как раскрыть его правильно.
               </h2>
               <p className="text-white/80 max-w-lg mx-auto mb-8 text-[15px] leading-relaxed">
-                Пройди тест — и мы поможем понять, что происходит внутри и что именно мешает тебе чувствовать себя по-настоящему успешным.
+                Пройди персональный разбор и выстрой свою модель роста, реализации и дохода.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
                   onClick={() => scrollTo("demo")}
                   className="bg-white text-primary font-bold px-8 py-4 rounded-2xl hover:bg-white/90 transition-colors text-[15px]"
                 >
-                  Пройти тест бесплатно
+                  Пройти разбор
                 </button>
                 <button
                   onClick={() => navigate("/auth")}
